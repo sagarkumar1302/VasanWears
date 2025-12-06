@@ -75,3 +75,12 @@ body {
   background-position: right bottom;
 }
 /* text-3xl md:text-5xl */
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar on Firefox */
+.scrollbar-hide {
+  scrollbar-width: none;
+}

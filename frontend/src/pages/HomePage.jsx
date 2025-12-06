@@ -2,15 +2,21 @@ import React from "react";
 import HeroSlider from "../components/Common/HeroSlider";
 import HowItWorks from "../components/Common/HowItWorks";
 import HeroShowcase from "../components/Common/HeroShowcase";
+import ProductShowcase from "../components/Common/ProductShowcase";
+import ZigZagFeatures from "../components/Common/ZigZagFeatures";
+import ShoppingCategories from "../components/Common/ShoppingCategories";
+import FAQSection from "../components/Common/FAQSection";
 
 const HomePage = () => {
   return (
     <>
       <HeroSlider />
+      <ShoppingCategories/>
       <HowItWorks />
       <HeroShowcase />
-      <div className="h-80 bg-primary3/30"></div>
-      <div className="h-80 bg-slate-100"></div>
+      <ProductShowcase/>
+      <ZigZagFeatures/>
+      <FAQSection/>
     </>
   );
 };

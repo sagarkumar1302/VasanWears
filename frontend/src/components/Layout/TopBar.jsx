@@ -3,7 +3,7 @@ import { RiInstagramLine, RiTwitterXLine } from "@remixicon/react";
 import { Link } from "react-router-dom";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-const TopBar = ({visible }) => {
+const TopBar = ({ visible }) => {
   useGSAP(() => {
     var t1 = gsap.timeline();
     t1.from(".icons a", {
@@ -22,9 +22,13 @@ const TopBar = ({visible }) => {
       y: -30,
       duration: 0.8,
     });
-  },[]);
+  }, []);
   return (
-    <div className={`bg-linear-to-br from-primary3 to-primary4 py-2  text-primary2 font-medium px-4 ${visible? '':'hidden'}`}>
+    <div
+      className={`bg-linear-to-br from-primary3 to-primary4 py-2  text-primary2 font-medium px-4 ${
+        visible ? "" : "hidden"
+      }`}
+    >
       <div className="container mx-auto flex justify-between">
         <div className="icons md:flex items-center space-x-4 hidden">
           <Link to="#">
