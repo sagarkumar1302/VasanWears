@@ -22,6 +22,10 @@ export const PRODUCTS = [
     image: "/images/dummy/dummy3.png",
     hoverImage: "/images/dummy/dummy4.png",
     category: "Best Selling",
+    sale: true,
+    new: true,
+    hot: false,
+    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
   },
   {
     id: 2,
@@ -32,6 +36,10 @@ export const PRODUCTS = [
     image: "/images/dummy/dummy3.png",
     hoverImage: "/images/dummy/dummy4.png",
     category: "Best Selling",
+    sale: true,
+    new: true,
+    hot: false,
+    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
   },
   {
     id: 3,
@@ -41,6 +49,10 @@ export const PRODUCTS = [
     image: "/images/dummy/dummy3.png",
     hoverImage: "/images/dummy/dummy4.png",
     category: "Best Selling",
+    sale: true,
+    new: true,
+    hot: false,
+    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
   },
   {
     id: 4,
@@ -50,6 +62,10 @@ export const PRODUCTS = [
     image: "/images/dummy/dummy3.png",
     hoverImage: "/images/dummy/dummy4.png",
     category: "Best Selling",
+    sale: true,
+    new: true,
+    hot: false,
+    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
   },
 
   // ============================
@@ -63,6 +79,10 @@ export const PRODUCTS = [
     image: "/images/dummy/dummy3.png",
     hoverImage: "/images/dummy/dummy4.png",
     category: "New Arrival",
+    sale: true,
+    new: true,
+    hot: false,
+    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
   },
   {
     id: 6,
@@ -72,6 +92,10 @@ export const PRODUCTS = [
     image: "/images/dummy/dummy3.png",
     hoverImage: "/images/dummy/dummy4.png",
     category: "New Arrival",
+    sale: true,
+    new: true,
+    hot: false,
+    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
   },
   {
     id: 7,
@@ -81,6 +105,10 @@ export const PRODUCTS = [
     image: "/images/dummy/dummy3.png",
     hoverImage: "/images/dummy/dummy4.png",
     category: "New Arrival",
+    sale: true,
+    new: true,
+    hot: false,
+    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
   },
   {
     id: 8,
@@ -90,6 +118,10 @@ export const PRODUCTS = [
     image: "/images/dummy/dummy3.png",
     hoverImage: "/images/dummy/dummy4.png",
     category: "New Arrival",
+    sale: true,
+    new: true,
+    hot: false,
+    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
   },
 
   // ============================
@@ -104,6 +136,10 @@ export const PRODUCTS = [
     image: "/images/dummy/dummy3.png",
     hoverImage: "/images/dummy/dummy4.png",
     category: "Great Offers",
+    sale: true,
+    new: true,
+    hot: false,
+    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
   },
   {
     id: 10,
@@ -113,6 +149,10 @@ export const PRODUCTS = [
     image: "/images/dummy/dummy3.png",
     hoverImage: "/images/dummy/dummy4.png",
     category: "Great Offers",
+    sale: true,
+    new: true,
+    hot: false,
+    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
   },
   {
     id: 11,
@@ -123,6 +163,10 @@ export const PRODUCTS = [
     image: "/images/dummy/dummy3.png",
     hoverImage: "/images/dummy/dummy4.png",
     category: "Great Offers",
+    sale: true,
+    new: true,
+    hot: false,
+    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
   },
   {
     id: 12,
@@ -132,6 +176,10 @@ export const PRODUCTS = [
     image: "/images/dummy/dummy3.png",
     hoverImage: "/images/dummy/dummy4.png",
     category: "Great Offers",
+    sale: true,
+    new: true,
+    hot: false,
+    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
   },
 ];
 
@@ -233,12 +281,12 @@ const ProductCard = ({ data }) => {
 
   return (
     <div
-      className="relative group cursor-pointer"
+      className="relative group cursor-pointer duration-300 hover:shadow-xl p-4 rounded-xl hover:-translate-y-3"
       onMouseEnter={handleHoverIn}
       onMouseLeave={handleHoverOut}
     >
       {/* Tags */}
-      <div className="absolute top-3 left-3 flex flex-col gap-1 z-10">
+      <div className="absolute top-7 left-7 flex flex-col gap-1 z-10">
         {data.tags.map((t, i) => (
           <span
             key={i}

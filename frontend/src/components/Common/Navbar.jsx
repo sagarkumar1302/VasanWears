@@ -19,53 +19,53 @@ const Navbar = ({ searchModel, setSearchModel }) => {
   const mobileMenuTimeline = useRef(null);
   useGSAP(() => {
     var t1 = gsap.timeline();
-    
+
     t1.from(".mobile-1", {
       opacity: 0,
       x: -30,
-      duration: 0.6,
+      duration: 0.4,
     });
     t1.from(".logo", {
       opacity: 0,
       x: -30,
-      duration: 0.6,
+      duration: 0.4,
     });
     t1.from(".menu a", {
       opacity: 0,
       y: -30,
-      duration: 0.4,
-      stagger: 0.3,
+      duration: 0.3,
+      stagger: 0.15,
     });
     t1.from(".menu-icons>a,.menu-icons button", {
       opacity: 0,
       x: 30,
-      duration: 0.3,
-      stagger: 0.2,
+      duration: 0.2,
+      stagger: 0.15,
     });
     mobileMenuTimeline.current = gsap.timeline({ paused: true });
     mobileMenuTimeline.current.to(".mobile-menu", {
       x: 0,
-      duration: 0.4,
+      duration: 0.2,
       ease: "power3.out",
     });
     mobileMenuTimeline.current.from(".mobile-menu a", {
       x: -20,
       opacity: 0,
-      duration: 0.4,
-      stagger: 0.2,
+      duration: 0.2,
+      stagger: 0.1,
     });
     mobileMenuTimeline.current.from(".mobile-cross", {
       x: 20,
       opacity: 0,
-      duration: 0.3,
+      duration: 0.2,
     });
   }, []);
   const mobileSidebarOpen = () => {
-    document.body.style.overflow = "hidden"; 
+    document.body.style.overflow = "hidden";
     mobileMenuTimeline.current.play();
   };
   const mobileSidebarClose = () => {
-    document.body.style.overflow = "auto";   
+    document.body.style.overflow = "auto";
     mobileMenuTimeline.current.reverse();
   };
   return (
@@ -89,7 +89,7 @@ const Navbar = ({ searchModel, setSearchModel }) => {
           <Link to="/" className="hover:text-primary1 menu-item">
             Home
           </Link>
-          <Link to="/" className="hover:text-primary1 menu-item">
+          <Link to="/shop" className="hover:text-primary1 menu-item">
             Shop
           </Link>
           <Link to="/" className="hover:text-primary1 menu-item">
@@ -131,19 +131,39 @@ const Navbar = ({ searchModel, setSearchModel }) => {
         </div>
       </nav>
       <div className="z-50 w-full h-screen fixed bg-linear-to-bl  from-primary1 to-primary4 backdrop-blur-2xl left-0 top-0 mobile-menu -translate-x-full flex flex-col p-6 text-3xl justify-center items-center gap-4 font-semibold overflow-hidden">
-        <Link to="/" className="hover:text-primary1 ">
+        <Link
+          to="/"
+          className="hover:text-primary2 "
+          onClick={mobileSidebarClose}
+        >
           Home
         </Link>
-        <Link to="/" className="hover:text-primary1 ">
+        <Link
+          to="/shop"
+          className="hover:text-primary2 "
+          onClick={mobileSidebarClose}
+        >
           Shop
         </Link>
-        <Link to="/" className="hover:text-primary1 ">
+        <Link
+          to="/"
+          className="hover:text-primary2 "
+          onClick={mobileSidebarClose}
+        >
           Men
         </Link>
-        <Link to="/" className="hover:text-primary1 ">
+        <Link
+          to="/"
+          className="hover:text-primary2 "
+          onClick={mobileSidebarClose}
+        >
           Women
         </Link>
-        <Link to="/" className="hover:text-primary1 ">
+        <Link
+          to="/"
+          className="hover:text-primary2 "
+          onClick={mobileSidebarClose}
+        >
           Contact Us
         </Link>
         <button
