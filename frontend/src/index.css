@@ -74,6 +74,21 @@ body {
   color: var(--color-primary3);
   background-position: right bottom;
 }
+.btn-slide2 {
+  background: linear-gradient(
+    to right,
+    var(--color-primary2) 50%,
+    var(--color-primary5) 50%
+  );
+  background-size: 200% 100%;
+  background-position: left bottom;
+  transition: background-position 0.4s ease-out, color 0.3s ease-out;
+}
+
+.btn-slide2:hover {
+  color: var(--color-primary3);
+  background-position: right bottom;
+}
 /* text-3xl md:text-5xl */
 
 .scrollbar-hide::-webkit-scrollbar {
@@ -83,4 +98,18 @@ body {
 /* Hide scrollbar on Firefox */
 .scrollbar-hide {
   scrollbar-width: none;
+}
+.product-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;      /* number of lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+input[type="range"] {
+  /* Change the accent color to green */
+  accent-color: var(--color-primary5); 
+}
+select {
+  /* This targets the <select> element itself */
+  accent-color: #ff6347; /* Example: Tomato red */
 }

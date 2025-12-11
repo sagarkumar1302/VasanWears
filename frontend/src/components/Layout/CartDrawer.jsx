@@ -220,12 +220,14 @@ const CartDrawer = ({ setCartDrawer, cartDrawer }) => {
                 ₹5999
               </span>{" "}
             </div>
-            <button className="w-full py-2 rounded-xl border-0 bg-primary2 text-white font-semibold cursor-pointer">
+            <Link to="/cart" className="w-full py-2.5 px-8 rounded-xl font-semibold text-primary3 
+             transition-all duration-300 btn-slide2 md:text-base text-sm cursor-pointer text-center">
               View Cart
-            </button>
-            <button className="w-full py-2 rounded-xl border-0 bg-primary1 font-semibold cursor-pointer">
+            </Link>
+            <Link to="/checkout" className="w-full py-2.5 px-8 rounded-xl font-semibold text-primary2 
+             transition-all duration-300 btn-slide md:text-base text-sm cursor-pointer text-center">
               Checkout
-            </button>
+            </Link>
           </div>
         )}
       </div>

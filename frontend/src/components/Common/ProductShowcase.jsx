@@ -6,182 +6,11 @@ import {
   RiSearch2Line,
 } from "@remixicon/react";
 import gsap from "gsap";
-
+import { PRODUCTS } from "../../utils/Products";
 const TABS = ["Best Selling", "New Arrival", "Great Offers", "sagarr", "New"];
 
-export const PRODUCTS = [
-  // ============================
-  // ⭐ BEST SELLING (4 ITEMS)
-  // ============================
-  {
-    id: 1,
-    title: "Premium Crewneck Sweatshirt",
-    price: "₹29.00",
-    oldPrice: "₹39.00",
-    tags: ["-26%"],
-    image: "/images/dummy/dummy3.png",
-    hoverImage: "/images/dummy/dummy4.png",
-    category: "Best Selling",
-    sale: true,
-    new: true,
-    hot: false,
-    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
-  },
-  {
-    id: 2,
-    title: "Urban Streetwear Tee",
-    price: "₹22.00",
-    oldPrice: "₹30.00",
-    tags: ["Sale!"],
-    image: "/images/dummy/dummy3.png",
-    hoverImage: "/images/dummy/dummy4.png",
-    category: "Best Selling",
-    sale: true,
-    new: true,
-    hot: false,
-    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
-  },
-  {
-    id: 3,
-    title: "Classic Oversize Tee",
-    price: "₹25.00",
-    tags: ["Hot"],
-    image: "/images/dummy/dummy3.png",
-    hoverImage: "/images/dummy/dummy4.png",
-    category: "Best Selling",
-    sale: true,
-    new: true,
-    hot: false,
-    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
-  },
-  {
-    id: 4,
-    title: "Minimalist Cotton Tee",
-    price: "₹27.00",
-    tags: ["Trending"],
-    image: "/images/dummy/dummy3.png",
-    hoverImage: "/images/dummy/dummy4.png",
-    category: "Best Selling",
-    sale: true,
-    new: true,
-    hot: false,
-    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
-  },
 
-  // ============================
-  // 🆕 NEW ARRIVAL (4 ITEMS)
-  // ============================
-  {
-    id: 5,
-    title: "Midweight Cotton Tee",
-    price: "₹26.00 – ₹29.00",
-    tags: ["New"],
-    image: "/images/dummy/dummy3.png",
-    hoverImage: "/images/dummy/dummy4.png",
-    category: "New Arrival",
-    sale: true,
-    new: true,
-    hot: false,
-    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
-  },
-  {
-    id: 6,
-    title: "Soft Pastel Hoodie",
-    price: "₹45.00",
-    tags: ["New", "Hot"],
-    image: "/images/dummy/dummy3.png",
-    hoverImage: "/images/dummy/dummy4.png",
-    category: "New Arrival",
-    sale: true,
-    new: true,
-    hot: false,
-    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
-  },
-  {
-    id: 7,
-    title: "Everyday Relaxed Tee",
-    price: "₹24.00",
-    tags: ["New"],
-    image: "/images/dummy/dummy3.png",
-    hoverImage: "/images/dummy/dummy4.png",
-    category: "New Arrival",
-    sale: true,
-    new: true,
-    hot: false,
-    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
-  },
-  {
-    id: 8,
-    title: "Premium Polo Shirt",
-    price: "₹34.00",
-    tags: ["New Arrival"],
-    image: "/images/dummy/dummy3.png",
-    hoverImage: "/images/dummy/dummy4.png",
-    category: "New Arrival",
-    sale: true,
-    new: true,
-    hot: false,
-    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
-  },
 
-  // ============================
-  // 🎯 GREAT OFFER (4 ITEMS)
-  // ============================
-  {
-    id: 9,
-    title: "Youth Short Sleeve Tee",
-    price: "₹20.00",
-    oldPrice: "₹29.00",
-    tags: ["Great Offer", "Sale!"],
-    image: "/images/dummy/dummy3.png",
-    hoverImage: "/images/dummy/dummy4.png",
-    category: "Great Offers",
-    sale: true,
-    new: true,
-    hot: false,
-    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
-  },
-  {
-    id: 10,
-    title: "Fine Jersey Tee",
-    price: "₹31.00",
-    tags: ["Offer"],
-    image: "/images/dummy/dummy3.png",
-    hoverImage: "/images/dummy/dummy4.png",
-    category: "Great Offers",
-    sale: true,
-    new: true,
-    hot: false,
-    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
-  },
-  {
-    id: 11,
-    title: "Printed Graphic Tee",
-    price: "₹19.00",
-    oldPrice: "₹28.00",
-    tags: ["Discount"],
-    image: "/images/dummy/dummy3.png",
-    hoverImage: "/images/dummy/dummy4.png",
-    category: "Great Offers",
-    sale: true,
-    new: true,
-    hot: false,
-    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
-  },
-  {
-    id: 12,
-    title: "Casual Summer Tank",
-    price: "₹17.00",
-    tags: ["Hot Deal"],
-    image: "/images/dummy/dummy3.png",
-    hoverImage: "/images/dummy/dummy4.png",
-    category: "Great Offers",
-    sale: true,
-    new: true,
-    hot: false,
-    colors: ["#000000", "#F5D2A8", "#E5E5E5", "#A9A9A9"],
-  },
-];
 
 const ProductShowcase = () => {
   const [activeTab, setActiveTab] = useState("Best Selling");
@@ -202,7 +31,7 @@ const ProductShowcase = () => {
           </p>
 
           {/* Tabs */}
-          <div className="flex md:justify-center mt-6 gap-4 overflow-x-auto w-full md:py-0 py-2 md:px-0 px-2 ">
+          <div className="flex md:justify-center mt-6 gap-4 overflow-x-auto w-full md:py-0 py-2 md:px-0 px-2 scrollbar-hide">
             {TABS.map((tab) => (
               <button
                 key={tab}
@@ -224,7 +53,7 @@ const ProductShowcase = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 md:gap-10 gap-5 ">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 md:gap-4 gap-5 ">
           {filteredProducts.map((product) => (
             <ProductCard key={product.id} data={product} />
           ))}
@@ -302,13 +131,13 @@ const ProductCard = ({ data }) => {
         <img
           ref={imgRef}
           src={data.image}
-          className="w-full h-[350px] object-cover"
+          className="w-full object-cover"
         />
 
         <img
           ref={hoverImgRef}
           src={data.hoverImage}
-          className="w-full h-[350px] object-cover absolute inset-0 opacity-0"
+          className="w-full object-cover absolute inset-0 opacity-0"
         />
 
         {/* Icons */}
@@ -330,7 +159,7 @@ const ProductCard = ({ data }) => {
       </div>
 
       {/* Product Details */}
-      <h3 className="mt-4 text-xl md:text-2xl font-semibold">{data.title}</h3>
+      <h3 className="mt-4 text-base md:text-xl font-bold product-title">{data.title}</h3>
       <p className="text-gray-700 mt-1">
         <span className="font-bold text-primary5 text-lg">{data.price}</span>{" "}
         {data.oldPrice && (

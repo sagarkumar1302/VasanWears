@@ -121,7 +121,7 @@ const Navbar = ({ searchModel, setSearchModel }) => {
             }}
           >
             <RiShoppingBagLine className="hover:text-primary1" />
-            <span className="absolute px-2 py-0.5 bg-primary1 -top-4 left-3 text-xs flex items-center justify-center rounded-full text-primary2">
+            <span className="absolute px-2 py-0.5 bg-primary5 -top-4 left-3 text-xs flex items-center justify-center rounded-full text-primary3">
               20
             </span>
           </button>

@@ -3,12 +3,13 @@ import {
   RiGridFill,
   RiUserLine,
   RiSearchLine,
-  RiShoppingBag3Line 
+  RiShoppingBag3Line, 
+  RiShoppingBagLine
 } from "@remixicon/react";
 
 const BottomNav = () => {
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-white shadow-md py-2 px-4 flex justify-around items-center md:hidden z-50">
+    <div className="fixed bottom-0 left-0 w-full bg-white shadow-md py-2.5 px-4 flex justify-around items-center md:hidden z-50">
 
       {/* Shop */}
       <div className="flex flex-col items-center text-gray-600">
@@ -30,11 +31,11 @@ const BottomNav = () => {
 
       {/* Cart */}
       <div className="relative flex flex-col items-center text-gray-600">
-        <RiShoppingBag3Line size={22} />
+        <RiShoppingBagLine size={22} />
         <span className="text-xs mt-1">Cart</span>
 
         {/* Cart Badge */}
-        <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+        <span className="absolute -top-1 -right-1 bg-primary5 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
           5
         </span>
       </div>

@@ -18,7 +18,6 @@ const Header = () => {
       const currentScroll = window.scrollY;
 
       if (currentScroll > lastScroll && currentScroll > 0) {
-
         gsap.to(".navbar-wrapper", {
           y: 0,
           duration: 0.4,
@@ -41,7 +40,7 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 w-full z-100 bg-white navbar-wrapper">
-       <TopBar visible={topBar} />
+      <TopBar visible={topBar} />
       <Navbar setSearchModel={setSearchModel} searchModel={searchModel} />
       <SearchBar searchModel={searchModel} topBar={topBar} />
     </header>
