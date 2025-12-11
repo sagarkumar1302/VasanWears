@@ -1,22 +1,19 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
+import { GoogleLogin } from "@react-oauth/google";
+import axios from "axios";
 const LoginPage = () => {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-primary3 flex items-center justify-center px-4">
       <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-lg">
-        
         {/* Heading */}
         <h2 className="text-3xl font-semibold text-center text-gray-800">
           Welcome Back
         </h2>
-        <p className="text-center text-gray-500 mt-2">
-          Login to continue
-        </p>
+        <p className="text-center text-gray-500 mt-2">Login to continue</p>
 
         {/* Form */}
         <form className="mt-8 space-y-5">
-          
           {/* Email */}
           <div>
             <label className="text-gray-700 font-medium">Email</label>
@@ -51,7 +48,8 @@ const LoginPage = () => {
           {/* Login Button */}
           <button
             type="submit"
-            className="w-full py-3 bg-black text-white text-lg rounded-xl hover:opacity-90 transition"
+            className="w-full py-2.5 px-8 rounded-xl font-semibold text-primary2 
+             transition-all duration-300 btn-slide md:text-base text-sm cursor-pointer"
           >
             Login
           </button>
@@ -64,9 +62,21 @@ const LoginPage = () => {
           </div>
 
           {/* Google Login Button */}
-          <button
+          <GoogleLogin
+            onSuccess={(credentialResponse) => {
+              axios
+                .post("http://localhost:4500/api/user/google-login", {
+                  idToken: credentialResponse.credential,
+                })
+                .then((res) => console.log("Logged In →", res.data))
+                .catch((err) => console.log(err));
+            }}
+            onError={() => console.log("Login Failed")}
+            
+          />
+          {/* <button
             type="button"
-            className="w-full py-3 border rounded-xl flex items-center justify-center gap-3 hover:bg-gray-50"
+            className="w-full py-3 border rounded-xl flex items-center justify-center gap-3 hover:bg-gray-50 cursor-pointer"
           >
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -74,15 +84,15 @@ const LoginPage = () => {
               className="w-6 h-6"
             />
             Continue with Google
-          </button>
+          </button> */}
 
           {/* Signup Link */}
-          <p className="text-center text-sm text-gray-600 mt-4">
+          {/* <p className="text-center text-sm text-gray-600 mt-4">
             Don’t have an account?{" "}
             <Link to="/register" className="text-black font-medium">
               Create Account
             </Link>
-          </p>
+          </p> */}
         </form>
       </div>
     </div>
