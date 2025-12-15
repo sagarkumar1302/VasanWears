@@ -22,6 +22,7 @@ import Orders from "./components/Common/Orders";
 import SingleOrder from "./components/Common/SingleOrder";
 import Wishlist from "./pages/WishList";
 import Coupons from "./components/Common/Coupon";
+import ScrollToHash from "./components/components/ScrollToHash";
 
 const App = () => {
   const setUser = useAuthStore((s) => s.setUser);
@@ -44,6 +45,7 @@ const App = () => {
 
   return (
     <BrowserRouter>
+    <ScrollToHash/>
       <Routes>
         <Route element={<UserLayout />}>
           <Route path="/" element={<HomePage />} />

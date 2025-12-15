@@ -96,12 +96,13 @@ const Navbar = ({ searchModel, setSearchModel }) => {
           <Link to="/" className="hover:text-primary1 menu-item">
             Home
           </Link>
+          <Link to="/about" className="hover:text-primary1 menu-item">
+            About
+          </Link>
           <Link to="/shop" className="hover:text-primary1 menu-item">
             Shop
           </Link>
-          <Link to="/" className="hover:text-primary1 menu-item">
-            Men
-          </Link>
+          
           <Link to="/" className="hover:text-primary1 menu-item">
             Women
           </Link>
@@ -173,19 +174,20 @@ const Navbar = ({ searchModel, setSearchModel }) => {
           Home
         </Link>
         <Link
+          to="/about"
+          className="hover:text-primary2 "
+          onClick={mobileSidebarClose}
+        >
+          About
+        </Link>
+        <Link
           to="/shop"
           className="hover:text-primary2 "
           onClick={mobileSidebarClose}
         >
           Shop
         </Link>
-        <Link
-          to="/"
-          className="hover:text-primary2 "
-          onClick={mobileSidebarClose}
-        >
-          Men
-        </Link>
+        
         <Link
           to="/"
           className="hover:text-primary2 "

@@ -60,7 +60,7 @@ const MyAccount = () => {
         {/* ------------------------------------
              SIDEBAR WITH ACCORDION + AVATAR
         ------------------------------------- */}
-        <div className="bg-white w-full md:w-72 p-4 shadow rounded-lg">
+        <div className="bg-white w-full md:w-72 p-4 shadow rounded-lg h-fit">
           <div className="flex flex-col items-center mb-6">
             {user?.avatar ? (
               <img
@@ -122,7 +122,7 @@ const MyAccount = () => {
         {/* ------------------------------------
              MAIN CONTENT AREA
         ------------------------------------- */}
-        <div className="w-full bg-white p-6 shadow rounded-lg">
+        <div className="w-full bg-white p-6 shadow rounded-lg h-fit">
           <Outlet />
         </div>
       </div>

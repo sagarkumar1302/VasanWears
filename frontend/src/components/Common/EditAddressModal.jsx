@@ -8,7 +8,7 @@ const EditAddressInline = ({ data, onCancel, onSave, onDelete }) => {
     setForm({ ...form, [e.target.name]: e.target.value });
 
   return (
-    <div className="bg-gray-50 border-t p-6">
+    <div className="bg-primary3/20 border-t p-6 border-primary2/10">
       <h3 className="font-semibold mb-4">EDIT ADDRESS</h3>
 
       {/* FORM */}
@@ -71,11 +71,13 @@ const EditAddressInline = ({ data, onCancel, onSave, onDelete }) => {
 
         {/* RIGHT SIDE */}
         <div className="flex gap-4">
-          <button onClick={onCancel} className="px-6 py-2 border rounded-xl border-primary1/50 cursor-pointer hover:bg-primary2 hover:text-white transition-all duration-500 hover:border-primary2">Cancel</button>
+          <button onClick={onCancel} className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
+             transition-all duration-300 btn-slide md:text-base text-sm flex items-center justify-center gap-1 cursor-pointer">Cancel</button>
 
           <button
             onClick={() => onSave(form)}
-            className="bg-primary1 text-primary2 font-semibold px-6 py-2 rounded-lg cursor-pointer hover:bg-primary2 hover:text-white transition-all duration-500"
+            className="py-2.5 px-8 rounded-xl font-semibold text-primary3 
+             transition-all duration-300 btn-slide2 md:text-base text-sm flex items-center justify-center gap-1 cursor-pointer"
           >
             Save
           </button>

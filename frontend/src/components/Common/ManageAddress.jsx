@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import {
-  RiAddLine,
-  RiCloseLine,
-  RiCrossLine,
-  RiMore2Fill,
-  RiXboxLine,
-} from "@remixicon/react";
-import EditAddressModal from "./EditAddressModal";
+import { RiAddLine, RiMore2Fill } from "@remixicon/react";
 import EditAddressInline from "./EditAddressModal";
+
+const EMPTY_ADDRESS = {
+  id: null,
+  type: "HOME",
+  name: "",
+  phone: "",
+  address: "",
+};
 
 const ManageAddress = () => {
   const [addresses, setAddresses] = useState([
@@ -28,14 +29,23 @@ const ManageAddress = () => {
         "Haridas Lane Chatterji Durga Bari, Opp of Quasmia Madarsa, Durga Bari, Gaya, Bihar - 823001",
     },
   ]);
+
   const [editingId, setEditingId] = useState(null);
 
-  const handleSave = (updated) => {
-    setAddresses((prev) =>
-      prev.map((a) => (a.id === updated.id ? updated : a))
-    );
+  const handleSave = (data) => {
+    if (editingId === "new") {
+      setAddresses((prev) => [
+        ...prev,
+        { ...data, id: Date.now() },
+      ]);
+    } else {
+      setAddresses((prev) =>
+        prev.map((a) => (a.id === data.id ? data : a))
+      );
+    }
     setEditingId(null);
   };
+
   const handleDelete = (id) => {
     setAddresses((prev) => prev.filter((a) => a.id !== id));
     setEditingId(null);
@@ -43,14 +53,36 @@ const ManageAddress = () => {
 
   return (
     <div className="mx-auto">
-      <h3 className="text-xl font-semibold mb-4">Manage Addresses</h3>
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl font-semibold">Manage Addresses</h3>
 
+        <button
+          onClick={() => setEditingId("new")}
+          className="px-6 py-2 border rounded-xl border-primary1/50 cursor-pointer hover:bg-primary2 hover:text-white transition-all duration-500 hover:border-primary2 flex gap-3 items-center"
+        >
+          <RiAddLine /> <span>Add New Address</span>
+        </button>
+      </div>
+
+      {/* ADD NEW ADDRESS INLINE */}
+      {editingId === "new" && (
+        <div className="border rounded-lg mb-4 overflow-hidden">
+          <EditAddressInline
+            data={EMPTY_ADDRESS}
+            onCancel={() => setEditingId(null)}
+            onSave={handleSave}
+          />
+        </div>
+      )}
+
+      {/* ADDRESS LIST */}
       <div className="space-y-4">
         {addresses.map((item) => (
-          <div key={item.id} className="border rounded-lg overflow-hidden">
+          <div key={item.id} className="border rounded-xl overflow-hidden border-primary2/12">
             {/* Address Card */}
             <div className="p-4 relative">
-              <span className="px-3 py-1 text-xs bg-gray-200 rounded">
+              <span className="px-3 py-1 text-xs bg-primary1  rounded">
                 {item.type}
               </span>
 
@@ -59,7 +91,7 @@ const ManageAddress = () => {
                 <p>{item.phone}</p>
               </div>
 
-              <p className="text-gray-700 mt-1">{item.address}</p>
+              <p className="text-primary5 text-sm mt-1">{item.address}</p>
 
               <RiMore2Fill
                 className="absolute right-4 top-4 cursor-pointer"
@@ -69,9 +101,9 @@ const ManageAddress = () => {
               />
             </div>
 
-            {/* 🔽 INLINE EDITOR */}
+            {/* INLINE EDIT */}
             <div
-              className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              className={`transition-all duration-300 overflow-hidden ${
                 editingId === item.id
                   ? "max-h-[900px] opacity-100"
                   : "max-h-0 opacity-0"

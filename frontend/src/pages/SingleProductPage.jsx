@@ -9,7 +9,7 @@ import {
 import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useCartStore } from "../store/cartStore";
-import gsap from "gsap"
+import gsap from "gsap";
 const dummyProduct = {
   id: 1,
   title: "All–Over–Print Hoodie",
@@ -417,7 +417,14 @@ const SingleProductPage = () => {
             </Accordion>
           </div>
         </div>
+        <div id="review">
+        <p>No reviews yet.</p>
+        <button className="mt-4 px-5 py-2 bg-black text-white rounded">
+          Write a Review
+        </button>
       </div>
+      </div>
+      
     </div>
   );
 };

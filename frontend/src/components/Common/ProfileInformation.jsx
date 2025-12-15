@@ -56,21 +56,24 @@ const ProfileInformation = () => {
             <div className="flex gap-3">
               <button
                 onClick={saveChanges}
-                className="flex items-center gap-1 text-green-600"
+                className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
+             transition-all duration-300 btn-slide md:text-base text-sm flex items-center justify-center gap-1 cursor-pointer"
               >
-                <RiCheckLine size={20} /> Save
+                 Save
               </button>
               <button
                 onClick={cancelEdit}
-                className="flex items-center gap-1 text-red-500"
+                className="py-2.5 px-8 rounded-xl font-semibold text-primary3 
+             transition-all duration-300 btn-slide2 md:text-base text-sm flex items-center justify-center gap-1 cursor-pointer"
               >
-                <RiCloseLine size={20} /> Cancel
+                 Cancel
               </button>
             </div>
           ) : (
             <button
               onClick={() => setEditing(true)}
-              className="flex items-center gap-1 text-primary2 cursor-pointer bg-primary1 px-4 py-2 rounded-lg hover:bg-primary2 hover:text-white transition-all duration-500"
+              className=" py-2.5 px-8 rounded-xl font-semibold text-primary2 
+             transition-all duration-300 btn-slide md:text-base text-sm flex items-center justify-center gap-1 cursor-pointer"
             >
               <RiEdit2Line size={20} /> Edit
             </button>

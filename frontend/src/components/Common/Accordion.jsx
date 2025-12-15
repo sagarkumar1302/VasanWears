@@ -34,7 +34,7 @@ const Accordion = ({ title, children }) => {
   };
 
   return (
-    <div className="border-b py-3 md:pb-3 md:py-0 border-b-primary1/50">
+    <div className="border-b mt-3 py-3 md:pb-3 md:py-0 border-b-primary1/50">
       <button
         onClick={toggleAccordion}
         className="w-full flex justify-between items-center text-left font-semibold text-sm cursor-pointer"
@@ -49,7 +49,7 @@ const Accordion = ({ title, children }) => {
         style={{ overflow: "hidden", height: 0 }}
         className="space-y-2"
       >
-        <div className="pt-2 flex flex-col gap-2">{children}</div>
+        <div className="pt-2 flex flex-col gap-1">{children}</div>
       </div>
     </div>
   );

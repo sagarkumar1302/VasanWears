@@ -4,104 +4,80 @@ import { RiArrowRightLine } from "@remixicon/react";
 
 const OfferSection = () => {
   const marqueeRef = useRef(null);
+  const tlRef = useRef(null);
+  const directionRef = useRef(1); // 1 = forward, -1 = backward
+  const wheelTimeout = useRef(null);
 
   useEffect(() => {
-    const marquees = marqueeRef.current.querySelectorAll(".marquee-item");
-    const arrows = marqueeRef.current.querySelectorAll(".marquee-arrow");
+    const container = marqueeRef.current;
+    const items = gsap.utils.toArray(".marquee-item");
+    const arrows = container.querySelectorAll(".marquee-arrow");
 
-    const animateForward = () => {
-      gsap.to(marquees, {
-        x: "-200%",
-        duration: 4,
-        repeat: -1,
-        ease: "none",
-      });
+    let speed = 2; // base speed
+    let direction = 1;
+    let x = 0;
 
+    let totalWidth = 0;
+    items.forEach((el) => (totalWidth += el.offsetWidth));
+
+    const wrap = gsap.utils.wrap(-totalWidth / 2, 0);
+
+    gsap.ticker.add(() => {
+      x += speed * direction;
+      gsap.set(items, { x: wrap(x) });
+    });
+
+    const setDirection = (dir) => {
+      direction = dir;
       gsap.to(arrows, {
-        rotate: 0,
+        rotate: dir === 1 ? 0 : 180,
         duration: 0.3,
       });
     };
 
-    const animateBackward = () => {
-      gsap.to(marquees, {
-        x: "0%",
-        duration: 4,
-        repeat: -1,
-        ease: "none",
-      });
-
-      gsap.to(arrows, {
-        rotate: 180,
-        duration: 0.3,
-      });
+    const onWheel = (e) => {
+      setDirection(e.deltaY > 0 ? 1 : -1);
     };
 
-    let touchStartY = 0;
-
-    // Desktop scroll
-    const wheelListener = (e) => {
-      if (e.deltaY < 0) {
-        animateBackward();
-      } else {
-        animateForward();
-      }
+    let startY = 0;
+    const onTouchStart = (e) => {
+      startY = e.touches[0].clientY;
+    };
+    const onTouchMove = (e) => {
+      setDirection(e.touches[0].clientY < startY ? 1 : -1);
     };
 
-    // Mobile swipe
-    const touchStart = (e) => {
-      touchStartY = e.touches[0].clientY;
-    };
-
-    const touchMove = (e) => {
-      const touchEndY = e.touches[0].clientY;
-
-      if (touchEndY < touchStartY) {
-        // swipe UP ➝ forward
-        animateForward();
-      } else {
-        // swipe DOWN ➝ backward
-        animateBackward();
-      }
-    };
-
-    window.addEventListener("wheel", wheelListener);
-    window.addEventListener("touchstart", touchStart);
-    window.addEventListener("touchmove", touchMove);
-
-    // initial start
-    animateForward();
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
 
     return () => {
-      window.removeEventListener("wheel", wheelListener);
-      window.removeEventListener("touchstart", touchStart);
-      window.removeEventListener("touchmove", touchMove);
+      gsap.ticker.remove(() => {});
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
     };
   }, []);
 
   return (
-    <div className="w-full bg-white">
-      <div
-        ref={marqueeRef}
-        className="flex overflow-hidden bg-primary4 select-none"
-      >
-        {Array(8)
-          .fill(0)
-          .map((_, i) => (
-            <div
-              key={i}
-              className="marquee-item flex shrink-0 items-center gap-6 px-10 py-2 md:py-4"
-            >
-              <h1 className="text-2xl md:text-3xl uppercase font-semibold whitespace-nowrap">
-                Buy 2 Get 1 Free. And 25% Off using DISC18
-              </h1>
+    <div className="w-full overflow-hidden bg-white">
+      <div ref={marqueeRef} className="flex bg-primary4 whitespace-nowrap">
+        {[...Array(2)].map((_, block) =>
+          Array(8)
+            .fill(0)
+            .map((_, i) => (
+              <div
+                key={`${block}-${i}`}
+                className="marquee-item flex shrink-0 items-center gap-6 px-10 py-2 md:py-4"
+              >
+                <h1 className="text-2xl md:text-3xl uppercase font-semibold">
+                  Buy 2 Get 1 Free. And 25% Off using DISC18
+                </h1>
 
-              <RiArrowRightLine
-                
-                className="marquee-arrow transition-all md:w-15 md:h-15 w-8 h-8"
-              />
-            </div>
-          ))}
+                <RiArrowRightLine className="marquee-arrow w-8 h-8 md:w-12 md:h-12" />
+              </div>
+            ))
+        )}
       </div>
     </div>
   );
