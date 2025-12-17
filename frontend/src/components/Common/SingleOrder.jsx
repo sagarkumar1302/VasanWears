@@ -108,7 +108,7 @@ const SingleOrder = () => {
           </div>
 
           {/* RATE EXPERIENCE */}
-          <div className="bg-white p-4 rounded">
+          <div className="bg-white p-4 rounded-xl border border-primary5/10">
             <Link to="/shop/1/premium-crewneck-sweatshirt#review">
             <h4 className="font-medium mb-3">Rate your experience</h4>
 
@@ -191,9 +191,9 @@ const SingleOrder = () => {
           </div>
 
           {/* OFFERS */}
-          <div className="bg-white p-4 rounded flex justify-between items-center cursor-pointer">
+          {/* <div className="bg-white p-4 rounded flex justify-between items-center cursor-pointer">
             <span className="flex items-center gap-2">🏆 Offers earned</span>⌄
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

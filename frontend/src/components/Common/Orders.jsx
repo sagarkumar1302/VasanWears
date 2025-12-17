@@ -49,28 +49,30 @@ const Orders = () => {
                   className="w-20 h-20 object-cover rounded"
                 />
 
-                <div className="flex-1">
-                  <h3 className="font-medium text-sm">{order.title}</h3>
+                <div className="flex gap-4 w-full md:flex-row flex-col">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-sm product-title">{order.title}</h3>
 
-                  <p className="text-xs text-gray-500 mt-1">
-                    Color: {order.color} | Size: {order.size}
-                  </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Color: {order.color} | Size: {order.size}
+                    </p>
 
-                  <p className="font-semibold mt-2">₹{order.price}</p>
-                </div>
+                    <p className="font-semibold mt-2">₹{order.price}</p>
+                  </div>
 
-                <div className="text-sm text-right">
-                  <p className="text-primary2  font-semibold">
-                     Delivered on {order.deliveredOn}
-                  </p>
+                  <div className="text-sm md:text-right">
+                    <p className="text-primary2  font-semibold">
+                      Delivered on {order.deliveredOn}
+                    </p>
 
-                  <Link
-                    to="/shop/1/premium-crewneck-sweatshirt#review"
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-primary5 text-sm mt-2 flex items-center gap-1 z-30"
-                  >
-                    <RiStarFill size={15} /> Rate & Review Product
-                  </Link>
+                    <Link
+                      to="/shop/1/premium-crewneck-sweatshirt#review"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-primary5 text-sm mt-2 flex items-center gap-1 z-30"
+                    >
+                      <RiStarFill size={15} /> Rate & Review Product
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

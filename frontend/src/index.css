@@ -128,3 +128,6 @@ input[type="checkbox"]:checked::after {
   top: -8px;
   left: 2px;
 }
+input[type="radio"] {
+  accent-color: var(--color-primary5); /* your color */
+}

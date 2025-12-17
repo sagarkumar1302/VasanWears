@@ -321,7 +321,7 @@ const SingleProductPage = () => {
               >
                 {tab === "description" && "Description"}
                 {tab === "additional" && "Additional Information"}
-                {tab === "reviews" && "Reviews (0)"}
+                
               </button>
             ))}
           </div>
@@ -361,14 +361,14 @@ const SingleProductPage = () => {
               </div>
             )}
 
-            {activeTab === "reviews" && (
+            {/* {activeTab === "reviews" && (
               <div>
                 <p>No reviews yet.</p>
                 <button className="mt-4 px-5 py-2 bg-black text-white rounded">
                   Write a Review
                 </button>
               </div>
-            )}
+            )} */}
           </div>
           <div className="md:hidden mt-6 text-primary5 leading-relaxed">
             {/* Description */}
@@ -407,24 +407,23 @@ const SingleProductPage = () => {
             </Accordion>
 
             {/* Reviews */}
-            <Accordion title="Reviews">
+            {/* <Accordion title="Reviews">
               <div>
                 <p>No reviews yet.</p>
                 <button className="mt-4 px-5 py-2 bg-black text-white rounded">
                   Write a Review
                 </button>
               </div>
-            </Accordion>
+            </Accordion> */}
           </div>
         </div>
         <div id="review">
-        <p>No reviews yet.</p>
-        <button className="mt-4 px-5 py-2 bg-black text-white rounded">
-          Write a Review
-        </button>
+          <p>No reviews yet.</p>
+          <button className="mt-4 px-5 py-2 bg-black text-white rounded">
+            Write a Review
+          </button>
+        </div>
       </div>
-      </div>
-      
     </div>
   );
 };

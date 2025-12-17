@@ -102,7 +102,7 @@ const Navbar = ({ searchModel, setSearchModel }) => {
           <Link to="/shop" className="hover:text-primary1 menu-item">
             Shop
           </Link>
-          
+
           <Link to="/" className="hover:text-primary1 menu-item">
             Women
           </Link>
@@ -165,7 +165,7 @@ const Navbar = ({ searchModel, setSearchModel }) => {
           </Link>
         </div>
       </nav>
-      <div className="z-50 w-full h-screen fixed bg-linear-to-bl  from-primary1 to-primary4 backdrop-blur-2xl left-0 top-0 mobile-menu -translate-x-full flex flex-col p-6 text-3xl justify-center items-center gap-4 font-semibold overflow-hidden">
+      <div className="z-50 w-full h-screen fixed bg-linear-to-bl  from-primary1 to-primary4 backdrop-blur-2xl left-0 top-0 mobile-menu -translate-x-full flex flex-col md:hidden p-6 text-3xl justify-center items-center gap-4 font-semibold overflow-hidden">
         <Link
           to="/"
           className="hover:text-primary2 "
@@ -187,7 +187,7 @@ const Navbar = ({ searchModel, setSearchModel }) => {
         >
           Shop
         </Link>
-        
+
         <Link
           to="/"
           className="hover:text-primary2 "

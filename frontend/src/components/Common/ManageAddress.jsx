@@ -59,7 +59,7 @@ const ManageAddress = () => {
 
         <button
           onClick={() => setEditingId("new")}
-          className="px-6 py-2 border rounded-xl border-primary1/50 cursor-pointer hover:bg-primary2 hover:text-white transition-all duration-500 hover:border-primary2 flex gap-3 items-center"
+          className="md:px-6 px-2 py-2 border rounded-xl border-primary1/50 cursor-pointer hover:bg-primary2 hover:text-white transition-all duration-500 hover:border-primary2 flex gap-3 items-center text-sm"
         >
           <RiAddLine /> <span>Add New Address</span>
         </button>

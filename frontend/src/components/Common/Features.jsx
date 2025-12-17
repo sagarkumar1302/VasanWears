@@ -42,13 +42,13 @@ const features = [
 
 const Features = () => {
   return (
-    <section className="bg-gray-50 py-16">
+    <section className="bg-primary3/50 py-5 md:py-14">
       <div className="container mx-auto px-4">
-        <h2 className="text-center text-3xl font-bold mb-12">
+        <h2 className="text-center text-3xl font-bold mb-6 md:mb-12">
           What Makes Us Different?
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 md:gap-8 gap-4">
           {features.map((item, i) => {
             const Icon = item.icon;
 

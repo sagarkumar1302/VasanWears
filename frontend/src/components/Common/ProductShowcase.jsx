@@ -7,10 +7,9 @@ import {
 } from "@remixicon/react";
 import gsap from "gsap";
 import { PRODUCTS } from "../../utils/Products";
+import slugify from "../../utils/Slug";
+import { Link } from "react-router-dom";
 const TABS = ["Best Selling", "New Arrival", "Great Offers", "sagarr", "New"];
-
-
-
 
 const ProductShowcase = () => {
   const [activeTab, setActiveTab] = useState("Best Selling");
@@ -114,58 +113,61 @@ const ProductCard = ({ data }) => {
       onMouseEnter={handleHoverIn}
       onMouseLeave={handleHoverOut}
     >
-      {/* Tags */}
-      <div className="absolute top-7 left-7 flex flex-col gap-1 z-10">
-        {data.tags.map((t, i) => (
-          <span
-            key={i}
-            className="bg-primary5 text-white px-2 py-0.5 rounded text-xs font-semibold w-fit"
+      <Link to={`/shop/${data.id}/${slugify(data.title)}`}>
+        {/* Tags */}
+        <div className="absolute top-7 left-7 flex flex-col gap-1 z-10">
+          {data.tags.map((t, i) => (
+            <span
+              key={i}
+              className="bg-primary5 text-white px-2 py-0.5 rounded text-xs font-semibold w-fit"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+
+        {/* Image Wrapper */}
+        <div className="relative rounded-xl overflow-hidden">
+          <img ref={imgRef} src={data.image} className="w-full object-cover" />
+
+          <img
+            ref={hoverImgRef}
+            src={data.hoverImage}
+            className="w-full object-cover absolute inset-0 opacity-0"
+          />
+
+          {/* Icons */}
+          <div
+            className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-0"
+            ref={sideIconRef}
           >
-            {t}
-          </span>
-        ))}
-      </div>
-
-      {/* Image Wrapper */}
-      <div className="relative rounded-xl overflow-hidden">
-        <img
-          ref={imgRef}
-          src={data.image}
-          className="w-full object-cover"
-        />
-
-        <img
-          ref={hoverImgRef}
-          src={data.hoverImage}
-          className="w-full object-cover absolute inset-0 opacity-0"
-        />
-
-        {/* Icons */}
-        <div
-          className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-0"
-          ref={sideIconRef}
-        >
-          {[RiStarSmileLine, RiHeartLine, RiShoppingBagLine, RiSearch2Line].map(
-            (Icon, i) => (
+            {[
+              RiStarSmileLine,
+              RiHeartLine,
+              RiShoppingBagLine,
+              RiSearch2Line,
+            ].map((Icon, i) => (
               <div
                 key={i}
                 className={`cursor-pointer translate-y-2 w-10 h-10 bg-white shadow-md rounded-full flex items-center justify-center hover:bg-primary1 hover:text-white transition-all}`}
               >
                 <Icon size={18} />
               </div>
-            )
-          )}
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Product Details */}
-      <h3 className="mt-4 text-base md:text-xl font-bold product-title">{data.title}</h3>
-      <p className="text-gray-700 mt-1">
-        <span className="font-bold text-primary5 text-lg">{data.price}</span>{" "}
-        {data.oldPrice && (
-          <del className="ml-2 text-gray-400">{data.oldPrice}</del>
-        )}
-      </p>
+        {/* Product Details */}
+        <h3 className="mt-4 text-base md:text-xl font-bold product-title">
+          {data.title}
+        </h3>
+        <p className="text-gray-700 mt-1">
+          <span className="font-bold text-primary5 text-lg">{data.price}</span>{" "}
+          {data.oldPrice && (
+            <del className="ml-2 text-gray-400">{data.oldPrice}</del>
+          )}
+        </p>
+      </Link>
     </div>
   );
 };

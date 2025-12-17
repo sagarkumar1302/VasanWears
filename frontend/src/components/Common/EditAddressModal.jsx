@@ -60,19 +60,24 @@ const EditAddressInline = ({ data, onCancel, onSave, onDelete }) => {
       </div>
 
       {/* ACTION BUTTONS */}
-      <div className="flex justify-between items-center mt-6">
+      <div className="flex md:flex-row  flex-col justify-between items-center mt-6">
         {/* DELETE */}
         <button
           onClick={() => onDelete(form.id)}
-          className="bg-red-500 text-white font-medium hover:bg-red-600 cursor-pointer py-2 px-3 rounded-lg"
+          className="bg-red-500 text-white font-medium hover:bg-red-600 cursor-pointer py-2 px-3 rounded-lg md:w-auto w-full"
         >
           Delete Address
         </button>
 
         {/* RIGHT SIDE */}
-        <div className="flex gap-4">
-          <button onClick={onCancel} className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
-             transition-all duration-300 btn-slide md:text-base text-sm flex items-center justify-center gap-1 cursor-pointer">Cancel</button>
+        <div className="flex gap-4 md:flex-row flex-col md:w-auto w-full md:mt-0 mt-5">
+          <button
+            onClick={onCancel}
+            className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
+             transition-all duration-300 btn-slide md:text-base text-sm flex items-center justify-center gap-1 cursor-pointer md:w-auto w-full"
+          >
+            Cancel
+          </button>
 
           <button
             onClick={() => onSave(form)}
