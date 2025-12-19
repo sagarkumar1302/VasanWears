@@ -15,7 +15,7 @@ app.use(express.urlencoded({
 app.use(express.static("public"));
 app.use(cookieParser());
 import userRouter from "./routes/user.routes.js"
-import messageRouter from "./routes/message.routes.js"
+import adminRouter from "./routes/admin.routes.js"
 app.use("/api/user", userRouter)
-app.use("/api/message", messageRouter)
+app.use("/api/admin", adminRouter)
 export {app}

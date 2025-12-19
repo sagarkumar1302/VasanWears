@@ -1,7 +1,7 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import UserLayout from "./components/Layout/UserLayout";
-import AdminDashboard from "./components/Admin/AdminDashboard";
+import AdminDashboard from "./components/Admin/pages/AdminDashboard";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import ShopPage from "./pages/ShopPage";
@@ -14,7 +14,7 @@ import ProfileInformation from "./components/Common/ProfileInformation";
 import ManageAddress from "./components/Common/ManageAddress";
 import { useAuthStore } from "./store/useAuthStore";
 import { useEffect } from "react";
-import { currentUserApi } from "./utils/api";
+import { currentUserApi } from "./utils/userApi";
 import PublicRoute from "./components/components/PublicRoute";
 import MyAccountRightSide from "./components/Common/MyAccountRightSide";
 import Designer from "./pages/Designer";
@@ -27,34 +27,50 @@ import CartPage from "./pages/CartPage";
 import Checkout from "./pages/Checkout";
 import ThankYou from "./pages/ThankYou";
 import NotFound from "./pages/NotFound";
-
+import { BlogsPage } from "./pages/BlogsPage";
+import { SingleBlogPage } from "./pages/SingleBlogPage";
+import AutoScrollToTop from "./components/Common/AutoScrollToTop";
+import AdminLayout from "./components/Admin/Layout/AdminLayout";
+import AdminLoginPage from "./components/Admin/pages/AdminLoginPage";
+import AdminPublicRoute from "./components/components/AdminPublicRoute";
+import AdminProtectedRoute from "./components/components/AdminProtectedRoute";
+import { useAdminAuthStore } from "./store/useAdminAuthStore";
+import { adminCurrentUserApi } from "./utils/adminApi";
 const App = () => {
   const setUser = useAuthStore((s) => s.setUser);
   const setAuthChecked = useAuthStore((s) => s.setAuthChecked);
-
+  const setAdminAuthChecked = useAdminAuthStore((s) => s.setAdminAuthChecked);
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const res = await currentUserApi();
-        setUser(res.data);
-      } catch {
-        // not logged in
-      } finally {
-        setAuthChecked();
-      }
-    };
+  const initAuth = async () => {
+    try {
+      const userRes = await currentUserApi();
+      setUser(userRes.data);
+    } catch {}
 
-    initAuth();
-  }, []);
+    try {
+      const adminRes = await adminCurrentUserApi();
+      useAdminAuthStore.getState().setUser(adminRes.data);
+    } catch {}
+
+    setAuthChecked();
+    setAdminAuthChecked();
+  };
+
+  initAuth();
+}, []);
+
 
   return (
     <BrowserRouter>
+      <AutoScrollToTop />
       <ScrollToHash />
       <Routes>
         <Route element={<UserLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/shop" element={<ShopPage />} />
+          <Route path="/blogs" element={<BlogsPage />} />
+          <Route path="/blogs/:blogId" element={<SingleBlogPage />} />
           <Route path="*" element={<NotFound />} />
 
           <Route element={<ProtectedRoute />}>
@@ -82,9 +98,17 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
-        //User Layout
-        <Route path="/admin" element={<AdminDashboard />}></Route> //Admin
-        Layout
+        {/* //Admin Layout */}
+        <Route element={<AdminPublicRoute />}>
+          <Route path="/admin-login" element={<AdminLoginPage />} />
+        </Route>
+        <Route element={<AdminProtectedRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="dashboard" />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            {/* <Route path="products" element={<Products />} /> */}
+          </Route>
+        </Route>
       </Routes>
     </BrowserRouter>
   );

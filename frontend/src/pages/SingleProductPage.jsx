@@ -59,8 +59,127 @@ const SingleProductPage = () => {
       });
     }
   };
+  const [showVideo, setShowVideo] = useState(false);
+  const videoOverlayRef = useRef(null);
+  const videoBoxRef = useRef(null);
+  const openVideo = () => {
+    setShowVideo(true);
+
+    requestAnimationFrame(() => {
+      gsap.fromTo(
+        videoOverlayRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3 }
+      );
+
+      gsap.fromTo(
+        videoBoxRef.current,
+        { scale: 0.8, y: 50, opacity: 0 },
+        {
+          scale: 1,
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          ease: "power3.out",
+        }
+      );
+    });
+
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeVideo = () => {
+    gsap.to(videoBoxRef.current, {
+      scale: 0.8,
+      y: 50,
+      opacity: 0,
+      duration: 0.3,
+      ease: "power3.in",
+    });
+
+    gsap.to(videoOverlayRef.current, {
+      opacity: 0,
+      duration: 0.3,
+      onComplete: () => {
+        setShowVideo(false);
+        document.body.style.overflow = "auto";
+      },
+    });
+  };
+  const [reviews, setReviews] = useState([]);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewData, setReviewData] = useState({
+    name: "",
+    rating: 0,
+    comment: "",
+  });
+
+  const reviewOverlayRef = useRef(null);
+  const reviewBoxRef = useRef(null);
+  const openReviewModal = () => {
+    setShowReviewModal(true);
+
+    requestAnimationFrame(() => {
+      gsap.fromTo(
+        reviewOverlayRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3 }
+      );
+
+      gsap.fromTo(
+        reviewBoxRef.current,
+        { scale: 0.8, y: 50, opacity: 0 },
+        {
+          scale: 1,
+          y: 0,
+          opacity: 1,
+          duration: 0.4,
+          ease: "power3.out",
+        }
+      );
+    });
+
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeReviewModal = () => {
+    gsap.to(reviewBoxRef.current, {
+      scale: 0.8,
+      y: 50,
+      opacity: 0,
+      duration: 0.3,
+    });
+
+    gsap.to(reviewOverlayRef.current, {
+      opacity: 0,
+      duration: 0.3,
+      onComplete: () => {
+        setShowReviewModal(false);
+        document.body.style.overflow = "auto";
+      },
+    });
+  };
+  const submitReview = () => {
+    if (!reviewData.name || !reviewData.comment || reviewData.rating === 0) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    setReviews((prev) => [
+      ...prev,
+      {
+        ...reviewData,
+        id: Date.now(),
+        date: new Date().toLocaleDateString(),
+      },
+    ]);
+
+    setReviewData({ name: "", rating: 0, comment: "" });
+    closeReviewModal();
+  };
+
   return (
-    <div className="px-4 py-10 mt-30 md:mt-35">
+    <div className="px-5 py-5 md:py-20 mt-30 md:mt-35">
       <div className="container mx-auto">
         <div className="md:pb-6 pb-4 md:flex gap-1 sm:gap-4 md:text-base text-sm whitespace-nowrap hidden">
           <span>
@@ -170,11 +289,11 @@ const SingleProductPage = () => {
                     key={i}
                     style={{ backgroundColor: c }}
                     onClick={() => setSelectedColor(c)}
-                    className={`w-8 h-8 rounded-full cursor-pointer border 
+                    className={`w-8 h-8 rounded-full cursor-pointer border
     ${
       selectedColor === c
         ? "border-primary5 border-2 scale-115"
-        : "border-primary2"
+        : "border-primary2/40"
     }
     transition-all duration-200`}
                   />
@@ -194,8 +313,8 @@ const SingleProductPage = () => {
     px-4 py-1 border rounded transition cursor-pointer
     ${
       selectedSize === s
-        ? "bg-primary5 text-white border-primary2"
-        : "bg-white text-primary5 border-primary2 hover:bg-primary1 hover:text-white"
+        ? "bg-primary5 text-white border-primary5"
+        : "bg-white text-primary5 border-primary2/10 hover:bg-primary1 hover:text-white"
     }
   `}
                   >
@@ -246,13 +365,24 @@ const SingleProductPage = () => {
                 Add To Cart
               </button>
             </div>
-            <Link
-              to="/design"
-              className="mt-4 py-2.5 px-8 rounded-xl font-semibold text-primary3 
-             transition-all duration-300 btn-slide2 md:text-base text-sm  w-fit"
-            >
-              Design Your Tshirt
-            </Link>
+            <div className="flex flex-wrap gap-3 mt-4">
+              <Link
+                to="/design"
+                className="py-2.5 px-8 rounded-xl font-semibold text-primary3 
+    transition-all duration-300 btn-slide2 md:text-base text-sm"
+              >
+                Design Your Tshirt
+              </Link>
+
+              <button
+                onClick={openVideo}
+                className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
+    transition-all duration-300 btn-slide md:text-base text-sm cursor-pointer"
+              >
+                Watch Tutorials
+              </button>
+            </div>
+
             {/* Share */}
             {/* Pincode Checker */}
             <div className="mt-6">
@@ -321,7 +451,6 @@ const SingleProductPage = () => {
               >
                 {tab === "description" && "Description"}
                 {tab === "additional" && "Additional Information"}
-                
               </button>
             ))}
           </div>
@@ -417,13 +546,135 @@ const SingleProductPage = () => {
             </Accordion> */}
           </div>
         </div>
-        <div id="review">
-          <p>No reviews yet.</p>
-          <button className="mt-4 px-5 py-2 bg-black text-white rounded">
+        <div id="review" className="mt-10">
+          <h3 className="text-xl font-semibold mb-4">Customer Reviews</h3>
+
+          {reviews.length === 0 ? (
+            <p>No reviews yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((r) => (
+                <div key={r.id} className="border rounded-lg p-4 bg-primary3">
+                  <div className="flex justify-between items-center">
+                    <p className="font-semibold">{r.name}</p>
+                    <p className="text-sm text-primary5">{r.date}</p>
+                  </div>
+
+                  <div className="flex gap-1 text-yellow-500 mt-1">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i}>{i < r.rating ? "★" : "☆"}</span>
+                    ))}
+                  </div>
+
+                  <p className="mt-2 text-primary5">{r.comment}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            onClick={openReviewModal}
+            className="mt-6 px-5 py-2 bg-black text-white rounded cursor-pointer"
+          >
             Write a Review
           </button>
         </div>
       </div>
+      {showVideo && (
+        <div
+          ref={videoOverlayRef}
+          className="fixed inset-0 z-[999] bg-black/80 flex items-center justify-center px-4"
+        >
+          {/* Video Box */}
+          <div
+            ref={videoBoxRef}
+            className="relative w-full max-w-4xl aspect-video bg-black rounded-xl overflow-hidden"
+          >
+            {/* Close Button */}
+            <button
+              onClick={closeVideo}
+              className="absolute top-3 right-3 z-10 bg-white text-black 
+        rounded-full w-10 h-10 flex items-center justify-center font-bold cursor-pointer"
+            >
+              ✕
+            </button>
+
+            {/* Video */}
+            <video
+              src="/images/dummy/video1.mp4"
+              controls
+              autoPlay
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+      )}
+      {showReviewModal && (
+        <div
+          ref={reviewOverlayRef}
+          className="fixed inset-0 z-[999] bg-black/70 flex items-center justify-center px-4"
+        >
+          <div
+            ref={reviewBoxRef}
+            className="bg-white w-full max-w-md rounded-xl p-6 relative"
+          >
+            <button
+              onClick={closeReviewModal}
+              className="absolute top-3 right-3 text-xl font-bold"
+            >
+              ✕
+            </button>
+
+            <h3 className="text-xl font-semibold mb-4">Write a Review</h3>
+
+            {/* Name */}
+            <input
+              type="text"
+              placeholder="Your Name"
+              value={reviewData.name}
+              onChange={(e) =>
+                setReviewData({ ...reviewData, name: e.target.value })
+              }
+              className="w-full border px-3 py-2 rounded mb-3"
+            />
+
+            {/* Rating */}
+            <div className="flex gap-1 mb-3 text-2xl cursor-pointer">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span
+                  key={star}
+                  onClick={() => setReviewData({ ...reviewData, rating: star })}
+                  className={
+                    star <= reviewData.rating
+                      ? "text-yellow-500"
+                      : "text-gray-300"
+                  }
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+
+            {/* Comment */}
+            <textarea
+              placeholder="Write your review..."
+              value={reviewData.comment}
+              onChange={(e) =>
+                setReviewData({ ...reviewData, comment: e.target.value })
+              }
+              className="w-full border px-3 py-2 rounded mb-4 resize-none"
+              rows="4"
+            />
+
+            <button
+              onClick={submitReview}
+              className="w-full bg-black text-white py-2 rounded"
+            >
+              Submit Review
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

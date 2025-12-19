@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { useAuthStore } from "../store/useAuthStore";
 const API = axios.create({
   baseURL: "http://localhost:4500/api",
   withCredentials: true,
@@ -45,7 +45,10 @@ export const currentUserApi = async () => {
   }
 };
 
+
 export const updateProfileApi = (data) => API.put("/user/update-profile", data);
+
+
 API.interceptors.response.use(
   res => res,
   async (error) => {
@@ -59,7 +62,7 @@ API.interceptors.response.use(
         return API(originalRequest);
       } catch {
         useAuthStore.getState().logout();
-        window.location.href = "/login";
+        // window.location.href = "/login";
       }
     }
 

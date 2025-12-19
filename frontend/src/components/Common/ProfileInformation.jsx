@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { RiEdit2Line, RiCheckLine, RiCloseLine } from "@remixicon/react";
-import { updateProfileApi } from "../../utils/api"; // <-- use your API endpoint
+import { updateProfileApi } from "../../utils/userApi"; // <-- use your API endpoint
 
 const ProfileInformation = () => {
   const user = useAuthStore((state) => state.user);

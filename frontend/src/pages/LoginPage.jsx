@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useAuthStore } from "../store/useAuthStore";
-import { googleLoginApi, loginUser } from "../utils/api";
+import { googleLoginApi, loginUser } from "../utils/userApi";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast"; // ✅ Import toast
 

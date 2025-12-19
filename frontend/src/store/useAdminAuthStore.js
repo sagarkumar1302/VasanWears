@@ -1,26 +1,26 @@
 import { create } from "zustand";
-import { currentUserApi } from "../utils/userApi";
+import { adminCurrentUserApi } from "../utils/adminApi";
 
-export const useAuthStore = create((set) => ({
+export const useAdminAuthStore = create((set) => ({
   user: null,
   isAuthChecked: false, // 👈 NEW
 
   setUser: (user) =>
     set({ user }),
 
-  setAuthChecked: () =>
+  setAdminAuthChecked: () =>
     set({ isAuthChecked: true }),
   fetchCurrentUser: async () => {
     try {
-      const res = await currentUserApi();
+      const res = await adminCurrentUserApi();
       console.log("res", res.data);
-      
+
       set({ user: res.data });
     } catch {
       set({ user: null });
     }
   },
-  logout: () =>
+  adminLogoutAuth: () =>
     set({
       user: null,
       isAuthChecked: true,

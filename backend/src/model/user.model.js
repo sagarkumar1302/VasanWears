@@ -72,5 +72,20 @@ userSchema.methods.generateRefreshToken = function () {
         { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN }
     );
 };
+userSchema.methods.generateAdminAccessToken = function () {
+    return jwt.sign(
+        { _id: this._id, fullName: this.fullName, email: this.email },
+        process.env.ADMIN_ACCESS_TOKEN_SECRET,
+        { expiresIn: process.env.ADMIN_ACCESS_TOKEN_EXPIRES_IN }
+    );
+};
+
+userSchema.methods.generateAdminRefreshToken = function () {
+    return jwt.sign(
+        { _id: this._id },
+        process.env.ADMIN_REFRESH_TOKEN_SECRET,
+        { expiresIn: process.env.ADMIN_REFRESH_TOKEN_EXPIRES_IN }
+    );
+};
 
 export const User = mongoose.model("User", userSchema);

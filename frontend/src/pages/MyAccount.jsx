@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { logoutUser } from "../utils/api";
+import { logoutUser } from "../utils/userApi";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import default_female_avatar from "../../public/images/female_default_avatar.png";
@@ -20,9 +20,10 @@ const MyAccount = () => {
   
   const logoutHandler = async () => {
     try {
+      navigate("/", { replace: true });
       await logoutUser();
       logout();
-      navigate("/");
+      
     } catch (error) {
       console.error("Logout failed:", error.response?.data || error);
     }
