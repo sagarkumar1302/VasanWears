@@ -7,7 +7,10 @@ import jwt from "jsonwebtoken";
 // const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const options = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
+    sameSite: "none",
+    // domain: "https://vasanwears-production.up.railway.app",
+    path: "/",
 }
 const generateAccessAndRefreshToken = async (userId) => {
     try {

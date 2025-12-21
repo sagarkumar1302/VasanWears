@@ -4,23 +4,24 @@ import { User } from "../model/user.model.js";
 import { uploadCloudinary } from "../utils/Cloudinary.js";
 import axios from "axios";
 import jwt from "jsonwebtoken";
-// const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const options = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     sameSite: "none",
+    // domain: process.env.DOMAIN_URL,
+    path: "/",
 }
 const generateAccessAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId);
         const accessToken = await user.generateAccessToken();
         // const refreshToken = await user.generateRefreshToken();
-        const hashedRefresh = await user.generateRefreshToken();
+        const refreshToken  = await user.generateRefreshToken();
         // const hashedRefresh = await bcryptjs.hash(refreshToken, 10);
-        user.refreshToken = hashedRefresh;
+        user.refreshToken = refreshToken;
         user.lastLogin = Date.now();
         await user.save({ validateBeforeSave: false })
-        return { accessToken, hashedRefresh }
+        return { accessToken, refreshToken }
     } catch (error) {
         throw new Error("Error generating tokens: " + error.message);
     }
@@ -118,7 +119,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // Generate tokens
-    const { accessToken, hashedRefresh } =
+    const { accessToken, refreshToken  } =
         await generateAccessAndRefreshToken(user._id);
 
 
@@ -129,12 +130,12 @@ const loginUser = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", hashedRefresh, options)
+        .cookie("refreshToken", refreshToken , options)
         .json(
             new ApiResponse(200, "Login Successful", {
                 user: loginUser,
                 accessToken,
-                refreshToken: hashedRefresh
+                refreshToken
             })
         );
 });
@@ -185,7 +186,7 @@ const googleLogin = asyncHandler(async (req, res) => {
     console.log("Created User ", user);
 
     // 4️⃣ Generate tokens
-    const { accessToken, hashedRefresh } =
+    const { accessToken, refreshToken } =
     await generateAccessAndRefreshToken(user._id);
 
 
@@ -197,12 +198,12 @@ const googleLogin = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", hashedRefresh, options)
+        .cookie("refreshToken", refreshToken , options)
         .json(
             new ApiResponse(200, "Google Login Successful", {
                 user: loggedInUser,
                 accessToken,
-                refreshToken: hashedRefresh,
+                refreshToken,
             })
         );
 });
@@ -253,7 +254,7 @@ const userProfile = asyncHandler(async (req, res) => {
 })
 const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken =
-        req.cookies.refreshToken || req.body.refreshToken;
+        req.cookies?.refreshToken || req.body.refreshToken;
 
     if (!incomingRefreshToken) {
         return res
