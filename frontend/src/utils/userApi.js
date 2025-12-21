@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useAuthStore } from "../store/useAuthStore";
 const API = axios.create({
-  baseURL: "http://localhost:4500/api",
+  baseURL: `${import.meta.env.VITE_BACKEND_URL}/api`,
   withCredentials: true,
 });
 export const loginUser = async (email, password) => {
