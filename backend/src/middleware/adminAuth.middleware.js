@@ -17,7 +17,7 @@ const adminVerifyJwt = asyncHandler(async (req, res, next) => {
                 .status(401)
                 .json(new ApiResponse(401, "Token is expired. Invalid Token", null));
         }
-        req.user = user;
+        req.adminuser = user;
         next();
     } catch (error) {
         return res

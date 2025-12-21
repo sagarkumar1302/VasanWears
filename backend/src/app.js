@@ -16,6 +16,12 @@ app.use(express.static("public"));
 app.use(cookieParser());
 import userRouter from "./routes/user.routes.js"
 import adminRouter from "./routes/admin.routes.js"
+import categoryRoutes from "./routes/admincategory.routes.js"
+import subCategoryRoutes from "./routes/adminsubcategory.routes.js"
+import productRoutes from "./routes/adminproduct.routes.js"
 app.use("/api/user", userRouter)
 app.use("/api/admin", adminRouter)
+app.use("/api/categories", categoryRoutes);
+app.use("/api/subcategories", subCategoryRoutes);
+app.use("/api/products", productRoutes);
 export {app}

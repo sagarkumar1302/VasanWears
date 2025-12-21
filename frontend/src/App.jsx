@@ -36,29 +36,33 @@ import AdminPublicRoute from "./components/components/AdminPublicRoute";
 import AdminProtectedRoute from "./components/components/AdminProtectedRoute";
 import { useAdminAuthStore } from "./store/useAdminAuthStore";
 import { adminCurrentUserApi } from "./utils/adminApi";
+import AdminProductPage from "./components/Admin/pages/AdminProductList";
+import AdminProductList from "./components/Admin/pages/AdminProductList";
+import EditProduct from "./components/Admin/pages/EditProduct";
+import AddProduct from "./components/Admin/pages/AddProduct";
+import AdminCategory from "./components/Admin/pages/AdminCategory";
 const App = () => {
   const setUser = useAuthStore((s) => s.setUser);
   const setAuthChecked = useAuthStore((s) => s.setAuthChecked);
   const setAdminAuthChecked = useAdminAuthStore((s) => s.setAdminAuthChecked);
   useEffect(() => {
-  const initAuth = async () => {
-    try {
-      const userRes = await currentUserApi();
-      setUser(userRes.data);
-    } catch {}
+    const initAuth = async () => {
+      try {
+        const userRes = await currentUserApi();
+        setUser(userRes.data);
+      } catch {}
 
-    try {
-      const adminRes = await adminCurrentUserApi();
-      useAdminAuthStore.getState().setUser(adminRes.data);
-    } catch {}
+      try {
+        const adminRes = await adminCurrentUserApi();
+        useAdminAuthStore.getState().setUser(adminRes.data);
+      } catch {}
 
-    setAuthChecked();
-    setAdminAuthChecked();
-  };
+      setAuthChecked();
+      setAdminAuthChecked();
+    };
 
-  initAuth();
-}, []);
-
+    initAuth();
+  }, []);
 
   return (
     <BrowserRouter>
@@ -106,6 +110,13 @@ const App = () => {
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="dashboard" />} />
             <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="products">
+              <Route path="all-products" element={<AdminProductList />} />
+              <Route path="add" element={<AddProduct />} />
+              <Route path=":productId/edit" element={<EditProduct />} />
+              <Route path="category" element={<AdminCategory />} />
+            </Route>
+
             {/* <Route path="products" element={<Products />} /> */}
           </Route>
         </Route>

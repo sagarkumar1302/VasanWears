@@ -37,6 +37,77 @@ export const adminLoginUser = async (email, password) => {
     throw err;
   }
 };
+export const addCategoryApi = async (formData) => {
+  try {
+    const res = await API.post("/categories", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Add Category Error:", err);
+    throw err;
+  }
+};
+export const updateCategoryApi = async (categoryId, formData) => {
+  try {
+    const res = await API.put(`/categories/${categoryId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Update Category Error:", err);
+    throw err;
+  }
+};
+export const deleteCategoryApi = async (categoryId) => {
+  try {
+    const res = await API.delete(`/categories/${categoryId}`);  
+    return res.data;
+  } catch (err) {
+    console.error("Delete Category Error:", err);
+    throw err;
+  }
+};
+export const getAllCategoriesWithSubCatApi = async () => {
+  try {
+    const res = await API.get("/categories/catws");
+    return res.data;
+  } catch (err) {
+    console.error("Get Categories Error:", err);
+    throw err;
+  }
+};
+export const addSubCategoryApi = async (categoryId, data) => {
+  try {
+    const res = await API.post(`/subcategories/${categoryId}`, data);
+    return res.data;
+  } catch (err) {
+    console.error("Add Subcategory Error:", err);
+    throw err;
+  }
+};
+export const deleteSubCategoryApi = async (subCategoryId) => {
+  try {
+    const res = await API.delete(`/subcategories/${subCategoryId}`);
+    return res.data;
+  } catch (err) {
+    console.error("Delete Subcategory Error:", err);
+    throw err;
+  }
+};
+export const updateSubCategoryApi = async (subCategoryId, data) => {
+  try {
+    const res = await API.put(`/subcategories/${subCategoryId}`, data);
+    return res.data;
+  } catch (err) {
+    console.error("Update Subcategory Error:", err);
+    throw err;
+  }
+};
 API.interceptors.response.use(
   res => res,
   async (error) => {

@@ -102,7 +102,7 @@ const logoutHandler = asyncHandler(async (req, res) => {
 });
 
 const currentUser = asyncHandler(async (req, res) => {
-    const userId = req?.user._id;
+    const userId = req?.adminuser._id;
     if (!userId) {
         return res
             .status(400)
