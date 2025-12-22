@@ -4,6 +4,7 @@ import { User } from "../model/user.model.js";
 import { uploadCloudinary } from "../utils/Cloudinary.js";
 import axios from "axios";
 import jwt from "jsonwebtoken";
+import { uploadToS3 } from "../utils/uploadToS3.js";
 const options = {
     httpOnly: true,
     secure: true,
@@ -16,7 +17,7 @@ const generateAccessAndRefreshToken = async (userId) => {
         const user = await User.findById(userId);
         const accessToken = await user.generateAccessToken();
         // const refreshToken = await user.generateRefreshToken();
-        const refreshToken  = await user.generateRefreshToken();
+        const refreshToken = await user.generateRefreshToken();
         // const hashedRefresh = await bcryptjs.hash(refreshToken, 10);
         user.refreshToken = refreshToken;
         user.lastLogin = Date.now();
@@ -48,26 +49,18 @@ const registerUser = asyncHandler(async (req, res) => {
             .status(400)
             .json(new ApiResponse(400, "User already existed.", null));
     }
-    const avatarLocalPath = req.file?.path;
-    console.log("res files ", req.file);
+    let imageUrl = null;
 
-    if (!avatarLocalPath) {
-        return res
-            .status(400)
-            .json(new ApiResponse(400, "Avatar local path is not found.", null));
+    if (req.file) {
+        imageUrl = await uploadToS3(req.file, "usersAvatars");
     }
-    const avatar = await uploadCloudinary(avatarLocalPath);
-    if (!avatar) {
-        return res
-            .status(400)
-            .json(new ApiResponse(400, "Avatar from cloudinary is not found.", null));
-    }
-    console.log("Avatar ", avatar);
+
+    
     const user = await User.create({
         fullName,
         email,
         password,
-        avatar: avatar.url,
+        avatar: imageUrl,
     });
     // console.log("User ", user);
 
@@ -119,7 +112,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // Generate tokens
-    const { accessToken, refreshToken  } =
+    const { accessToken, refreshToken } =
         await generateAccessAndRefreshToken(user._id);
 
 
@@ -130,7 +123,7 @@ const loginUser = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken , options)
+        .cookie("refreshToken", refreshToken, options)
         .json(
             new ApiResponse(200, "Login Successful", {
                 user: loginUser,
@@ -187,7 +180,7 @@ const googleLogin = asyncHandler(async (req, res) => {
 
     // 4️⃣ Generate tokens
     const { accessToken, refreshToken } =
-    await generateAccessAndRefreshToken(user._id);
+        await generateAccessAndRefreshToken(user._id);
 
 
     const loggedInUser = await User.findById(user._id).select(
@@ -198,7 +191,7 @@ const googleLogin = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken , options)
+        .cookie("refreshToken", refreshToken, options)
         .json(
             new ApiResponse(200, "Google Login Successful", {
                 user: loggedInUser,
@@ -291,7 +284,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     const accessToken = user.generateAccessToken();
     console.log("Access token worked");
-    
+
     return res
         .cookie("accessToken", accessToken, options)
         .status(200)

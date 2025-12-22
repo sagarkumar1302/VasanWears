@@ -1,7 +1,9 @@
 import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import compression from "compression";
 const app = express();
+app.use(compression());
 app.use(cors({
     origin: process.env.FRONT_END_URL,
     credentials: true,

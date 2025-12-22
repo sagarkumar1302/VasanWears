@@ -109,63 +109,76 @@ const deleteProduct = asyncHandler(async (req, res) => {
 /**
  * GET ALL PRODUCTS (FILTER + PAGINATION)
  */
+// const getAllProducts = asyncHandler(async (req, res) => {
+//   const {
+//     category,
+//     subCategory,
+//     minPrice,
+//     maxPrice,
+//     color,
+//     size,
+//     search,
+//     page = 1,
+//     limit = 10,
+//   } = req.query;
+
+//   const query = {};
+
+//   if (category) query.category = category;
+//   if (subCategory) query.subCategory = subCategory;
+
+//   if (minPrice || maxPrice) {
+//     query.$or = [
+//       {
+//         regularPrice: {
+//           $gte: Number(minPrice) || 0,
+//           $lte: Number(maxPrice) || 999999,
+//         },
+//       },
+//       {
+//         "variants.regularPrice": {
+//           $gte: Number(minPrice) || 0,
+//           $lte: Number(maxPrice) || 999999,
+//         },
+//       },
+//     ];
+//   }
+
+//   if (color) query["variants.colors"] = color;
+//   if (size) query["variants.sizes"] = size;
+
+//   if (search) {
+//     query.title = { $regex: search, $options: "i" };
+//   }
+
+//   const products = await Product.find(query)
+//     .populate("category subCategory author")
+//     .skip((page - 1) * limit)
+//     .limit(Number(limit))
+//     .sort({ createdAt: -1 });
+
+//   const total = await Product.countDocuments(query);
+
+//   res.json(
+//     new ApiResponse(200, "Products fetched successfully", {
+//       total,
+//       page: Number(page),
+//       limit: Number(limit),
+//       products,
+//     })
+//   );
+// });
 const getAllProducts = asyncHandler(async (req, res) => {
-  const {
-    category,
-    subCategory,
-    minPrice,
-    maxPrice,
-    color,
-    size,
-    search,
-    page = 1,
-    limit = 10,
-  } = req.query;
-
-  const query = {};
-
-  if (category) query.category = category;
-  if (subCategory) query.subCategory = subCategory;
-
-  if (minPrice || maxPrice) {
-    query.$or = [
-      {
-        regularPrice: {
-          $gte: Number(minPrice) || 0,
-          $lte: Number(maxPrice) || 999999,
-        },
-      },
-      {
-        "variants.regularPrice": {
-          $gte: Number(minPrice) || 0,
-          $lte: Number(maxPrice) || 999999,
-        },
-      },
-    ];
-  }
-
-  if (color) query["variants.colors"] = color;
-  if (size) query["variants.sizes"] = size;
-
-  if (search) {
-    query.title = { $regex: search, $options: "i" };
-  }
-
-  const products = await Product.find(query)
-    .populate("category subCategory author")
-    .skip((page - 1) * limit)
-    .limit(Number(limit))
+  const products = await Product.find()
+    .populate("category author")
     .sort({ createdAt: -1 });
-
-  const total = await Product.countDocuments(query);
-
+  if (!products) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, "No products found"));
+  }
   res.json(
-    new ApiResponse(200, "Products fetched successfully", {
-      total,
-      page: Number(page),
-      limit: Number(limit),
-      products,
-    })
+    new ApiResponse(200, "Products fetched successfully", products)
   );
 });
 
