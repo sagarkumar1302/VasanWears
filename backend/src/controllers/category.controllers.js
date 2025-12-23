@@ -86,10 +86,11 @@ const updateCategory = asyncHandler(async (req, res) => {
   );
 });
 const getAllCategories = asyncHandler(async (req, res) => {
-  const categories = await Category.find()
+  const categories = await Category.find({ published: true })
     .sort({ createdAt: -1 })
     // .populate("subCategories") // uncomment if subCategories are refs
-    .lean();
+    .lean()
+    ;
 
   res.status(200).json(
     new ApiResponse(

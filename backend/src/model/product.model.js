@@ -109,6 +109,18 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    desginImage: [
+      {
+        url: {
+          type: String,
+        },
+        side: {
+          type: String,
+          enum: ["front", "back", "left", "right"],
+          required: true,
+        },
+      },
+    ],
 
     gallery: [
       {
@@ -134,7 +146,6 @@ const productSchema = new mongoose.Schema(
     subCategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "SubCategory",
-      required: true,
     },
 
     status: {

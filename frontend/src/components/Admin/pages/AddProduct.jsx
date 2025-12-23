@@ -2,9 +2,27 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { createProductApi } from "../../../utils/productApi";
-import { getAllCategoriesWithSubCatApi } from "../../../utils/adminApi";
+import { API, getAllCategoriesWithSubCatApi } from "../../../utils/adminApi";
 const AddProduct = () => {
   const navigate = useNavigate();
+  const [availableColors, setAvailableColors] = useState([]);
+  const [availableSizes, setAvailableSizes] = useState([]);
+
+  const [selectedColors, setSelectedColors] = useState([]);
+  const [selectedSizes, setSelectedSizes] = useState([]);
+  useEffect(() => {
+    fetchAttributes();
+  }, []);
+
+  const fetchAttributes = async () => {
+    const [colorsRes, sizesRes] = await Promise.all([
+      API.get("/colors"),
+      API.get("/sizes"),
+    ]);
+
+    setAvailableColors(colorsRes.data.data);
+    setAvailableSizes(sizesRes.data.data);
+  };
 
   const [loading, setLoading] = useState(false);
 
@@ -21,18 +39,11 @@ const AddProduct = () => {
   const [hoverImage, setHoverImage] = useState(null);
   const [gallery, setGallery] = useState([]);
 
-  const [variants, setVariants] = useState([
-    {
-      sku: "",
-      colors: "",
-      sizes: "",
-      regularPrice: "",
-      salePrice: "",
-      stock: "",
-      featuredImage: null,
-      gallery: [],
-    },
-  ]);
+  const [variants, setVariants] = useState([]);
+  const [attributeSaved, setAttributeSaved] = useState(false);
+
+  const [savedColors, setSavedColors] = useState([]);
+  const [savedSizes, setSavedSizes] = useState([]);
 
   /* ================= HANDLERS ================= */
   const [categories, setCategories] = useState([]);
@@ -62,12 +73,17 @@ const AddProduct = () => {
   };
 
   const addVariant = () => {
+    if (!attributeSaved) {
+      toast.error("Save attributes first");
+      return;
+    }
+
     setVariants([
       ...variants,
       {
         sku: "",
-        colors: "",
-        sizes: "",
+        colorId: "",
+        sizeId: null,
         regularPrice: "",
         salePrice: "",
         stock: "",
@@ -82,7 +98,12 @@ const AddProduct = () => {
   };
 
   /* ================= SUBMIT ================= */
-
+  const [designImages, setDesignImages] = useState({
+    front: null,
+    back: null,
+    left: null,
+    right: null,
+  });
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -90,34 +111,47 @@ const AddProduct = () => {
       toast.error("Required fields are missing");
       return;
     }
+    if (!designImages.front) {
+      toast.error("Front design image is mandatory");
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
 
     try {
-      if (!selectedCategory || !selectedSubCategory) {
+      if (!selectedCategory) {
         toast.error("Please select category and subcategory");
         return;
       }
 
       const formData = new FormData();
+      const designMeta = [];
+
+      Object.entries(designImages).forEach(([side, file]) => {
+        if (file) {
+          formData.append("designImages", file);
+          designMeta.push({ side });
+        }
+      });
+
+      formData.append("designImagesMeta", JSON.stringify(designMeta));
 
       // TEXT FIELDS
       formData.append("title", form.title);
       formData.append("slug", form.slug);
       formData.append("description", form.description);
       formData.append("category", selectedCategory);
-      formData.append("subCategory", selectedSubCategory);
+      if (selectedSubCategory) {
+        formData.append("subCategory", selectedSubCategory);
+      }
       formData.append("status", form.status);
 
       // VARIANTS JSON (remove files)
       formData.append(
         "variants",
         JSON.stringify(
-          variants.map(({ featuredImage, gallery, ...rest }) => ({
-            ...rest,
-            colors: rest.colors.split(","),
-            sizes: rest.sizes.split(","),
-          }))
+          variants.map(({ featuredImage, gallery, ...rest }) => rest)
         )
       );
 
@@ -139,11 +173,13 @@ const AddProduct = () => {
           formData.append(`variantGallery_${index}`, file);
         });
       });
+      formData.append("sizes", JSON.stringify(savedSizes));
+      formData.append("colors", JSON.stringify(savedColors));
 
       await createProductApi(formData);
 
       toast.success("Product created successfully");
-      navigate("/admin/products");
+      navigate("/admin/products/all-products");
     } catch (error) {
       console.error(error);
       toast.error("Failed to create product");
@@ -151,6 +187,63 @@ const AddProduct = () => {
       setLoading(false);
     }
   };
+  const generateVariants = () => {
+    if (!attributeSaved) return;
+
+    const newVariants = [];
+
+    savedColors.forEach((colorId) => {
+      newVariants.push({
+        sku: "",
+        colorId,
+        sizeId: null, // ✅ Any Size (do NOT expand)
+        regularPrice: "",
+        salePrice: "",
+        stock: "",
+        featuredImage: null,
+        gallery: [],
+      });
+    });
+
+    setVariants(newVariants);
+  };
+
+  const renderPreview = (file) => {
+    const url = URL.createObjectURL(file);
+    return file.type.startsWith("video") ? (
+      <video src={url} className="w-16 h-16 rounded" />
+    ) : (
+      <img src={url} className="w-16 h-16 rounded object-cover" />
+    );
+  };
+  const saveAttributes = () => {
+    if (!selectedColors.length) {
+      toast.error("Select at least one color");
+      return;
+    }
+
+    setSavedColors(selectedColors);
+    setSavedSizes(selectedSizes);
+    setAttributeSaved(true);
+
+    toast.success("Attributes saved");
+  };
+
+  const handleDesignImageChange = (side, file) => {
+    setDesignImages((prev) => ({
+      ...prev,
+      [side]: file,
+    }));
+  };
+
+  const removeDesignImage = (side) => {
+    setDesignImages((prev) => ({
+      ...prev,
+      [side]: null,
+    }));
+  };
+  const allColorIds = availableColors.map((c) => c._id);
+  const allSizeIds = availableSizes.map((s) => s._id);
 
   /* ================= UI ================= */
 
@@ -201,6 +294,7 @@ const AddProduct = () => {
             accept="image/*"
             onChange={(e) => setFeaturedImage(e.target.files[0])}
           />
+          {featuredImage && renderPreview(featuredImage)}
         </div>
 
         {/* PRODUCT HOVER IMAGE */}
@@ -216,6 +310,7 @@ const AddProduct = () => {
             accept="image/*"
             onChange={(e) => setHoverImage(e.target.files[0])}
           />
+          {hoverImage && renderPreview(hoverImage)}
         </div>
 
         {/* PRODUCT GALLERY (IMAGES + VIDEO) */}
@@ -232,9 +327,153 @@ const AddProduct = () => {
             accept="image/*,video/*"
             onChange={(e) => setGallery([...e.target.files])}
           />
+          <div className="flex gap-2 flex-wrap">
+            {gallery.map((file, i) => (
+              <div key={i}>{renderPreview(file)}</div>
+            ))}
+          </div>
+        </div>
+        {/* DESIGN IMAGES */}
+        <div className="border p-4 rounded space-y-3">
+          <h2 className="font-semibold">Design Images</h2>
+          <p className="text-xs text-gray-500">
+            Upload design images for each side (Front is mandatory)
+          </p>
+
+          <div className="grid grid-cols-2 gap-4">
+            {["front", "back", "left", "right"].map((side) => (
+              <div
+                key={side}
+                className="border rounded p-3 flex flex-col gap-2"
+              >
+                <p className="text-sm font-medium capitalize">
+                  {side} {side === "front" && "(Required)"}
+                </p>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    handleDesignImageChange(side, e.target.files[0])
+                  }
+                />
+
+                {designImages[side] && (
+                  <div className="relative w-24 h-24">
+                    <img
+                      src={URL.createObjectURL(designImages[side])}
+                      alt={side}
+                      className="w-24 h-24 object-cover rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeDesignImage(side)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* VARIANTS */}
+        <div className="border p-4 rounded space-y-3">
+          <h2 className="font-semibold">Product Attributes</h2>
+
+          {/* COLORS */}
+          <div>
+            <p className="text-sm font-medium mb-1">Colors</p>
+            <label className="flex items-center gap-2 mb-2 font-medium">
+              <input
+                type="checkbox"
+                checked={selectedColors.length === allColorIds.length}
+                onChange={(e) =>
+                  setSelectedColors(e.target.checked ? allColorIds : [])
+                }
+              />
+              Select All Colors
+            </label>
+
+            <div className="flex flex-wrap gap-2">
+              {availableColors.map((color) => (
+                <label key={color._id} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedColors.includes(color._id)}
+                    onChange={() =>
+                      setSelectedColors((prev) =>
+                        prev.includes(color._id)
+                          ? prev.filter((c) => c !== color._id)
+                          : [...prev, color._id]
+                      )
+                    }
+                  />
+                  <span
+                    className="w-4 h-4 rounded border"
+                    style={{ background: color.hexCode }}
+                  />
+                  {color.name}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* SIZES */}
+          <div>
+            <p className="text-sm font-medium mb-1">Sizes</p>
+            <label className="flex items-center gap-2 mb-2 font-medium">
+              <input
+                type="checkbox"
+                checked={selectedSizes.length === allSizeIds.length}
+                onChange={(e) =>
+                  setSelectedSizes(e.target.checked ? allSizeIds : [])
+                }
+              />
+              Select All Sizes
+            </label>
+
+            <div className="flex flex-wrap gap-2">
+              {availableSizes.map((size) => (
+                <label key={size._id} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedSizes.includes(size._id)}
+                    onChange={() =>
+                      setSelectedSizes((prev) =>
+                        prev.includes(size._id)
+                          ? prev.filter((s) => s !== size._id)
+                          : [...prev, size._id]
+                      )
+                    }
+                  />
+                  {size.name}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={saveAttributes}
+            className="text-green-600 text-sm"
+          >
+            💾 Save Attributes
+          </button>
+
+          {attributeSaved && (
+            <button
+              type="button"
+              onClick={generateVariants}
+              className="text-blue-600 text-sm"
+            >
+              ⚡ Generate Variants
+            </button>
+          )}
+        </div>
+
         <h2 className="font-semibold">Variants</h2>
 
         {variants.map((variant, index) => (
@@ -248,23 +487,44 @@ const AddProduct = () => {
               className="border p-2 w-full"
             />
 
-            <input
-              placeholder="Colors (comma separated)"
-              value={variant.colors}
+            <select
+              value={variant.colorId}
               onChange={(e) =>
-                handleVariantChange(index, "colors", e.target.value)
+                handleVariantChange(index, "colorId", e.target.value)
               }
               className="border p-2 w-full"
-            />
+            >
+              <option value="">Select Color</option>
+              {availableColors
+                .filter((c) => savedColors.includes(c._id))
+                .map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.name}
+                  </option>
+                ))}
+            </select>
 
-            <input
-              placeholder="Sizes (comma separated)"
-              value={variant.sizes}
+            <select
+              value={variant.sizeId ?? "any"}
               onChange={(e) =>
-                handleVariantChange(index, "sizes", e.target.value)
+                handleVariantChange(
+                  index,
+                  "sizeId",
+                  e.target.value === "any" ? null : e.target.value
+                )
               }
               className="border p-2 w-full"
-            />
+            >
+              <option value="any">Any Size</option>
+
+              {availableSizes
+                .filter((s) => savedSizes.includes(s._id))
+                .map((s) => (
+                  <option key={s._id} value={s._id}>
+                    {s.name}
+                  </option>
+                ))}
+            </select>
 
             <input
               type="number"
@@ -310,6 +570,7 @@ const AddProduct = () => {
                   handleVariantChange(index, "featuredImage", e.target.files[0])
                 }
               />
+              {variant.featuredImage && renderPreview(variant.featuredImage)}
             </div>
 
             {/* VARIANT GALLERY */}
@@ -328,6 +589,11 @@ const AddProduct = () => {
                   handleVariantChange(index, "gallery", [...e.target.files])
                 }
               />
+              <div className="flex gap-2 flex-wrap">
+                {variant.gallery.map((file, i) => (
+                  <div key={i}>{renderPreview(file)}</div>
+                ))}
+              </div>
             </div>
 
             {variants.length > 1 && (

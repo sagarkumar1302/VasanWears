@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = axios.create({
+export const API = axios.create({
   baseURL: `${import.meta.env.VITE_BACKEND_URL}/api`,
   withCredentials: true,
 });
@@ -81,6 +81,16 @@ export const getAllCategoriesWithSubCatApi = async () => {
     throw err;
   }
 };
+export const getAllCategoriesAdminApi = async () => {
+  try {
+    const res = await API.get("/categories");
+    return res.data;
+  } catch (err) {
+    console.error("Get Categories Error:", err);
+    throw err;
+  }
+};
+
 export const addSubCategoryApi = async (categoryId, data) => {
   try {
     const res = await API.post(`/subcategories/${categoryId}`, data);

@@ -107,9 +107,9 @@ const AdminSidebar = ({ isOpen, isMobileOpen, closeMobile }) => {
 
       {/* PRODUCTS SUBMENU */}
       <div
-        className={`ml-8 overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`ml-8 overflow-y-auto transition-all duration-300 ease-in-out ${
           productOpen && isOpen
-            ? "max-h-40 opacity-100 translate-y-0"
+            ? "max-h-80 opacity-100 translate-y-0"
             : "max-h-0 opacity-0 -translate-y-2"
         }`}
       >
@@ -160,6 +160,36 @@ const AdminSidebar = ({ isOpen, isMobileOpen, closeMobile }) => {
         >
           <PlusCircleIcon className="h-4 w-4 mr-2" />
           Category
+        </NavLink>
+        <NavLink
+          to="/admin/products/color"
+          end
+          onClick={closeMobile}
+          className={({ isActive }) =>
+            `flex items-center p-2 rounded text-sm transition ${
+              isActive
+                ? "bg-indigo-100 text-indigo-700"
+                : "text-gray-600 hover:bg-gray-100"
+            }`
+          }
+        >
+          <PlusCircleIcon className="h-4 w-4 mr-2" />
+          Color
+        </NavLink>
+        <NavLink
+          to="/admin/products/sizes"
+          end
+          onClick={closeMobile}
+          className={({ isActive }) =>
+            `flex items-center p-2 rounded text-sm transition ${
+              isActive
+                ? "bg-indigo-100 text-indigo-700"
+                : "text-gray-600 hover:bg-gray-100"
+            }`
+          }
+        >
+          <PlusCircleIcon className="h-4 w-4 mr-2" />
+          Sizes
         </NavLink>
       </div>
 

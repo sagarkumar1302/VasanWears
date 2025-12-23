@@ -40,6 +40,8 @@ import AdminProductList from "./components/Admin/pages/AdminProductList";
 import EditProduct from "./components/Admin/pages/EditProduct";
 import AddProduct from "./components/Admin/pages/AddProduct";
 import AdminCategory from "./components/Admin/pages/AdminCategory";
+import SizePage from "./components/Admin/pages/SizePage";
+import ColorPage from "./components/Admin/pages/ColorPage";
 const App = () => {
   const setUser = useAuthStore((s) => s.setUser);
   const setAuthChecked = useAuthStore((s) => s.setAuthChecked);
@@ -114,6 +116,8 @@ const App = () => {
               <Route path="add" element={<AddProduct />} />
               <Route path=":productId/edit" element={<EditProduct />} />
               <Route path="category" element={<AdminCategory />} />
+              <Route path="sizes" element={<SizePage />} />
+              <Route path="color" element={<ColorPage />} />
             </Route>
 
             {/* <Route path="products" element={<Products />} /> */}

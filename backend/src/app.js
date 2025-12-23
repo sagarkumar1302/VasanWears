@@ -21,6 +21,10 @@ import adminRouter from "./routes/admin.routes.js"
 import categoryRoutes from "./routes/admincategory.routes.js"
 import subCategoryRoutes from "./routes/adminsubcategory.routes.js"
 import productRoutes from "./routes/adminproduct.routes.js"
+import sizeRoutes from "./routes/size.routes.js"
+import colorRoutes from "./routes/color.routes.js"
+app.use("/api/colors", colorRoutes);
+app.use("/api/sizes", sizeRoutes);
 app.use("/api/user", userRouter)
 app.use("/api/admin", adminRouter)
 app.use("/api/categories", categoryRoutes);

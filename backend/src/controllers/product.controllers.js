@@ -17,12 +17,29 @@ const createProduct = asyncHandler(async (req, res) => {
     subCategory,
     variants,
     status,
+    designImagesMeta,
   } = req.body;
 
+  // ✅ PARSE COLORS & SIZES
+  const colors = req.body.colors ? JSON.parse(req.body.colors) : [];
+  const sizes = req.body.sizes ? JSON.parse(req.body.sizes) : [];
+  if (!Array.isArray(colors) || !colors.length) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, "At least one color is required"));
+  }
+
+  if (!Array.isArray(sizes) || !sizes.length) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, "At least one size is required"));
+  }
+
+
   /* ================= BASIC VALIDATION ================= */
-  if (!title || !slug || !category || !subCategory) {
+  if (!title || !slug || !category) {
     return res.status(400).json(
-      new ApiResponse(400, "Title, slug, category and subCategory are required")
+      new ApiResponse(400, "Title, slug, category, colors and sizes are required")
     );
   }
 
@@ -35,35 +52,31 @@ const createProduct = asyncHandler(async (req, res) => {
   }
 
   /* ================= VALIDATE SUBCATEGORY ================= */
-  const validSubCategory = await SubCategory.findOne({
-    _id: subCategory,
-    category,
-  });
+  if (subCategory) {
+    const validSubCategory = await SubCategory.findOne({
+      _id: subCategory,
+      category,
+    });
 
-  if (!validSubCategory) {
-    return res.status(400).json(
-      new ApiResponse(400, "SubCategory does not belong to selected category")
-    );
+    if (!validSubCategory) {
+      return res.status(400).json(
+        new ApiResponse(400, "SubCategory does not belong to selected category")
+      );
+    }
   }
 
-  /* ================= FILE EXTRACTION (upload.any) ================= */
+  /* ================= FILE EXTRACTION ================= */
 
   let featuredImageFile = null;
   let hoverImageFile = null;
-  let productGalleryFiles = [];
+  const productGalleryFiles = [];
+  const designImageFiles = [];
 
   for (const file of req.files || []) {
-    if (file.fieldname === "featuredImage") {
-      featuredImageFile = file;
-    }
-
-    if (file.fieldname === "hoverImage") {
-      hoverImageFile = file;
-    }
-
-    if (file.fieldname === "gallery") {
-      productGalleryFiles.push(file);
-    }
+    if (file.fieldname === "featuredImage") featuredImageFile = file;
+    if (file.fieldname === "hoverImage") hoverImageFile = file;
+    if (file.fieldname === "gallery") productGalleryFiles.push(file);
+    if (file.fieldname === "designImages") designImageFiles.push(file);
   }
 
   if (!featuredImageFile || !hoverImageFile) {
@@ -85,85 +98,113 @@ const createProduct = asyncHandler(async (req, res) => {
   );
 
   const galleryMedia = [];
-
   for (const file of productGalleryFiles) {
     const url = await uploadToS3(file, "products/gallery");
-
     galleryMedia.push({
       url,
-      type: file.mimetype.startsWith("video/")
-        ? "video"
-        : "image",
+      type: file.mimetype.startsWith("video") ? "video" : "image",
     });
   }
 
-  /* ================= PARSE VARIANTS ================= */
+  /* ================= DESIGN IMAGES ================= */
 
-  let parsedVariants = [];
+  const parsedDesignMeta = designImagesMeta
+    ? JSON.parse(designImagesMeta)
+    : [];
+
+  if (!parsedDesignMeta.some((d) => d.side === "front")) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, "Front design image is mandatory"));
+  }
+
+  const designImages = [];
+
+  for (let i = 0; i < designImageFiles.length; i++) {
+    const file = designImageFiles[i];
+    const meta = parsedDesignMeta[i];
+
+    const url = await uploadToS3(file, "products/design");
+
+    designImages.push({
+      url,
+      side: meta.side,
+    });
+  }
+
+  /* ================= PARSE & FIX VARIANTS ================= */
 
   if (!variants) {
-    return res.status(400).json(
-      new ApiResponse(400, "At least one variant is required")
-    );
+    return res
+      .status(400)
+      .json(new ApiResponse(400, "At least one variant is required"));
   }
 
-  parsedVariants = JSON.parse(variants);
+  const parsedVariants = JSON.parse(variants);
 
-  if (!Array.isArray(parsedVariants) || parsedVariants.length === 0) {
-    return res.status(400).json(
-      new ApiResponse(400, "At least one variant is required")
-    );
+  if (!parsedVariants.length) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, "At least one variant is required"));
   }
 
-  // Initialize variant media fields
-  parsedVariants.forEach((variant) => {
-    variant.featuredImage = null;
-    variant.gallery = [];
+  // Collect product-level attributes
+  const productColors = new Set();
+  const productSizes = new Set();
+
+  parsedVariants.forEach((v) => {
+    v.color = v.colorId;
+    v.size = v.sizeId ?? null;
+
+    delete v.colorId;
+    delete v.sizeId;
+
+    v.featuredImage = null;
+    v.gallery = [];
+
+    productColors.add(v.color);
+    if (v.size) productSizes.add(v.size);
   });
 
-  /* ================= VARIANT IMAGE HANDLING ================= */
+  /* ================= VARIANT MEDIA ================= */
 
   for (const file of req.files || []) {
-    // variantFeatured_0
     if (file.fieldname.startsWith("variantFeatured_")) {
       const index = Number(file.fieldname.split("_")[1]);
-
-      if (parsedVariants[index]) {
-        const url = await uploadToS3(
-          file,
-          `products/variants/${index}/featured`
-        );
-        parsedVariants[index].featuredImage = url;
-      }
+      const url = await uploadToS3(
+        file,
+        `products/variants/${index}/featured`
+      );
+      parsedVariants[index].featuredImage = url;
     }
 
-    // variantGallery_0
     if (file.fieldname.startsWith("variantGallery_")) {
       const index = Number(file.fieldname.split("_")[1]);
+      const url = await uploadToS3(
+        file,
+        `products/variants/${index}/gallery`
+      );
 
-      if (parsedVariants[index]) {
-        const url = await uploadToS3(
-          file,
-          `products/variants/${index}/gallery`
-        );
-
-        parsedVariants[index].gallery.push({
-          url,
-          type: file.mimetype.startsWith("video/")
-            ? "video"
-            : "image",
-        });
-      }
+      parsedVariants[index].gallery.push({
+        url,
+        type: file.mimetype.startsWith("video") ? "video" : "image",
+      });
     }
   }
 
   /* ================= VARIANT VALIDATION ================= */
 
   for (const variant of parsedVariants) {
+    if (!variant.sku || !variant.regularPrice || variant.stock === undefined) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, "Variant fields missing"));
+    }
+
     if (!variant.featuredImage) {
-      return res.status(400).json(
-        new ApiResponse(400, "Each variant must have a featured image")
-      );
+      return res
+        .status(400)
+        .json(new ApiResponse(400, "Each variant must have a featured image"));
     }
   }
 
@@ -174,12 +215,16 @@ const createProduct = asyncHandler(async (req, res) => {
     slug,
     description,
     category,
-    subCategory,
+    subCategory: subCategory || null,
+    colors,
+    sizes,
     variants: parsedVariants,
     featuredImage: featuredImageUrl,
     hoverImage: hoverImageUrl,
+    desginImage: designImages,
     gallery: galleryMedia,
     status,
+
     author: req.adminuser._id,
   });
 
@@ -187,6 +232,7 @@ const createProduct = asyncHandler(async (req, res) => {
     new ApiResponse(201, "Product created successfully", product)
   );
 });
+
 
 
 /**
@@ -233,6 +279,32 @@ const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const product = await Product.findById(id)
+    .populate({
+      path: "author",
+      select: "fullName", // ✅ only fullName
+    })
+    .populate({
+      path: "category",
+      select: "name", // ✅ only name
+    })
+    .populate({
+      path: "subCategory",
+      select: "name", // ✅ only name
+    })
+
+  if (!product) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, "Product not found"));
+  }
+  res.status(200).json(
+    new ApiResponse(200, "Product fetched successfully", product)
+  );
+});
+const getProductBySlug = asyncHandler(async (req, res) => {
+  const { slug } = req.params;
+
+  const product = await Product.findOne({ slug })
     .populate({
       path: "author",
       select: "fullName", // ✅ only fullName
@@ -319,7 +391,7 @@ const getProductById = asyncHandler(async (req, res) => {
 //   );
 // });
 const getAllProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find()
+  const products = await Product.find({ status: "published" })
     .populate({
       path: "author",
       select: "fullName", // ✅ only fullName
@@ -346,4 +418,4 @@ const getAllProducts = asyncHandler(async (req, res) => {
 });
 
 
-export { createProduct, updateProduct, deleteProduct, getAllProducts, getProductById };
+export { createProduct, updateProduct, deleteProduct, getAllProducts, getProductById, getProductBySlug };

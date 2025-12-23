@@ -27,6 +27,7 @@ router.put(
   updateCategory
 );
 router.get("/catws",adminVerifyJwt, getAllCategoriesWithSub);
+router.get("/",adminVerifyJwt, getAllCategories);
 
 // DELETE CATEGORY
 router.delete("/:id", adminVerifyJwt, deleteCategory);
