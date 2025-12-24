@@ -241,23 +241,200 @@ const createProduct = asyncHandler(async (req, res) => {
 const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const product = await Product.findByIdAndUpdate(
-    id,
-    {
-      ...req.body,
-      author: req.adminuser._id, // optional audit trail
-    },
-    { new: true, runValidators: true }
-  );
-
+  const product = await Product.findById(id);
   if (!product) {
     return res
       .status(404)
       .json(new ApiResponse(404, "Product not found"));
   }
 
-  res.json(new ApiResponse(200, "Product updated successfully", product));
+  const {
+    title,
+    slug,
+    description,
+    category,
+    subCategory,
+    variants,
+    status,
+    designImagesMeta,
+  } = req.body;
+
+  /* ================= BASIC FIELDS ================= */
+  if (title) product.title = title;
+  if (slug) product.slug = slug;
+  if (description) product.description = description;
+  if (category) product.category = category;
+  if (status) product.status = status;
+  product.author = req.adminuser._id;
+
+  /* ================= COLORS & SIZES ================= */
+  if (req.body.colors) {
+    const colors = JSON.parse(req.body.colors);
+    if (!Array.isArray(colors) || !colors.length) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, "At least one color is required"));
+    }
+    product.colors = colors;
+  }
+
+  if (req.body.sizes) {
+    const sizes = JSON.parse(req.body.sizes);
+    if (!Array.isArray(sizes) || !sizes.length) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, "At least one size is required"));
+    }
+    product.sizes = sizes;
+  }
+
+  /* ================= SUBCATEGORY VALIDATION ================= */
+  if (subCategory) {
+    const validSubCategory = await SubCategory.findOne({
+      _id: subCategory,
+      category: category || product.category,
+    });
+
+    if (!validSubCategory) {
+      return res.status(400).json(
+        new ApiResponse(400, "SubCategory does not belong to selected category")
+      );
+    }
+    product.subCategory = subCategory;
+  }
+
+  /* ================= FILE EXTRACTION ================= */
+  let featuredImageFile = null;
+  let hoverImageFile = null;
+  const galleryFiles = [];
+  const designImageFiles = [];
+
+  for (const file of req.files || []) {
+    if (file.fieldname === "featuredImage") featuredImageFile = file;
+    if (file.fieldname === "hoverImage") hoverImageFile = file;
+    if (file.fieldname === "gallery") galleryFiles.push(file);
+    if (file.fieldname === "designImages") designImageFiles.push(file);
+  }
+
+  /* ================= IMAGE UPDATES ================= */
+  if (featuredImageFile) {
+    product.featuredImage = await uploadToS3(
+      featuredImageFile,
+      "products/featured"
+    );
+  }
+
+  if (hoverImageFile) {
+    product.hoverImage = await uploadToS3(
+      hoverImageFile,
+      "products/hover"
+    );
+  }
+
+  if (galleryFiles.length) {
+    const galleryMedia = [];
+    for (const file of galleryFiles) {
+      const url = await uploadToS3(file, "products/gallery");
+      galleryMedia.push({
+        url,
+        type: file.mimetype.startsWith("video") ? "video" : "image",
+      });
+    }
+    product.gallery = galleryMedia; // overwrite gallery
+  }
+
+  /* ================= DESIGN IMAGES ================= */
+  if (designImageFiles.length) {
+    const parsedDesignMeta = designImagesMeta
+      ? JSON.parse(designImagesMeta)
+      : [];
+
+    const designImages = [];
+
+    for (let i = 0; i < designImageFiles.length; i++) {
+      const url = await uploadToS3(
+        designImageFiles[i],
+        "products/design"
+      );
+
+      designImages.push({
+        url,
+        side: parsedDesignMeta[i]?.side,
+      });
+    }
+
+    product.desginImage = designImages;
+  }
+
+  /* ================= VARIANTS ================= */
+  if (variants) {
+    const parsedVariants = JSON.parse(variants);
+
+    if (!parsedVariants.length) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, "At least one variant is required"));
+    }
+
+    parsedVariants.forEach((v) => {
+      v.color = v.colorId;
+      v.size = v.sizeId ?? null;
+
+      delete v.colorId;
+      delete v.sizeId;
+
+      if (!v.gallery) v.gallery = [];
+      if (!v.featuredImage) v.featuredImage = null;
+    });
+
+    /* ===== Variant Media ===== */
+    for (const file of req.files || []) {
+      if (file.fieldname.startsWith("variantFeatured_")) {
+        const index = Number(file.fieldname.split("_")[1]);
+        const url = await uploadToS3(
+          file,
+          `products/variants/${index}/featured`
+        );
+        parsedVariants[index].featuredImage = url;
+      }
+
+      if (file.fieldname.startsWith("variantGallery_")) {
+        const index = Number(file.fieldname.split("_")[1]);
+        const url = await uploadToS3(
+          file,
+          `products/variants/${index}/gallery`
+        );
+        parsedVariants[index].gallery.push({
+          url,
+          type: file.mimetype.startsWith("video") ? "video" : "image",
+        });
+      }
+    }
+
+    /* ===== Variant Validation ===== */
+    for (const variant of parsedVariants) {
+      if (
+        !variant.sku ||
+        !variant.regularPrice ||
+        variant.stock === undefined
+      ) {
+        return res
+          .status(400)
+          .json(new ApiResponse(400, "Variant fields missing"));
+      }
+    }
+
+    product.variants = parsedVariants;
+  }
+
+  /* ================= SAVE ================= */
+  await product.save();
+
+  res.json(
+    new ApiResponse(200, "Product updated successfully", product)
+  );
 });
+
 
 /**
  * DELETE PRODUCT
@@ -317,6 +494,14 @@ const getProductBySlug = asyncHandler(async (req, res) => {
       path: "subCategory",
       select: "name", // ✅ only name
     })
+    .populate({
+      path: "colors",
+      select: "name hexCode", // ✅ only name and hexCode
+    })
+    .populate({
+      path: "sizes",
+      select: "name", // ✅ only name
+    });
 
   if (!product) {
     return res
@@ -391,7 +576,7 @@ const getProductBySlug = asyncHandler(async (req, res) => {
 //   );
 // });
 const getAllProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find({ status: "published" })
+  const products = await Product.find()
     .populate({
       path: "author",
       select: "fullName", // ✅ only fullName
@@ -416,6 +601,28 @@ const getAllProducts = asyncHandler(async (req, res) => {
     new ApiResponse(200, "Products fetched successfully", products)
   );
 });
+const getAllProductsForWebsite = asyncHandler(async (req, res) => {
+  const products = await Product.find({ status: "published" })
+    .populate({
+      path: "category",
+      select: "name", // ✅ only name
+    })
+    .populate({
+      path: "subCategory",
+      select: "name", // ✅ only name
+    })
+    .sort({ createdAt: -1 });
+
+  if (!products.length) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, "No products found"));
+  }
+
+  res.status(200).json(
+    new ApiResponse(200, "Products fetched successfully", products)
+  );
+});
 
 
-export { createProduct, updateProduct, deleteProduct, getAllProducts, getProductById, getProductBySlug };
+export { createProduct, updateProduct, deleteProduct, getAllProducts, getProductById, getProductBySlug, getAllProductsForWebsite };

@@ -6,30 +6,15 @@ import {
   RiHeartFill,
   RiHeartLine,
 } from "@remixicon/react";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+
 import { Link } from "react-router-dom";
 import { useCartStore } from "../store/cartStore";
 import gsap from "gsap";
-const dummyProduct = {
-  id: 1,
-  title: "All–Over–Print Hoodie",
-  price: "$26.00 – $29.00",
-  colors: ["#000000", "#ffffff", "#ffdd00", "#ff4444"],
-  sizes: ["2XL", "XL", "L", "M", "S", "XS"],
-  material: ["Cotton", "Polyester", "Blend"],
-  media: [
-    { type: "image", src: "/images/dummy/dummy1.png" },
-    { type: "image", src: "/images/dummy/dummy2.png" },
-    { type: "image", src: "/images/dummy/dummy2.png" },
-    { type: "image", src: "/images/dummy/dummy2.png" },
-    { type: "image", src: "/images/dummy/dummy3.png" },
-    { type: "video", src: "/images/dummy/video1.mp4" },
-  ],
-  category: "Great Offers",
-  subcategory: "Tank Top",
-  description:
-    "Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur, illum, ipsam cum incidunt maiores itaque eligendi, hic velit atque natus ut omnis voluptas officiis cupiditate ipsa nemo? Quod, voluptas sed!",
-};
+import { useParams } from "react-router-dom";
+import { getProductBySlugApi } from "../utils/productApi";
+import Loader from "../components/Common/Loader";
+
 const serviceablePincodes = {
   110001: "2–4 Days",
   400001: "3–5 Days",
@@ -38,14 +23,80 @@ const serviceablePincodes = {
 };
 
 const SingleProductPage = () => {
+  const { slug } = useParams();
+
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState(null);
+
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState("description");
   const [cartCount, setCartCount] = useState(1);
-  const selectedMedia = dummyProduct.media[selectedIndex];
   const [pincode, setPincode] = useState("");
   const [deliveryStatus, setDeliveryStatus] = useState(null);
-  const [selectedColor, setSelectedColor] = useState(dummyProduct.colors[0]);
-  const [selectedSize, setSelectedSize] = useState(dummyProduct.sizes[0]);
+  const [activeTab, setActiveTab] = useState("description");
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const res = await getProductBySlugApi(slug);
+        const data = res.data;
+        console.log("Product ", data);
+
+        setProduct(data);
+
+        // ✅ DEFAULT COLOR + VARIANT
+        const defaultColor = data.colors[0]?._id || null;
+        const defaultSize = data.sizes[0]?._id || null;
+
+        setSelectedColor(defaultColor);
+        setSelectedSize(defaultSize);
+
+        // pick variant based on color
+        const matchedVariant =
+          data.variants.find((v) => v.color === defaultColor) ||
+          data.variants[0];
+
+        setSelectedVariant(matchedVariant);
+
+        // ✅ DEFAULT SIZE
+        setSelectedSize(data.sizes?.[0]?._id || null);
+      } catch (err) {
+        console.error("Single product error", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [slug]);
+  const media = useMemo(() => {
+    if (!selectedVariant) return [];
+
+    const images = [];
+
+    if (selectedVariant.featuredImage) {
+      images.push({
+        type: "image",
+        src: selectedVariant.featuredImage,
+      });
+    }
+
+    selectedVariant.gallery?.forEach((g) => {
+      images.push({
+        type: g.type,
+        src: g.url,
+      });
+    });
+
+    return images;
+  }, [selectedVariant]);
+
+  const selectedMedia = media[selectedIndex];
+
   const addToCart = useCartStore((state) => state.addToCart);
   const checkPincode = () => {
     if (serviceablePincodes[pincode]) {
@@ -59,6 +110,20 @@ const SingleProductPage = () => {
       });
     }
   };
+  const handleColorChange = (colorId) => {
+    setSelectedColor(colorId);
+
+    const matchedVariant =
+      product.variants.find((v) => v.color === colorId) || product.variants[0]; // fallback
+
+    setSelectedVariant(matchedVariant);
+    setSelectedIndex(0);
+  };
+
+  const handleSizeChange = (sizeId) => {
+    setSelectedSize(sizeId);
+  };
+
   const [showVideo, setShowVideo] = useState(false);
   const videoOverlayRef = useRef(null);
   const videoBoxRef = useRef(null);
@@ -177,6 +242,8 @@ const SingleProductPage = () => {
     setReviewData({ name: "", rating: 0, comment: "" });
     closeReviewModal();
   };
+  if (loading) return <Loader />;
+  if (!product) return null;
 
   return (
     <div className="px-5 py-5 md:py-20 mt-30 md:mt-35">
@@ -186,18 +253,18 @@ const SingleProductPage = () => {
             <Link to="/">Home</Link>
           </span>
           <span>&gt;</span>
-          <span> {dummyProduct.category}</span>
+          <span> {product?.category?.name}</span>
           <span>&gt;</span>
-          <span>{dummyProduct.subcategory}</span>
+          <span>{product?.subCategory?.name ?? ""}</span>
           <span>&gt;</span>
-          <span>{dummyProduct.title}</span>
+          <span>{product.title}</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* LEFT SECTION */}
           <div className="flex gap-4 md:flex-row flex-col-reverse">
             {/* Thumbnails */}
             <div className="flex flex-row md:flex-col gap-3 overflow-auto md:overflow-visible  scrollbar-hide">
-              {dummyProduct.media.map((m, i) => (
+              {media.map((m, i) => (
                 <div
                   key={i}
                   className={`shrink-0 border rounded-lg cursor-pointer overflow-hidden 
@@ -225,14 +292,14 @@ const SingleProductPage = () => {
 
             {/* Main Image / Video */}
             <div className="relative w-full h-[450px] md:h-fit xl:h-[800px] bg-primary3 rounded-xl overflow-hidden">
-              {selectedMedia.type === "image" ? (
+              {selectedMedia?.type === "image" ? (
                 <img
-                  src={selectedMedia.src}
+                  src={selectedMedia?.src}
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <video
-                  src={selectedMedia.src}
+                  src={selectedMedia?.src}
                   autoPlay
                   className="w-full h-full object-cover"
                 />
@@ -242,7 +309,7 @@ const SingleProductPage = () => {
               <button
                 onClick={() =>
                   setSelectedIndex((prev) =>
-                    prev === 0 ? dummyProduct.media.length - 1 : prev - 1
+                    prev === 0 ? media.length - 1 : prev - 1
                   )
                 }
                 className="absolute left-3 top-1/2 -translate-y-1/2 bg-white w-12 h-12 items-center justify-center rounded-full cursor-pointer hover:bg-primary1 flex"
@@ -253,7 +320,7 @@ const SingleProductPage = () => {
               <button
                 onClick={() =>
                   setSelectedIndex((prev) =>
-                    prev === dummyProduct.media.length - 1 ? 0 : prev + 1
+                    prev === media.length - 1 ? 0 : prev + 1
                   )
                 }
                 className="absolute right-3 top-1/2 -translate-y-1/2 bg-white w-12 h-12 items-center justify-center rounded-full cursor-pointer hover:bg-primary1 flex"
@@ -271,31 +338,34 @@ const SingleProductPage = () => {
           {/* RIGHT SECTION */}
           <div className="flex flex-col gap-2">
             <h2 className="text-xl md:text-4xl font-semibold mb-2">
-              {dummyProduct.title}
+              {product.title}
             </h2>
             <p className="text-base text-primary5 mb-4">
-              {dummyProduct.description}
+              {product.description}
             </p>
             <p className="text-xl font-bold text-primary5 mb-4">
-              {dummyProduct.price}
+              ₹{selectedVariant.salePrice}
+              <del className="ml-2 text-gray-400">
+                ₹{selectedVariant.regularPrice}
+              </del>
             </p>
 
             {/* Colors */}
             <div className="mb-4">
               <p className="font-medium mb-3">Color:</p>
               <div className="flex gap-4 ">
-                {dummyProduct.colors.map((c, i) => (
+                {product.colors.map((color) => (
                   <div
-                    key={i}
-                    style={{ backgroundColor: c }}
-                    onClick={() => setSelectedColor(c)}
+                    key={color._id}
+                    style={{ backgroundColor: color.hexCode }}
+                    onClick={() => handleColorChange(color._id)}
                     className={`w-8 h-8 rounded-full cursor-pointer border
-    ${
-      selectedColor === c
-        ? "border-primary5 border-2 scale-115"
-        : "border-primary2/40"
-    }
-    transition-all duration-200`}
+      ${
+        selectedColor === color._id
+          ? "border-primary5 border-2 scale-110"
+          : "border-primary2/40"
+      }
+    `}
                   />
                 ))}
               </div>
@@ -305,20 +375,19 @@ const SingleProductPage = () => {
             <div className="mb-4">
               <p className="font-medium mb-3">Size:</p>
               <div className="flex flex-wrap gap-2">
-                {dummyProduct.sizes.map((s, i) => (
+                {product.sizes.map((size) => (
                   <button
-                    key={i}
-                    onClick={() => setSelectedSize(s)}
-                    className={`
-    px-4 py-1 border rounded transition cursor-pointer
-    ${
-      selectedSize === s
-        ? "bg-primary5 text-white border-primary5"
-        : "bg-white text-primary5 border-primary2/10 hover:bg-primary1 hover:text-white"
-    }
-  `}
+                    key={size._id}
+                    onClick={() => handleSizeChange(size._id)}
+                    className={`px-4 py-1 border rounded
+      ${
+        selectedSize === size._id
+          ? "bg-primary5 text-white border-primary5"
+          : "bg-white text-primary5 border-primary2/10 hover:bg-primary1 hover:text-white"
+      }
+    `}
                   >
-                    {s}
+                    {size.name}
                   </button>
                 ))}
               </div>
@@ -352,13 +421,13 @@ const SingleProductPage = () => {
              transition-all duration-300 btn-slide md:text-base text-sm cursor-pointer"
                 onClick={() =>
                   addToCart({
-                    id: dummyProduct.id, // or product.id if dynamic
-                    title: dummyProduct.title,
-                    price: dummyProduct.price,
-                    color: selectedColor,
-                    size: selectedSize,
+                    id: product._id,
+                    title: product.title,
+                    price: selectedVariant.salePrice,
+                    color: selectedColor, // outer color
+                    size: selectedSize, // outer size
                     quantity: cartCount,
-                    image: dummyProduct.media[0].src, // first image
+                    image: selectedVariant.featuredImage,
                   })
                 }
               >

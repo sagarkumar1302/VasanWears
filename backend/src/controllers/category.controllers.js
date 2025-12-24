@@ -89,7 +89,7 @@ const getAllCategories = asyncHandler(async (req, res) => {
   const categories = await Category.find({ published: true })
     .sort({ createdAt: -1 })
     // .populate("subCategories") // uncomment if subCategories are refs
-    .lean()
+    // .lean()
     ;
 
   res.status(200).json(
@@ -177,5 +177,40 @@ const getAllCategoriesWithSub = asyncHandler(async (req, res) => {
     new ApiResponse(200, "Categories fetched successfully", categories)
   );
 });
+const getAllCategoriesWithSubWebsite = asyncHandler(async (req, res) => {
+  const categories = await Category.aggregate([
+    // 1️⃣ Lookup subcategories
+    {
+      $lookup: {
+        from: "subcategories",
+        localField: "_id",
+        foreignField: "category",
+        as: "subCategories",
+      },
+    },
 
-export { createCategory, updateCategory, deleteCategory, getAllCategories, getAllCategoriesWithSub };
+    {
+      $project: {
+        name: 1,
+        slug: 1,
+        image: 1,
+        published: 1,
+        createdAt: 1,
+        subCategories: 1,
+
+        // only what you want from author
+      },
+    },
+
+    // 5️⃣ Sort
+    {
+      $sort: { createdAt: -1 },
+    },
+  ]);
+
+  res.status(200).json(
+    new ApiResponse(200, "Categories fetched successfully", categories)
+  );
+});
+
+export { createCategory, updateCategory, deleteCategory, getAllCategories, getAllCategoriesWithSub, getAllCategoriesWithSubWebsite };

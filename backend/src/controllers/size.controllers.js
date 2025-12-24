@@ -34,6 +34,13 @@ const getAllSizes = asyncHandler(async (req, res) => {
         .status(200)
         .json(new ApiResponse(200, "Sizes fetched successfully", sizes));
 });
+const getAllSizesWebsite = asyncHandler(async (req, res) => {
+    const sizes = await Size.find({ published: true }).sort({ createdAt: -1 }).select('name');
+
+    res
+        .status(200)
+        .json(new ApiResponse(200, "Sizes fetched successfully", sizes));
+});
 
 /* ================= UPDATE SIZE ================= */
 const updateSize = asyncHandler(async (req, res) => {
@@ -78,4 +85,5 @@ export {
     getAllSizes,
     updateSize,
     deleteSize,
+    getAllSizesWebsite
 };

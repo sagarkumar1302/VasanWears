@@ -70,7 +70,7 @@ const ShoppingCategories = () => {
               key={cat._id}
               className="cat-item flex flex-col items-center cursor-pointer"
             >
-              <div className="rounded-full overflow-hidden bg-gray-100 shadow-sm hover:scale-105 transition-all duration-300 p-5">
+              <div className="rounded-full overflow-hidden bg-gray-100 shadow-sm hover:scale-105 transition-all duration-300">
                 <img
                   src={cat.image}
                   alt={cat.name}

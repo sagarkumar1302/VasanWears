@@ -96,7 +96,7 @@ const AdminProductList = () => {
                 <td>
                   <button
                     onClick={() =>
-                      navigate(`/admin/products/${product._id}/edit`)
+                      navigate(`/admin/products/${product.slug}/edit`)
                     }
                     className="text-blue-600 hover:underline"
                   >

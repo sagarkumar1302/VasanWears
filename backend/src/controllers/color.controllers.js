@@ -34,6 +34,13 @@ const getAllColors = asyncHandler(async (req, res) => {
         .status(200)
         .json(new ApiResponse(200, "Colors fetched successfully", colors));
 });
+const getAllColorsWebsite = asyncHandler(async (req, res) => {
+    const colors = await Color.find({ published: true }).sort({ createdAt: -1 }).select('name hexCode');
+
+    res
+        .status(200)
+        .json(new ApiResponse(200, "Colors fetched successfully", colors));
+});
 
 /* ================= UPDATE COLOR ================= */
 const updateColor = asyncHandler(async (req, res) => {
@@ -79,4 +86,5 @@ export {
     getAllColors,
     updateColor,
     deleteColor,
+    getAllColorsWebsite
 };

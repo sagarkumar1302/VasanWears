@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { useAuthStore } from "../store/useAuthStore";
 export const API = axios.create({
   baseURL: `${import.meta.env.VITE_BACKEND_URL}/api`,
   withCredentials: true,
@@ -83,7 +83,7 @@ export const getAllCategoriesWithSubCatApi = async () => {
 };
 export const getAllCategoriesAdminApi = async () => {
   try {
-    const res = await API.get("/categories");
+    const res = await API.get("/categories/");
     return res.data;
   } catch (err) {
     console.error("Get Categories Error:", err);

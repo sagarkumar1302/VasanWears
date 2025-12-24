@@ -4,13 +4,14 @@ import {
   deleteCategory,
   getAllCategories,
   getAllCategoriesWithSub,
+  getAllCategoriesWithSubWebsite,
   updateCategory,
 } from "../controllers/category.controllers.js";
 import adminVerifyJwt from "../middleware/adminAuth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
 
 const router = Router();
-router.get("/", adminVerifyJwt, getAllCategories);
+
 // CREATE CATEGORY (WITH IMAGE)
 router.post(
   "/",
@@ -26,10 +27,11 @@ router.put(
   upload.single("image"),
   updateCategory
 );
-router.get("/catws",adminVerifyJwt, getAllCategoriesWithSub);
-router.get("/",adminVerifyJwt, getAllCategories);
+router.get("/catws", adminVerifyJwt, getAllCategoriesWithSub);
+router.get("/catwsforweb", getAllCategoriesWithSubWebsite);
 
 // DELETE CATEGORY
 router.delete("/:id", adminVerifyJwt, deleteCategory);
-
+//WEBSITE ONLY NO AUTH
+router.get("/", getAllCategories);
 export default router;

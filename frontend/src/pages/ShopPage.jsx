@@ -1,6 +1,12 @@
 import React, { useState, useRef, useMemo, useEffect } from "react";
 import { PRODUCTS } from "../utils/Products";
 import gsap from "gsap";
+import {
+  getAllCategoriesForWebsite,
+  getAllProductsForWebsite,
+  getAllColorsForWebsite,
+  getAllSizesForWebsite,
+} from "../utils/productApi";
 // ... (imports remain the same)
 import Banner from "../components/Common/Banner";
 import CustomSortDropdown from "../components/Common/CustomSortDropdown";
@@ -15,9 +21,44 @@ import {
   RiStarSmileLine,
 } from "@remixicon/react";
 import { Link } from "react-router-dom";
+import Loader from "../components/Common/Loader";
 
 const ShopPage = () => {
   // --- MAIN FILTER STATE (Applied to finalProducts) ---
+  const productsGridRef = useRef(null);
+
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [colors, setColors] = useState([]);
+  const [sizes, setSizes] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        const [catRes, prodRes, colorRes, sizeRes] = await Promise.all([
+          getAllCategoriesForWebsite(),
+          getAllProductsForWebsite(),
+          getAllColorsForWebsite(),
+          getAllSizesForWebsite(),
+        ]);
+
+        setCategories(catRes.data);
+        setProducts(prodRes.data);
+        setColors(colorRes.data);
+        setSizes(sizeRes.data);
+      } catch (err) {
+        console.error("Shop fetch error", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const [sortType, setSortType] = useState("default");
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -101,87 +142,95 @@ const ShopPage = () => {
   const pageTitle = "Shop";
 
   // Extract unique filters
-  const categories = [...new Set(PRODUCTS.map((p) => p.category))];
-  const subcategories = [...new Set(PRODUCTS.map((p) => p.subcategory))];
-  const colors = [
-    ...new Map(
-      PRODUCTS.flatMap((p) => p.colors).map((c) => [c.name, c])
-    ).values(),
-  ];
-  useEffect(() => {
-    const delay = setTimeout(() => {
-      setSearch(searchInput);
-    }, 800);
-
-    return () => clearTimeout(delay); // cleanup on next type
-  }, [searchInput]);
-  const sizes = [...new Set(PRODUCTS.flatMap((p) => p.sizes))];
 
   // Convert ₹ price to number
   const numericPrice = (str) => parseFloat(str.replace("₹", ""));
 
   // Filtering + Sorting (Uses the MAIN state variables)
   const finalProducts = useMemo(() => {
-    let data = [...PRODUCTS];
+    let data = [...products];
 
-    // Search Filter
-    if (search.trim() !== "") {
-      data = data.filter((item) =>
-        item.title.toLowerCase().includes(search.toLowerCase())
+    // 🔍 SEARCH
+    if (search.trim()) {
+      data = data.filter((p) =>
+        p.title.toLowerCase().includes(search.toLowerCase())
       );
     }
 
-    // Category Filter
+    // 📦 CATEGORY
     if (selectedCategory) {
-      data = data.filter((item) => item.category === selectedCategory);
+      data = data.filter((p) => p.category?._id === selectedCategory);
     }
 
-    // Subcategory Filter
+    // 📂 SUBCATEGORY
     if (selectedSubCategory) {
-      data = data.filter((item) => item.subcategory === selectedSubCategory);
+      data = data.filter((p) => p.subCategory?._id === selectedSubCategory);
     }
 
-    // Color Filter
+    // 🎨 COLOR (ID → ID)
     if (selectedColor) {
-      // Note: This filter logic seems slightly incorrect based on common data structures,
-      // but we'll leave it as is to match your original code's intent.
-      // Assuming item.colors is an array of color names or objects containing 'name'.
-      data = data.filter(
-        (item) => item.colors.some((c) => c.name === selectedColor) // Corrected to use object structure if p.colors contains objects
-      );
-      // If item.colors is just an array of strings (names):
-      // data = data.filter((item) => item.colors.includes(selectedColor));
+      data = data.filter((p) => p.colors.includes(selectedColor));
     }
 
-    // Size Filter
+    // 📏 SIZE (ID → ID)
     if (selectedSize) {
-      data = data.filter((item) => item.sizes.includes(selectedSize));
+      data = data.filter((p) => p.sizes.includes(selectedSize));
     }
 
-    // Price Filter
-    data = data.filter(
-      (item) =>
-        numericPrice(item.price) >= priceRange[0] &&
-        numericPrice(item.price) <= priceRange[1]
-    );
+    // 💰 PRICE
+    data = data.filter((p) => {
+      const price = p.variants?.[0]?.salePrice ?? 0;
+      return price >= priceRange[0] && price <= priceRange[1];
+    });
 
-    // Sorting
+    // 🔃 SORT
     if (sortType === "low-to-high") {
-      data.sort((a, b) => numericPrice(a.price) - numericPrice(b.price));
-    } else if (sortType === "high-to-low") {
-      data.sort((a, b) => numericPrice(b.price) - numericPrice(a.price));
+      data.sort(
+        (a, b) =>
+          (a.variants?.[0]?.salePrice ?? 0) - (b.variants?.[0]?.salePrice ?? 0)
+      );
+    }
+
+    if (sortType === "high-to-low") {
+      data.sort(
+        (a, b) =>
+          (b.variants?.[0]?.salePrice ?? 0) - (a.variants?.[0]?.salePrice ?? 0)
+      );
     }
 
     return data;
   }, [
-    sortType,
+    products,
     search,
     selectedCategory,
     selectedSubCategory,
     selectedColor,
     selectedSize,
     priceRange,
+    sortType,
   ]);
+  useEffect(() => {
+    if (!productsGridRef.current) return;
+
+    const items = productsGridRef.current.querySelectorAll(".product-card");
+
+    gsap.killTweensOf(items);
+
+    gsap.fromTo(
+      items,
+      {
+        opacity: 0,
+        y: 40,
+      },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: "power3.out",
+        stagger: 0.08,
+      }
+    );
+  }, [finalProducts]);
 
   const sortingFilterMobile = () => {
     // IMPORTANT: When opening, reset the temporary state to the current applied state
@@ -208,7 +257,16 @@ const ShopPage = () => {
       { y: "100%", duration: 0.5, ease: "power3.out" }
     );
   };
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setSearch(searchInput);
+    }, 500);
 
+    return () => clearTimeout(delay);
+  }, [searchInput]);
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <div className="md:mt-35 mt-30">
       <Banner pageTitle={pageTitle} />
@@ -233,65 +291,67 @@ const ShopPage = () => {
             {/* Category Filter - DESKTOP */}
             <Accordion title="Category">
               {categories.map((cat) => (
-                <label
-                  key={cat}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedCategory === cat}
-                    onChange={() =>
-                      setSelectedCategory(selectedCategory === cat ? "" : cat)
-                    }
-                    className="w-4 h-4"
-                  />
-                  <span>{cat}</span>
-                </label>
+                <div key={cat._id}>
+                  <label className="flex items-center gap-2 font-medium">
+                    <input
+                      type="checkbox"
+                      checked={selectedCategory === cat._id}
+                      onChange={() => {
+                        setSelectedCategory(
+                          selectedCategory === cat._id ? "" : cat._id
+                        );
+                        setSelectedSubCategory("");
+                      }}
+                    />
+                    {cat.name}
+                  </label>
+
+                  {cat.subCategories?.length > 0 && (
+                    <div className="ml-5 mt-1 space-y-1">
+                      {cat.subCategories.map((sub) => (
+                        <label
+                          key={sub._id}
+                          className="flex items-center gap-2 text-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedSubCategory === sub._id}
+                            onChange={() => {
+                              setSelectedCategory(cat._id);
+                              setSelectedSubCategory(
+                                selectedSubCategory === sub._id ? "" : sub._id
+                              );
+                            }}
+                          />
+                          {sub.name}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </Accordion>
+
             {/* Subcategory Filter - DESKTOP */}
-            <Accordion title="Subcategory">
-              {subcategories.map((sub) => (
-                <label
-                  key={sub}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedSubCategory === sub}
-                    onChange={() =>
-                      setSelectedSubCategory(
-                        selectedSubCategory === sub ? "" : sub
-                      )
-                    }
-                    className="w-4 h-4"
-                  />
-                  <span>{sub}</span>
-                </label>
-              ))}
-            </Accordion>
+
             {/* Color Filter - DESKTOP */}
             <Accordion title="Color">
               {colors.map((color) => (
-                <label
-                  key={color.name}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
+                <label key={color._id} className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    checked={selectedColor === color.name}
+                    checked={selectedColor === color._id}
                     onChange={() =>
                       setSelectedColor(
-                        selectedColor === color.name ? "" : color.name
+                        selectedColor === color._id ? "" : color._id
                       )
                     }
-                    className="w-4 h-4"
                   />
                   <span>{color.name}</span>
                   <div
-                    className="w-4 h-4 rounded-sm border"
-                    style={{ backgroundColor: color.hex }}
-                  ></div>
+                    className="w-4 h-4 border rounded"
+                    style={{ backgroundColor: color.hexCode }}
+                  />
                 </label>
               ))}
             </Accordion>
@@ -299,19 +359,15 @@ const ShopPage = () => {
             {/* Sizes Filter - DESKTOP */}
             <Accordion title="Size">
               {sizes.map((size) => (
-                <label
-                  key={size}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
+                <label key={size._id} className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    checked={selectedSize === size}
+                    checked={tempSize === size._id}
                     onChange={() =>
-                      setSelectedSize(selectedSize === size ? "" : size)
+                      setTempSize(tempSize === size._id ? "" : size._id)
                     }
-                    className="w-4 h-4"
                   />
-                  <span className="">{size}</span>
+                  <span>{size.name}</span>
                 </label>
               ))}
             </Accordion>
@@ -340,12 +396,29 @@ const ShopPage = () => {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
+            <div
+              ref={productsGridRef}
+              className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2"
+            >
               {finalProducts.length === 0 ? (
                 <p>No products found.</p>
               ) : (
                 finalProducts.map((product) => (
-                  <ProductCard data={product} key={product.id} />
+                  <ProductCard
+                    key={product._id}
+                    data={{
+                      id: product._id,
+                      title: product.title,
+                      image: product.featuredImage,
+                      hoverImage: product.hoverImage || product.featuredImage,
+                      price: `₹${product.variants?.[0]?.salePrice ?? 0}`,
+                      oldPrice: product.variants?.[0]?.regularPrice
+                        ? `₹${product.variants[0].regularPrice}`
+                        : null,
+                      tags: ["Trendy", "Sale"],
+                      slug: product.slug
+                    }}
+                  />
                 ))
               )}
             </div>
@@ -378,63 +451,67 @@ const ShopPage = () => {
           {/* Category Filter - MOBILE (Uses TEMP state) */}
           <Accordion title="Category">
             {categories.map((cat) => (
-              <label
-                key={cat}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={tempCategory === cat}
-                  onChange={() =>
-                    setTempCategory(tempCategory === cat ? "" : cat)
-                  }
-                  className="w-4 h-4"
-                />
-                <span>{cat}</span>
-              </label>
+              <div key={cat._id}>
+                <label className="flex items-center gap-2 font-medium">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategory === cat._id}
+                    onChange={() => {
+                      setSelectedCategory(
+                        selectedCategory === cat._id ? "" : cat._id
+                      );
+                      setSelectedSubCategory("");
+                    }}
+                  />
+                  {cat.name}
+                </label>
+
+                {cat.subCategories?.length > 0 && (
+                  <div className="ml-5 mt-1 space-y-1">
+                    {cat.subCategories.map((sub) => (
+                      <label
+                        key={sub._id}
+                        className="flex items-center gap-2 text-sm"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedSubCategory === sub._id}
+                          onChange={() => {
+                            setSelectedCategory(cat._id);
+                            setSelectedSubCategory(
+                              selectedSubCategory === sub._id ? "" : sub._id
+                            );
+                          }}
+                        />
+                        {sub.name}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </Accordion>
 
           {/* Subcategory Filter - MOBILE (Uses TEMP state) */}
-          <Accordion title="Subcategory">
-            {subcategories.map((sub) => (
-              <label
-                key={sub}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={tempSubCategory === sub}
-                  onChange={() =>
-                    setTempSubCategory(tempSubCategory === sub ? "" : sub)
-                  }
-                  className="w-4 h-4"
-                />
-                <span>{sub}</span>
-              </label>
-            ))}
-          </Accordion>
 
           {/* Color Filter - MOBILE (Uses TEMP state) */}
           <Accordion title="Color">
             {colors.map((color) => (
-              <label
-                key={color.name}
-                className="flex items-center gap-2 cursor-pointer"
-              >
+              <label key={color._id} className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  checked={tempColor === color.name}
+                  checked={selectedColor === color._id}
                   onChange={() =>
-                    setTempColor(tempColor === color.name ? "" : color.name)
+                    setSelectedColor(
+                      selectedColor === color._id ? "" : color._id
+                    )
                   }
-                  className="w-4 h-4"
                 />
                 <span>{color.name}</span>
                 <div
-                  className="w-4 h-4 rounded-sm border"
-                  style={{ backgroundColor: color.hex }}
-                ></div>
+                  className="w-4 h-4 border rounded"
+                  style={{ backgroundColor: color.hexCode }}
+                />
               </label>
             ))}
           </Accordion>
@@ -442,17 +519,15 @@ const ShopPage = () => {
           {/* Sizes Filter - MOBILE (Uses TEMP state) */}
           <Accordion title="Size">
             {sizes.map((size) => (
-              <label
-                key={size}
-                className="flex items-center gap-2 cursor-pointer"
-              >
+              <label key={size._id} className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  checked={tempSize === size}
-                  onChange={() => setTempSize(tempSize === size ? "" : size)}
-                  className="w-4 h-4"
+                  checked={selectedSize === size._id}
+                  onChange={() =>
+                    setSelectedSize(selectedSize === size._id ? "" : size._id)
+                  }
                 />
-                <span className="">{size}</span>
+                <span>{size.name}</span>
               </label>
             ))}
           </Accordion>
@@ -617,11 +692,11 @@ const ProductCard = ({ data }) => {
   return (
     <div
       // className="relative group cursor-pointer hover:scale-105 duration-300 hover:shadow-xl p-4 rounded-xl hover:-translate-y-3 transform-gpu"
-      className="relative group cursor-pointer duration-300 hover:shadow-xl p-2 md:p-4 rounded-xl hover:-translate-y-3 transform-gpu"
+      className="product-card relative group cursor-pointer duration-300 hover:shadow-xl p-2 md:p-4 rounded-xl hover:-translate-y-3 transform-gpu"
       onMouseEnter={handleHoverIn}
       onMouseLeave={handleHoverOut}
     >
-      <Link to={`/shop/${data.id}/${slugify(data.title)}`}>
+      <Link to={`/shop/${data.id}/${data.slug}`}>
         {/* Tags */}
         <div className="absolute top-4 left-4 md:top-7 md:left-7 flex flex-col gap-1 z-10">
           {data.tags.map((t, i) => (
@@ -646,15 +721,10 @@ const ProductCard = ({ data }) => {
 
           {/* Icons */}
           <div
-            className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-0"
+            className="absolute right-3 top-1/4 -translate-y-1/2 flex flex-col gap-3 opacity-0"
             ref={sideIconRef}
           >
-            {[
-              RiStarSmileLine,
-              RiHeartLine,
-              RiShoppingBagLine,
-              RiSearch2Line,
-            ].map((Icon, i) => (
+            {[RiHeartLine, RiShoppingBagLine].map((Icon, i) => (
               <div
                 key={i}
                 className={`cursor-pointer translate-y-2 w-7 h-7 md:w-10 md:h-10 bg-white shadow-md rounded-full flex items-center justify-center hover:bg-primary1 hover:text-white transition-all}`}

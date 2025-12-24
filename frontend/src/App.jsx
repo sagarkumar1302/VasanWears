@@ -74,6 +74,7 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/shop" element={<ShopPage />} />
+          <Route path="/shop/:id/:slug" element={<SingleProductPage />} />
           <Route path="/blogs" element={<BlogsPage />} />
           <Route path="/blogs/:blogId" element={<SingleBlogPage />} />
           <Route path="*" element={<NotFound />} />
@@ -96,8 +97,6 @@ const App = () => {
               <Route index element={<MyAccountRightSide />} />
             </Route>
           </Route>
-
-          <Route path="/shop/:id/:name" element={<SingleProductPage />} />
         </Route>{" "}
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
@@ -114,7 +113,7 @@ const App = () => {
             <Route path="products">
               <Route path="all-products" element={<AdminProductList />} />
               <Route path="add" element={<AddProduct />} />
-              <Route path=":productId/edit" element={<EditProduct />} />
+              <Route path=":slug/edit" element={<EditProduct />} />
               <Route path="category" element={<AdminCategory />} />
               <Route path="sizes" element={<SizePage />} />
               <Route path="color" element={<ColorPage />} />

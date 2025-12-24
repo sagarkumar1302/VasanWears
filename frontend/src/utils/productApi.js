@@ -39,7 +39,7 @@ export const getAllSizesApi = async () => {
 };
 export const createColorApi = async (colorData) => {
     try {
-        const res = await API.post("/colors", colorData);  
+        const res = await API.post("/colors", colorData);
         return res.data;
     } catch (err) {
         console.error("Create Color Error:", err);
@@ -49,7 +49,7 @@ export const createColorApi = async (colorData) => {
 
 export const createSizeApi = async (sizeData) => {
     try {
-        const res = await API.post("/sizes", sizeData);  
+        const res = await API.post("/sizes", sizeData);
         return res.data;
     } catch (err) {
         console.error("Create Size Error:", err);
@@ -58,12 +58,12 @@ export const createSizeApi = async (sizeData) => {
 };
 export const updateColorsApi = async (colorId, colorData) => {
     try {
-        const res = await API.put(`/colors/${colorId}`, colorData); 
+        const res = await API.put(`/colors/${colorId}`, colorData);
         return res.data;
     } catch (err) {
         console.error("Update Color Error:", err);
         throw err;
-    }  
+    }
 };
 
 export const updateSizesApi = async (sizeId, sizeData) => {
@@ -78,16 +78,16 @@ export const updateSizesApi = async (sizeId, sizeData) => {
 
 export const deleteColorApi = async (colorId) => {
     try {
-        const res = await API.delete(`/colors/${colorId}`); 
+        const res = await API.delete(`/colors/${colorId}`);
         return res.data;
     } catch (err) {
         console.error("Delete Color Error:", err);
         throw err;
-    }  
+    }
 };
 export const deleteSizeApi = async (sizeId) => {
     try {
-        const res = await API.delete(`/sizes/${sizeId}`);  
+        const res = await API.delete(`/sizes/${sizeId}`);
         return res.data;
     } catch (err) {
         console.error("Delete Size Error:", err);
@@ -95,12 +95,69 @@ export const deleteSizeApi = async (sizeId) => {
     }
 };
 export const getProductBySlugApi = async (slug) => {
-  try {
-    const res = await API.get(`/products/slug/${slug}`);
-    return res.data;
-  }
+    try {
+        const res = await API.get(`/products/slug/${slug}`);
+        return res.data;
+    }
     catch (err) {
-    console.error("Get Product By Slug Error:", err);
-    throw err;
-  }
+        console.error("Get Product By Slug Error:", err);
+        throw err;
+    }
+};
+export const updateProductApi = async (productId, formData) => {
+    try {
+        const res = await API.patch(`/products/${productId}`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+        return res.data;
+    }
+    catch (err) {
+        console.error("Update Product Error:", err);
+        throw err;
+    }
+};
+export const deleteProductApi = async (productId) => {
+    try {
+        const res = await API.delete(`/products/${productId}`);
+        return res.data;
+    } catch (err) {
+        console.error("Delete Product Error:", err);
+        throw err;
+    }
+};
+export const getAllProductsForWebsite = async () => {
+    try {
+        const res = await API.get("/products/webprod");
+        return res.data;
+    } catch (err) {
+        console.error("Get Products Error:", err);
+        throw err;
+    }
+};
+export const getAllCategoriesForWebsite = async () => {
+    try {
+        const res = await API.get("/categories/catwsforweb");
+        return res.data;
+    } catch (err) {
+        console.error("Get Categories Error:", err);
+        throw err;
+    }
+};
+export const getAllColorsForWebsite = async () => {
+    try {
+        const res = await API.get("/colors/webcolors");
+        return res.data;
+    } catch (err) {
+        console.error("Get Colors Error:", err);
+        throw err;
+    }
+};
+export const getAllSizesForWebsite = async () => {
+    try {
+        const res = await API.get("/sizes/websizes");
+        return res.data;
+    } catch (err) {
+        console.error("Get Sizes Error:", err);
+        throw err;
+    }
 };

@@ -23,6 +23,12 @@ const slides = [
     title: "NEW ARRIVALS",
     button: "SHOP NOW",
   },
+  {
+    type: "video",
+    url: "/videos/VasanWears.mp4",
+    title: "FESTIVE COLLECTION",
+    button: "EXPLORE",
+  },
   
 ];
 
