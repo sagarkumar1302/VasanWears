@@ -25,7 +25,7 @@ const LoginPage = () => {
       // Wait 1.5 seconds before navigating
       setTimeout(() => {
         navigate("/my-account");
-      }, 800);
+      }, 400);
     } catch (error) {
       console.error("Login failed:", error.response?.data || error);
       toast.error("Invalid credentials! ❌");
@@ -43,7 +43,7 @@ const LoginPage = () => {
 
         setTimeout(() => {
           navigate("/my-account");
-        }, 800);
+        }, 400);
       } catch (err) {
         console.error("Google login failed:", err.response?.data || err);
         toast.error("Google Login Failed! ❌");

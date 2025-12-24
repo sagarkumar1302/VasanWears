@@ -23,7 +23,7 @@ const AdminLoginPage = () => {
       // Wait 1.5 seconds before navigating
       setTimeout(() => {
         navigate("/admin");
-      }, 600);
+      }, 400);
     } catch (error) {
       console.error("Login failed:", error.response?.data || error);
       toast.error("Invalid credentials! ❌");
