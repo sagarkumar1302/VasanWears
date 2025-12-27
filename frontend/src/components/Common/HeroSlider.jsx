@@ -8,28 +8,26 @@ const slides = [
   {
     type: "video",
     url: "/videos/VasanWears.mp4",
-    title: "FESTIVE COLLECTION",
-    button: "EXPLORE",
+    title: "",
   },
   {
     type: "image",
     url: "./images/slider.jpg",
-    title: "WEDDING STORIES",
-    button: "SHOP NOW",
+    title: "Make Your Design Now",
+    button: "Design Now",
   },
   {
     type: "video",
     url: "/videos/video1.mp4",
-    title: "FESTIVE COLLECTION",
-    button: "EXPLORE",
+    title: "Exclusive Collection",
+    button: "Shop Now",
   },
   {
     type: "image",
     url: "./images/slider2.jpg",
     title: "NEW ARRIVALS",
-    button: "SHOP NOW",
+    button: "Shop Now",
   },
-  
 ];
 
 const HeroSlider = () => {
@@ -103,13 +101,15 @@ const HeroSlider = () => {
           {slides[current].title}
         </h1>
 
-        <Link
-          to="/shop"
-          className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
+        {slides[current].title.length > 0 && (
+          <Link
+            to="/shop"
+            className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
              transition-all duration-300 btn-slide md:text-base text-sm"
-        >
-          Visit Shop
-        </Link>
+          >
+            {slides[current].button}
+          </Link>
+        )}
       </div>
 
       {/* Controls */}

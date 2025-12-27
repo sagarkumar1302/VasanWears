@@ -14,7 +14,7 @@ import gsap from "gsap";
 import { useParams } from "react-router-dom";
 import { getProductBySlugApi } from "../utils/productApi";
 import Loader from "../components/Common/Loader";
-
+import { toggleWishlistApi, getWishlistApi } from "../utils/wishlistApi";
 const serviceablePincodes = {
   110001: "2–4 Days",
   400001: "3–5 Days",
@@ -33,6 +33,9 @@ const SIZE_ORDER = {
 
 const SingleProductPage = () => {
   const { slug } = useParams();
+  const [wishlistProductIds, setWishlistProductIds] = useState([]);
+  const [wishlistVariantIds, setWishlistVariantIds] = useState([]);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -46,6 +49,16 @@ const SingleProductPage = () => {
   const [pincode, setPincode] = useState("");
   const [deliveryStatus, setDeliveryStatus] = useState(null);
   const [activeTab, setActiveTab] = useState("description");
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const res = await getWishlistApi();
+        setWishlistProductIds(res.data.productIds || []);
+      } catch (err) {}
+    };
+
+    fetchWishlist();
+  }, []);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -82,6 +95,26 @@ const SingleProductPage = () => {
 
     fetchProduct();
   }, [slug]);
+  const isWishlisted = wishlistProductIds.includes(product?._id);
+
+  const handleToggleWishlist = async () => {
+    if (!product || wishlistLoading) return;
+
+    try {
+      setWishlistLoading(true);
+
+      const res = await toggleWishlistApi(product._id);
+
+      const updatedIds = res.data.items.map((item) => item.product.toString());
+
+      setWishlistProductIds(updatedIds);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
   const sortedSizes = useMemo(() => {
     if (!product?.sizes) return [];
 
@@ -332,9 +365,7 @@ const SingleProductPage = () => {
                   className="w-full h-full object-cover"
                 />
               )}
-              <div className="absolute top-1/3 right-[37%]">
-                <img src={product?.desginImage[0]?.url} className="w-40 h-40" />
-              </div>
+
               {/* Slider Controls */}
               <button
                 onClick={() =>
@@ -357,10 +388,18 @@ const SingleProductPage = () => {
               >
                 <RiArrowRightLongLine className="lg:h-6 lg:w-6 w-5 h-5" />
               </button>
-              <button className="absolute top-4 right-4 cursor-pointer">
-                <RiHeartLine className="xl:h-8 xl:w-8 w-5 h-5 hover:text-primary1" />
-                <RiHeartFill className="xl:h-8 xl:w-8 w-5 h-5 hover:text-primary1" />
-                {/* Here to write the condition to check whether it is added on wishlisht or not */}
+              <button
+                onClick={handleToggleWishlist}
+                disabled={wishlistLoading}
+                className="absolute top-4 right-4 cursor-pointer z-10 flex items-center justify-center"
+              >
+                {wishlistLoading ? (
+                  <span className="w-6 h-6 border-2 border-primary1 border-t-transparent rounded-full animate-spin"></span>
+                ) : isWishlisted ? (
+                  <RiHeartFill className="xl:h-8 xl:w-8 w-5 h-5 text-primary5 transition" />
+                ) : (
+                  <RiHeartLine className="xl:h-8 xl:w-8 w-5 h-5 hover:text-primary1 transition" />
+                )}
               </button>
             </div>
           </div>

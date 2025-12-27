@@ -23,6 +23,8 @@ import subCategoryRoutes from "./routes/adminsubcategory.routes.js"
 import productRoutes from "./routes/adminproduct.routes.js"
 import sizeRoutes from "./routes/size.routes.js"
 import colorRoutes from "./routes/color.routes.js"
+import cartRoutes from "./routes/cart.routes.js"
+import wishListRoutes from "./routes/wishlist.routes.js"
 app.use("/api/colors", colorRoutes);
 app.use("/api/sizes", sizeRoutes);
 app.use("/api/user", userRouter)
@@ -30,4 +32,6 @@ app.use("/api/admin", adminRouter)
 app.use("/api/categories", categoryRoutes);
 app.use("/api/subcategories", subCategoryRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/wishlist", wishListRoutes);
 export {app}
