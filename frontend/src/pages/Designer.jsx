@@ -3,7 +3,7 @@ import * as fabric from "fabric";
 import html2canvas from "html2canvas";
 import JSZip from "jszip";
 import { gsap } from "gsap";
-
+import "./Designer.css"
 const SIDE_CONFIG = {
   front: { key: "Front", label: "Front", bgImage: "/Black/Front.jpg" },
   back: { key: "Back", label: "Back", bgImage: "/Black/Back.jpg" },
@@ -1611,13 +1611,8 @@ function handleImageChange(colorObj) {
 
   return (
     <div
-      className="designerLayout"
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-        background: "#ffffff",
-        borderColor: "red",
-      }}
+      className="designerLayout mt-35"
+      
     >
       {/* LEFT PANEL */}
       <div

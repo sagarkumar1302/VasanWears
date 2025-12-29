@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useAuthStore } from "../store/useAuthStore";
+import { useAdminAuthStore } from "../store/useAdminAuthStore";
 export const API = axios.create({
   baseURL: `${import.meta.env.VITE_BACKEND_URL}/api`,
   withCredentials: true,
@@ -149,7 +149,7 @@ API.interceptors.response.use(
         await API.post("/admin/refresh-token");
         return API(originalRequest);
       } catch {
-        useAuthStore.getState().logout();
+        useAdminAuthStore.getState().logout();
       }
     }
 

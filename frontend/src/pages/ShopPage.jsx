@@ -12,7 +12,7 @@ import Banner from "../components/Common/Banner";
 import CustomSortDropdown from "../components/Common/CustomSortDropdown";
 import { toggleWishlistApi, getWishlistApi } from "../utils/wishlistApi";
 import toast from "react-hot-toast";
-
+import { useNavigate } from "react-router-dom";
 import {
   RiArrowDownSLine,
   RiArrowUpSLine,
@@ -29,6 +29,7 @@ import Loader from "../components/Common/Loader";
 const ShopPage = () => {
   // --- MAIN FILTER STATE (Applied to finalProducts) ---
   const productsGridRef = useRef(null);
+  const navigate = useNavigate();
   const [wishlistProductIds, setWishlistProductIds] = useState([]);
   const [wishlistLoadingId, setWishlistLoadingId] = useState(null);
 

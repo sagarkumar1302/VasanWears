@@ -53,14 +53,17 @@ const App = () => {
       try {
         const userRes = await currentUserApi();
         setUser(userRes.data);
-      } catch {}
+      } catch (err) {
+        setUser(null);
+      } finally {
+        setAuthChecked(); // ✅ move here
+      }
 
       try {
         const adminRes = await adminCurrentUserApi();
         useAdminAuthStore.getState().setUser(adminRes.data);
       } catch {}
 
-      setAuthChecked();
       setAdminAuthChecked();
     };
 
@@ -102,7 +105,7 @@ const App = () => {
               <Route index element={<MyAccountRightSide />} />
             </Route>
           </Route>
-        </Route>{" "}
+        </Route>
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
