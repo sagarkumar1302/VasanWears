@@ -379,8 +379,12 @@ const SingleProductPage = () => {
           </span>
           <span>&gt;</span>
           <span> {product?.category?.name}</span>
-          <span>&gt;</span>
-          <span>{product?.subCategory?.name ?? ""}</span>
+          {product?.subCategory && (
+            <>
+              <span>&gt;</span>
+              <span>{product?.subCategory?.name}</span>
+            </>
+          )}
           <span>&gt;</span>
           <span>{product.title}</span>
         </div>
@@ -559,9 +563,13 @@ const SingleProductPage = () => {
             </div>
             <div className="flex flex-wrap gap-3 mt-4">
               <Link
-                to="/design"
+                to={`/design?category=${product?.category?._id}${
+                  product?.subCategory
+                    ? `&subcategory=${product.subCategory._id}`
+                    : ""
+                }`}
                 className="py-2.5 px-8 rounded-xl font-semibold text-primary3 
-    transition-all duration-300 btn-slide2 md:text-base text-sm"
+transition-all duration-300 btn-slide2 md:text-base text-sm"
               >
                 Design Your Tshirt
               </Link>

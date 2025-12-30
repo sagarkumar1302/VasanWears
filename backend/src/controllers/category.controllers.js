@@ -89,8 +89,8 @@ const getAllCategories = asyncHandler(async (req, res) => {
   const categories = await Category.find({ published: true })
     .sort({ createdAt: -1 }).lean()
     .populate("author", "-password -refreshToken")
-    // .populate("subCategories") // uncomment if subCategories are refs
-    // .lean()
+  // .populate("subCategories") // uncomment if subCategories are refs
+  // .lean()
 
   res.status(200).json(
     new ApiResponse(
@@ -212,5 +212,11 @@ const getAllCategoriesWithSubWebsite = asyncHandler(async (req, res) => {
     new ApiResponse(200, "Categories fetched successfully", categories)
   );
 });
-
-export { createCategory, updateCategory, deleteCategory, getAllCategories, getAllCategoriesWithSub, getAllCategoriesWithSubWebsite };
+const findCategoryById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const category = await Category.findById(id);
+  res.status(200).json(
+    new ApiResponse(200, "Category fetched successfully", category)
+  );
+});
+export { createCategory, updateCategory, deleteCategory, getAllCategories, getAllCategoriesWithSub, getAllCategoriesWithSubWebsite, findCategoryById };

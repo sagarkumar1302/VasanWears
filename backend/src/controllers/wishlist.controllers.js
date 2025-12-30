@@ -52,26 +52,26 @@ const toggleWishlist = async (req, res) => {
  */
 const getWishlist = async (req, res) => {
     try {
-        const wishlist = await WishList.findOne({ user: req.user._id });
+        const wishlist = await WishList.findOne({ user: req.user._id })
+            .populate("items.product");
 
         const productIds = wishlist
-            ? wishlist.items.map((item) => item.product.toString())
+            ? wishlist.items.map((item) => item.product._id.toString())
             : [];
 
-        return res
-            .status(200)
-            .json(
-                new ApiResponse(200, "Wishlist fetched", {
-                    productIds,
-                    items: wishlist?.items || [],
-                })
-            );
+        return res.status(200).json(
+            new ApiResponse(200, "Wishlist fetched", {
+                productIds,
+                items: wishlist?.items || [],
+            })
+        );
     } catch (error) {
         return res
             .status(500)
             .json(new ApiResponse(500, error.message));
     }
 };
+
 
 
 export { toggleWishlist, getWishlist };

@@ -29,6 +29,7 @@
     "react-toastify": "^11.0.5",
     "recharts": "^3.5.1",
     "tailwindcss": "^4.1.17",
+    "three": "^0.182.0",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

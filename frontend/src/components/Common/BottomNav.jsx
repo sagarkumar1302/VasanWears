@@ -7,8 +7,10 @@ import {
   RiShoppingBagLine,
 } from "@remixicon/react";
 import { Link } from "react-router-dom";
+import { useCartStore } from "../../store/cartStore";
 
 const BottomNav = () => {
+  const totalQty = useCartStore((s) => s.totalQty);
   return (
     <div className="fixed bottom-0 left-0 w-full bg-white shadow-md py-2.5 px-4 flex justify-around items-center md:hidden z-50">
       {/* Shop */}
@@ -38,7 +40,7 @@ const BottomNav = () => {
 
         {/* Cart Badge */}
         <span className="absolute -top-1 -right-1 bg-primary5 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-          5
+          {totalQty}
         </span>
       </div>
     </div>

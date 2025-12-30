@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createCategory,
   deleteCategory,
+  findCategoryById,
   getAllCategories,
   getAllCategoriesWithSub,
   getAllCategoriesWithSubWebsite,
@@ -32,6 +33,7 @@ router.get("/catwsforweb", getAllCategoriesWithSubWebsite);
 
 // DELETE CATEGORY
 router.delete("/:id", adminVerifyJwt, deleteCategory);
+router.get("/:id", findCategoryById);
 //WEBSITE ONLY NO AUTH
 router.get("/", getAllCategories);
 export default router;

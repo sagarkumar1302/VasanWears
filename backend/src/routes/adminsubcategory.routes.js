@@ -1,7 +1,7 @@
 // routes/subcategory.routes.js
 import { Router } from "express";
 import adminVerifyJwt from "../middleware/adminAuth.middleware.js";
-import { createSubCategory, deleteSubCategory, updateSubCategory } from "../controllers/subcategory.controllers.js";
+import { createSubCategory, deleteSubCategory, findSubCategoryById, updateSubCategory } from "../controllers/subcategory.controllers.js";
 
 
 const router = Router();
@@ -15,5 +15,6 @@ router.put("/:id", adminVerifyJwt, updateSubCategory);
 
 // DELETE SUBCATEGORY
 router.delete("/:id", adminVerifyJwt, deleteSubCategory);
+router.get("/:id", findSubCategoryById);
 
 export default router;

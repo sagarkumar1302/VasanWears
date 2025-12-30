@@ -5,23 +5,15 @@ import { useCartStore } from "../store/cartStore";
 import Loader from "../components/Common/Loader";
 
 const CartPage = () => {
-  const {
-    items,
-    subtotal,
-    loading,
-    fetchCart,
-    updateQty,
-    removeItem,
-  } = useCartStore();
+  const { items, subtotal, loading, fetchCart, updateQty, removeItem } =
+    useCartStore();
 
   useEffect(() => {
     fetchCart();
   }, []);
 
   if (loading) {
-    return (
-      <Loader/>
-    );
+    return <Loader />;
   }
 
   return (
@@ -35,9 +27,7 @@ const CartPage = () => {
 
         {items.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-lg font-medium mb-4">
-              Your cart is empty 🛒
-            </p>
+            <p className="text-lg font-medium mb-4">Your cart is empty 🛒</p>
             <Link
               to="/shop"
               className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
@@ -71,30 +61,28 @@ const CartPage = () => {
                     >
                       ×
                     </button>
+                    <Link
+                      to={`/shop/${item.product?._id}/${item.product?.slug}?variant=${item.variant}&size=${item.size?._id}`}
+                      className="flex gap-4"
+                    >
+                      <img
+                        src={item.product?.featuredImage}
+                        alt={item.product?.title}
+                        className="w-20 h-24 object-cover rounded-md"
+                      />
 
-                    <img
-                      src={item.product?.featuredImage}
-                      alt={item.product?.title}
-                      className="w-20 h-24 object-cover rounded-md"
-                    />
+                      <div className="space-y-1 text-primary5">
+                        <h3 className="font-semibold">{item.product?.title}</h3>
 
-                    <div className="space-y-1 text-primary5">
-                      <h3 className="font-semibold">
-                        {item.product?.title}
-                      </h3>
+                        <p className="text-sm">Color: {item.color?.name}</p>
 
-                      <p className="text-sm">
-                        Color: {item.color?.name}
-                      </p>
+                        <p className="text-sm">
+                          Size: {item.size?.name || "Free Size"}
+                        </p>
 
-                      <p className="text-sm">
-                        Size: {item.size?.name || "Free Size"}
-                      </p>
-
-                      <p className="text-sm">
-                        Delivery: 5–7 business days
-                      </p>
-                    </div>
+                        <p className="text-sm">Delivery: 5–7 business days</p>
+                      </div>
+                    </Link>
                   </div>
 
                   {/* PRICE */}
@@ -106,9 +94,7 @@ const CartPage = () => {
                   <div className="col-span-2 flex justify-center">
                     <div className="flex items-center bg-primary3 rounded-full overflow-hidden p-1">
                       <button
-                        onClick={() =>
-                          updateQty(item._id, item.quantity - 1)
-                        }
+                        onClick={() => updateQty(item._id, item.quantity - 1)}
                         disabled={item.quantity <= 1}
                         className="px-3 py-1 text-lg cursor-pointer disabled:opacity-40"
                       >
@@ -123,9 +109,7 @@ const CartPage = () => {
                       />
 
                       <button
-                        onClick={() =>
-                          updateQty(item._id, item.quantity + 1)
-                        }
+                        onClick={() => updateQty(item._id, item.quantity + 1)}
                         className="px-3 py-1 text-lg cursor-pointer"
                       >
                         +
@@ -143,9 +127,7 @@ const CartPage = () => {
 
             {/* ---------------- PRICE SUMMARY ---------------- */}
             <div className="bg-white p-6 rounded-lg shadow h-fit w-full sticky top-35">
-              <h4 className="text-lg font-semibold mb-4">
-                Price Details
-              </h4>
+              <h4 className="text-lg font-semibold mb-4">Price Details</h4>
 
               <div className="space-y-3 text-sm mb-6">
                 <div className="flex justify-between">

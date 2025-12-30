@@ -1,60 +1,103 @@
-import React, { useState, useRef } from "react";
-import {
-  RiStarSmileLine,
-  RiHeartLine,
-  RiShoppingBagLine,
-  RiSearch2Line,
-} from "@remixicon/react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
+import { RiHeartLine, RiHeartFill } from "@remixicon/react";
 import gsap from "gsap";
-import { PRODUCTS } from "../../utils/Products";
-import slugify from "../../utils/Slug";
 import { Link } from "react-router-dom";
-const TABS = ["Best Selling", "New Arrival", "Great Offers", "sagarr", "New"];
+import {
+  getAllProductsForWebsite,
+  getAllCategoriesForWebsite,
+} from "../../utils/productApi";
+import Loader from "../Common/Loader";
 
 const ProductShowcase = () => {
-  const [activeTab, setActiveTab] = useState("Best Selling");
-  const filteredProducts = PRODUCTS.filter(
-    (item) => item.category === activeTab
-  );
+  const [activeCategory, setActiveCategory] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        const [prodRes, catRes] = await Promise.all([
+          getAllProductsForWebsite(),
+          getAllCategoriesForWebsite(),
+        ]);
+
+        setProducts(prodRes.data || []);
+        setCategories(catRes.data || []);
+
+        // 👇 set first category as default tab
+        if (catRes.data?.length) {
+          setActiveCategory(catRes.data[0]._id);
+        }
+      } catch (err) {
+        console.error("Showcase fetch error", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  /** 🔥 FILTER PRODUCTS BY CATEGORY */
+  const filteredProducts = useMemo(() => {
+    if (!activeCategory) return [];
+    return products.filter((p) => p.category?._id === activeCategory);
+  }, [products, activeCategory]);
+
+  if (loading) return <Loader />;
+
   return (
     <div className="px-5 w-full pb-5 pt-8 md:py-20 bg-white">
-      {/* Heading */}
       <div className="container mx-auto">
+        {/* Heading */}
         <div className="text-center mb-5 md:mb-12">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-            Lorem Ipsum Dolor
+            Featured Products
           </h2>
-          <p className="text-primary5 md:max-w-2xl w-full mx-auto mt-3">
-            Lorem ipsum det, cowec tetuec tetur duis necgi duis necgi det,
-            consec eturlagix adipiscinig eliet.
+          <p className="text-primary5 md:max-w-2xl mx-auto mt-3">
+            Discover our latest collections handpicked for you.
           </p>
 
-          {/* Tabs */}
-          <div className="flex md:justify-center mt-6 gap-4 overflow-x-auto w-full md:py-0 py-2 md:px-0 px-2 scrollbar-hide">
-            {TABS.map((tab) => (
+          {/* 🔥 CATEGORY TABS */}
+          <div className="flex md:justify-center mt-6 gap-4 overflow-x-auto py-2 scrollbar-hide">
+            {categories.map((cat) => (
               <button
-                key={tab}
-                onClick={() => {
-                  setActiveTab(tab);
-                  console.log(activeTab);
-                }}
-                className={`px-5 md:px-6 py-2.5 rounded-full text-sm md:text-[15px] font-bold transition-all cursor-pointer whitespace-nowrap
+                key={cat._id}
+                onClick={() => setActiveCategory(cat._id)}
+                className={`px-5 md:px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap
                 ${
-                  activeTab === tab
+                  activeCategory === cat._id
                     ? "bg-primary1 text-primary2"
                     : "bg-primary3/60 hover:bg-primary3"
                 }`}
               >
-                {tab}
+                {cat.name}
               </button>
             ))}
           </div>
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 md:gap-4 gap-5 ">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} data={product} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {filteredProducts.slice(0, 8).map((product) => (
+            <ProductCard
+              key={product._id}
+              data={{
+                id: product._id,
+                title: product.title,
+                slug: product.slug,
+                image: product.featuredImage,
+                hoverImage: product.hoverImage || product.featuredImage,
+                price: `₹${product.variants?.[0]?.salePrice ?? 0}`,
+                oldPrice: product.variants?.[0]?.regularPrice
+                  ? `₹${product.variants[0].regularPrice}`
+                  : null,
+                tags: product.tags || [],
+              }}
+            />
           ))}
         </div>
       </div>
@@ -64,7 +107,7 @@ const ProductShowcase = () => {
 
 // ---------------- PRODUCT CARD -----------------
 
-const ProductCard = ({ data }) => {
+const ProductCard = ({ data, isWishlisted, onToggleWishlist, loading }) => {
   const imgRef = useRef(null);
   const hoverImgRef = useRef(null);
   const sideIconRef = useRef(null);
@@ -109,13 +152,14 @@ const ProductCard = ({ data }) => {
 
   return (
     <div
-      className="relative group cursor-pointer duration-300 hover:shadow-xl p-4 rounded-xl hover:-translate-y-3"
+      // className="relative group cursor-pointer hover:scale-105 duration-300 hover:shadow-xl p-4 rounded-xl hover:-translate-y-3 transform-gpu"
+      className="product-card relative group cursor-pointer duration-300 hover:shadow-xl p-2 md:p-4 rounded-xl hover:-translate-y-3 transform-gpu"
       onMouseEnter={handleHoverIn}
       onMouseLeave={handleHoverOut}
     >
-      <Link to={`/shop/${data.id}/${slugify(data.title)}`}>
+      <Link to={`/shop/${data.id}/${data.slug}`}>
         {/* Tags */}
-        <div className="absolute top-7 left-7 flex flex-col gap-1 z-10">
+        <div className="absolute top-4 left-4 md:top-7 md:left-7 flex flex-col gap-1 z-10">
           {data.tags.map((t, i) => (
             <span
               key={i}
@@ -128,7 +172,7 @@ const ProductCard = ({ data }) => {
 
         {/* Image Wrapper */}
         <div className="relative rounded-xl overflow-hidden">
-          <img ref={imgRef} src={data.image} className="w-full object-cover" />
+          <img ref={imgRef} src={data.image} className="w-full  object-cover" />
 
           <img
             ref={hoverImgRef}
@@ -138,31 +182,38 @@ const ProductCard = ({ data }) => {
 
           {/* Icons */}
           <div
-            className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-0"
+            className="absolute right-3 top-1/4 -translate-y-1/2 flex flex-col gap-3 opacity-0"
             ref={sideIconRef}
           >
-            {[
-              RiStarSmileLine,
-              RiHeartLine,
-              RiShoppingBagLine,
-              RiSearch2Line,
-            ].map((Icon, i) => (
-              <div
-                key={i}
-                className={`cursor-pointer translate-y-2 w-10 h-10 bg-white shadow-md rounded-full flex items-center justify-center hover:bg-primary1 hover:text-white transition-all}`}
-              >
-                <Icon size={18} />
-              </div>
-            ))}
+            <div
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleWishlist();
+              }}
+              className="cursor-pointer translate-y-2 w-7 h-7 md:w-10 md:h-10 
+             bg-white shadow-md rounded-full flex items-center justify-center 
+             hover:bg-primary5 transition-all hover:text-white text-primary5"
+            >
+              {loading ? (
+                <span className="w-4 h-4 border-2 border-primary5 border-t-transparent rounded-full animate-spin" />
+              ) : isWishlisted ? (
+                <RiHeartFill className="  " size={18} />
+              ) : (
+                <RiHeartLine className="" size={18} />
+              )}
+            </div>
           </div>
         </div>
 
         {/* Product Details */}
-        <h3 className="mt-4 text-base md:text-xl font-bold product-title">
+        <h3 className="mt-4 text-base md:text-lg font-bold product-title">
           {data.title}
         </h3>
         <p className="text-gray-700 mt-1">
-          <span className="font-bold text-primary5 text-lg">{data.price}</span>{" "}
+          <span className="font-bold text-primary5 text-base md:text-lg">
+            {data.price}
+          </span>{" "}
           {data.oldPrice && (
             <del className="ml-2 text-gray-400">{data.oldPrice}</del>
           )}

@@ -5,11 +5,14 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import sendEmail from "../utils/sendEmail.js";
 import { User } from "../model/user.model.js";
 
+import razorpay from "../utils/razorpay.js";
+import crypto from "crypto";
+
 export const placeOrder = async (req, res) => {
   try {
     const userId = req.user._id;
-    const user = await  User.findById(userId);
-    
+    const user = await User.findById(userId);
+
     const {
       shippingAddress,
       paymentMethod,
@@ -23,7 +26,6 @@ export const placeOrder = async (req, res) => {
         .json(new ApiResponse(400, "Missing required fields"));
     }
 
-    /* ================= GET CART ================= */
     const cart = await Cart.findOne({ user: userId }).populate(
       "items.product items.color items.size"
     );
@@ -34,7 +36,6 @@ export const placeOrder = async (req, res) => {
         .json(new ApiResponse(400, "Cart is empty"));
     }
 
-    /* ================= BUILD ORDER ITEMS ================= */
     const orderItems = cart.items.map((item) => ({
       product: item.product._id,
       variant: item.variant,
@@ -49,7 +50,6 @@ export const placeOrder = async (req, res) => {
     const subtotal = cart.subtotal;
     const totalAmount = subtotal - discount + deliveryCharge;
 
-    /* ================= CREATE ORDER ================= */
     const order = await Order.create({
       user: userId,
       items: orderItems,
@@ -58,64 +58,88 @@ export const placeOrder = async (req, res) => {
       deliveryCharge,
       totalAmount,
       paymentMethod,
-      paymentStatus: paymentMethod === "COD" ? "PENDING" : "PENDING",
+      paymentStatus: "PENDING",
       orderStatus: "PLACED",
       shippingAddress,
     });
-    console.log("User email ", user.email);
-    
-    await sendEmail({
-      email: user.email,
-      subject: "Order Placed Successfully - Vasan Wears",
-      title: "Thank you for your order!",
-      message: `
-        Hi ${user.fullName},<br/><br/>
-        Your order <b>#${order._id}</b> has been placed successfully.<br/>
-        We’ll notify you once it’s shipped.
-      `,
-      buttonText: "View Order",
-      url: `${process.env.FRONTEND_URL}/orders/${order._id}`,
+
+    /* ================= COD ================= */
+    if (paymentMethod === "COD") {
+      const payment = await Payment.create({
+        user: userId,
+        order: order._id,
+        method: "COD",
+        amount: totalAmount,
+        status: "PENDING",
+      });
+
+      order.paymentId = payment._id;
+      await order.save();
+
+      cart.items = [];
+      cart.subtotal = 0;
+      await cart.save();
+
+      await sendEmail({
+        email: user.email,
+        subject: "Order Placed - Vasan Wears",
+        title: "Order Confirmed 🛍️",
+        message: `Your order <b>#${order._id}</b> has been placed successfully.`,
+        buttonText: "View Order",
+        buttonLink: `${process.env.FRONTEND_URL}/orders/${order._id}`,
+      });
+      await sendEmail({
+        email: process.env.EMAIL_USER,
+        subject: "New COD Order - Vasan Wears",
+        title: "New Order Received 📦",
+        message: `
+          <b>Order ID:</b> ${order._id}<br/>
+          <b>Customer:</b> ${user.fullName} (${user.email})<br/>
+          <b>Total:</b> ₹${order.totalAmount}<br/>
+          <b>Payment:</b> COD
+        `,
+        buttonText: "View Order",
+        buttonLink: `${process.env.ADMIN_PANEL_URL}/orders/${order._id}`,
+      });
+
+      return res.status(201).json(
+        new ApiResponse(201, "COD order placed", { order })
+      );
+    }
+
+    /* ================= ONLINE ================= */
+    const razorpayOrder = await razorpay.orders.create({
+      amount: totalAmount * 100,
+      currency: "INR",
+      receipt: `order_${order._id}`,
     });
-    await sendEmail({
-      email: process.env.EMAIL_USER,
-      subject: "New Order Received - Vasan Wears",
-      title: "New Order Alert 🚨",
-      message: `
-    A new order has been placed.<br/><br/>
-    <b>Order ID:</b> ${order._id}<br/>
-    <b>Customer:</b> ${user.fullName} (${user.email})<br/>
-    <b>Total:</b> ₹${order.totalAmount}
-  `,
-      buttonText: "View in Admin Panel",
-      url: `${process.env.ADMIN_PANEL_URL}/orders/${order._id}`,
-    });
-    /* ================= CREATE PAYMENT ================= */
+
     const payment = await Payment.create({
       user: userId,
       order: order._id,
-      method: paymentMethod,
+      method: "ONLINE",
       amount: totalAmount,
-      status: paymentMethod === "COD" ? "PENDING" : "PENDING",
+      gateway: "RAZORPAY",
+      gatewayOrderId: razorpayOrder.id,
+      status: "PENDING",
     });
 
     order.paymentId = payment._id;
     await order.save();
 
-    /* ================= CLEAR CART ================= */
-    cart.items = [];
-    cart.subtotal = 0;
-    await cart.save();
-
     return res.status(201).json(
-      new ApiResponse(201, "Order placed successfully", {
+      new ApiResponse(201, "Razorpay order created", {
         order,
-        payment,
+        razorpayOrder,
+        paymentId: payment._id,
       })
     );
   } catch (error) {
     res.status(500).json(new ApiResponse(500, error.message));
   }
 };
+
+
 export const getMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id })

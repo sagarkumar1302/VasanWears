@@ -101,4 +101,11 @@ const deleteSubCategory = asyncHandler(async (req, res) => {
   res.json(new ApiResponse(200, "SubCategory deleted successfully"));
 });
 
-export { createSubCategory, updateSubCategory, deleteSubCategory };
+const findSubCategoryById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const subCategory = await SubCategory.findById(id);
+  res.status(200).json(
+    new ApiResponse(200, "SubCategory fetched successfully", subCategory)
+  );
+});
+export { createSubCategory, updateSubCategory, deleteSubCategory, findSubCategoryById };

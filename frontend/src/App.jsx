@@ -44,6 +44,9 @@ import SizePage from "./components/Admin/pages/SizePage";
 import ColorPage from "./components/Admin/pages/ColorPage";
 import ForgotPassword from "./components/Admin/pages/ForgotPassword";
 import ResetPassword from "./components/Admin/pages/ResetPassword";
+import TermsAndCondition from "./pages/TermsAndCondition";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CancellationPolicy from "./pages/CancellationPolicy";
 const App = () => {
   const setUser = useAuthStore((s) => s.setUser);
   const setAuthChecked = useAuthStore((s) => s.setAuthChecked);
@@ -84,6 +87,9 @@ const App = () => {
           <Route path="/blogs/:blogId" element={<SingleBlogPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/terms-and-condition" element={<TermsAndCondition />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/refund-and-cancellation" element={<CancellationPolicy />} />
 
           <Route path="*" element={<NotFound />} />
 

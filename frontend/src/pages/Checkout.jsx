@@ -134,7 +134,7 @@ const Checkout = () => {
       paymentMethod: "ONLINE",
     });
 
-    const { razorpayOrder, order } = res.data;
+    const { razorpayOrder, order, paymentId } = res.data;
 
     // 2️⃣ Open Razorpay
     const options = {
@@ -145,16 +145,27 @@ const Checkout = () => {
       name: "Vasan Wears",
       description: "Order Payment",
       handler: async (response) => {
-        await verifyPaymentApi({
-          orderId: order._id,
-          razorpay_order_id: response.razorpay_order_id,
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_signature: response.razorpay_signature,
-        });
+        try {
+          await verifyPaymentApi({
+            paymentId,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
 
-        navigate("/thank-you", {
-          state: { orderId: order._id },
-        });
+          navigate("/thank-you", {
+            state: { orderId: order._id },
+          });
+        } catch (err) {
+          alert("Payment verification failed");
+          setPlacingOrder(false);
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          alert("Payment cancelled");
+          setPlacingOrder(false); // 🔑 VERY IMPORTANT
+        },
       },
       theme: { color: "#000000" },
     };
@@ -390,8 +401,9 @@ const Checkout = () => {
               <button
                 onClick={handlePlaceOrder}
                 disabled={placingOrder}
-                className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
-  transition-all duration-300 btn-slide w-full mt-6 cursor-pointer"
+                className={`py-2.5 px-8 rounded-xl font-semibold w-full mt-6
+    ${placingOrder ? "opacity-60 cursor-not-allowed" : "btn-slide"}
+  `}
               >
                 {placingOrder ? "Placing Order..." : "Place Order"}
               </button>
