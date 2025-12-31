@@ -21,11 +21,7 @@ const Footer = () => {
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast.error("Enter a valid email address");
-      return;
-    }
+    
 
     try {
       setLoading(true);
@@ -160,6 +156,7 @@ const Footer = () => {
                 href="https://youtube.com/@vasanwears"
                 target="_blank"
                 rel="noopener noreferrer"
+                className="hover:text-primary1"
               >
                 <RiYoutubeFill size={22} />
               </a>
@@ -167,6 +164,7 @@ const Footer = () => {
                 href="https://x.com/VasanWears"
                 target="_blank"
                 rel="noopener noreferrer"
+                className="hover:text-primary1"
               >
                 <RiTwitterXLine size={22} />
               </a>
@@ -174,6 +172,7 @@ const Footer = () => {
                 href="https://www.facebook.com/profile.php?id=61585672538949"
                 target="_blank"
                 rel="noopener noreferrer"
+                className="hover:text-primary1"
               >
                 <RiFacebookCircleFill size={22} />
               </a>
@@ -181,6 +180,7 @@ const Footer = () => {
                 href="https://www.instagram.com/vasan_wears/"
                 target="_blank"
                 rel="noopener noreferrer"
+                className="hover:text-primary1"
               >
                 <RiInstagramFill size={22} />
               </a>

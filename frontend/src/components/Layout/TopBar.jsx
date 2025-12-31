@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { RiInstagramLine, RiTwitterXLine } from "@remixicon/react";
+import { RiFacebookCircleFill, RiInstagramFill, RiInstagramLine, RiTwitterXLine, RiYoutubeFill } from "@remixicon/react";
 import { Link } from "react-router-dom";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -31,12 +31,38 @@ const TopBar = ({ visible }) => {
     >
       <div className="container mx-auto flex justify-between">
         <div className="icons md:flex items-center space-x-4 hidden">
-          <Link to="#">
-            <RiInstagramLine />
-          </Link>
-          <Link to="#">
-            <RiTwitterXLine />
-          </Link>
+          <a
+            href="https://youtube.com/@vasanwears"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary1"
+          >
+            <RiYoutubeFill size={22} />
+          </a>
+          <a
+            href="https://x.com/VasanWears"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary1"
+          >
+            <RiTwitterXLine size={22} />
+          </a>
+          <a
+            href="https://www.facebook.com/profile.php?id=61585672538949"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary1"
+          >
+            <RiFacebookCircleFill size={22} />
+          </a>
+          <a
+            href="https://www.instagram.com/vasan_wears/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary1"
+          >
+            <RiInstagramFill size={22} />
+          </a>
         </div>
         <div className="middleContent text-center grow">
           <span>🔥 Free shipping on all U.S. orders $50+</span>

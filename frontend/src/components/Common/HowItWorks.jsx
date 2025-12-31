@@ -1,4 +1,5 @@
 import React from "react";
+import enjoyVideo from "../../assets/videos/EnjoyYourProduct.mp4";
 
 const HowItWorks = () => {
   return (
@@ -23,7 +24,7 @@ const HowItWorks = () => {
           {/* Step 1 */}
           <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center md:mb-20 mb-6">
             <img
-              src="./images/slider2.jpg"
+              src="./AddCustomDesign.jpeg"
               className="rounded-xl shadow-md"
               alt="step"
             />
@@ -68,11 +69,12 @@ const HowItWorks = () => {
 
           {/* Step 3 */}
           <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center">
-            <img
+            {/* <img
               src="./images/htw2.jpg"
               className="rounded-xl shadow-md"
               alt="step"
-            />
+            /> */}
+            <video src={enjoyVideo} loop muted autoPlay />
 
             <div>
               <div className="w-15 h-15 flex items-center justify-center bg-linear-to-br from-primary4 to-primary3 text-primary2 text-2xl rounded-full mb-4 font-semibold">

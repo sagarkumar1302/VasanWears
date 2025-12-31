@@ -5,7 +5,7 @@ export const API = axios.create({
 });
 export const subscribeNewsletterApi = async (email) => {
     try {
-        const res = await API.post("/subscribers/subscribe", { email });
+        const res = await API.post("/subscribers/subscribe", {email});
         return res.data;
     } catch (err) {
         console.error("Subscribe Newsletter Error:", err);

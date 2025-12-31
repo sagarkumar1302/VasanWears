@@ -79,6 +79,9 @@ const App = () => {
       <AutoScrollToTop />
       <ScrollToHash />
       <Routes>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/design" element={<Designer />}></Route>
+        </Route>
         <Route element={<UserLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
@@ -90,7 +93,10 @@ const App = () => {
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/terms-and-condition" element={<TermsAndCondition />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/refund-and-cancellation" element={<CancellationPolicy />} />
+          <Route
+            path="/refund-and-cancellation"
+            element={<CancellationPolicy />}
+          />
           <Route path="/contact-us" element={<ContactUs />} />
 
           <Route path="*" element={<NotFound />} />

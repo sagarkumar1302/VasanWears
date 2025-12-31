@@ -40,5 +40,6 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishListRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/subscribers", subscriberRoutes);
 app.use("/api/contact", contactRoutes);
 export {app}

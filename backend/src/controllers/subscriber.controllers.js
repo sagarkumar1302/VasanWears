@@ -9,7 +9,8 @@ export const subscribeNewsletter = async (req, res) => {
   try {
     let { email } = req.body;
     
-
+    console.log(email);
+    
 
     if (!email) {
       return res

@@ -1,13 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import * as fabric from "fabric";
 import html2canvas from "html2canvas";
 import JSZip from "jszip";
 import { gsap } from "gsap";
 import * as THREE from "three";
-import { useSearchParams } from "react-router-dom";
-const UPLOAD_COPYRIGHT_ACK_KEY = "designer_upload_copyright_ack_v1";
-import { getCategoryByIdApi } from "../utils/categoryApi";
+import { getAllCategoriesForWebsite } from "../utils/productApi";
 import { getSubcategoryByIdApi } from "../utils/subCategoryApi";
+
+ 
+
+const CUSTOM_FONTS_DB_NAME = "designer_custom_fonts_db_v1";
+const CUSTOM_FONTS_DB_VERSION = 1;
+const CUSTOM_FONTS_STORE = "fonts";
+
 const SIDE_CONFIG = {
   front: {
     key: "Front",
@@ -17,34 +23,6 @@ const SIDE_CONFIG = {
   back: { key: "Back", label: "Back", bgImage: "/Men/Tshirt/Black/Back.jpg" },
   // left: { key: "left", label: "Left", bgImage: "/Black/left.png" },
   // right: { key: "right", label: "Right", bgImage: "/Black/right.png" },
-};
-const resolveClothConfig = (category, subCategory) => {
-  // Example assumptions:
-  // category.slug = "men" | "women"
-  // subCategory.slug = "tshirt" | "hoodie" | "crop-hoodie" | "sweatshirt"
-
-  if (!category) return null;
-
-  const catSlug = category?.slug?.toLowerCase();
-  const subSlug = subCategory?.slug?.toLowerCase();
-
-  // MEN
-  if (catSlug === "hoodie") return "hoodie";
-  if (catSlug === "sweatshirt") return "sweatshirt";
-  if (catSlug === "men") {
-    if (subSlug === "hoodie") return "hoodie";
-    if (subSlug === "sweatshirt") return "sweatshirt";
-    return "men"; // default men t-shirt
-  }
-
-  // WOMEN
-  if (catSlug === "women") {
-    if (subSlug === "crop-hoodie") return "womenCropHoodie";
-    if (subSlug === "hoodie") return "hoodie";
-    return "women"; // default women t-shirt
-  }
-
-  return null;
 };
 
 const CLOTH_CONFIG = {
@@ -251,7 +229,7 @@ const clothKeyFromExternalProductKey = (productKey) => {
 };
 
 const Designer = ({ productKey } = {}) => {
-  const AUTOSAVE_KEY = "designer_autosave_v1";
+  
   const NO_SCROLLBAR =
     "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0";
 
@@ -268,21 +246,27 @@ const Designer = ({ productKey } = {}) => {
 
   const historyRef = useRef({});
   const commitTimerRef = useRef(0);
-  const autosaveWriteTimerRef = useRef(0);
+  
   const clothRef = useRef("men");
   const sideRef = useRef("Front");
   const selectedColorRef = useRef("Black");
   const initialCanvasBuiltRef = useRef(false);
-  const autosavePayloadRef = useRef(null);
+  
   const baseSizeRef = useRef({ width: 1800, height: 1200 });
   const textInputRef = useRef(null);
   const fileInputRef = useRef(null);
+  const fontFileInputRef = useRef(null);
   const selectedObjectRef = useRef(null);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [showTextControls, setShowTextControls] = useState(false);
   const [fontColor, setFontColor] = useState("#000000");
   const [fontFamily, setFontFamily] = useState("Arial");
+  const [customFonts, setCustomFonts] = useState([]);
+  const customFontsRef = useRef([]);
+  const customFontBlobUrlsRef = useRef([]);
+  const customFontStyleElRef = useRef(null);
+  const [fontsHydrated, setFontsHydrated] = useState(false);
   const [mockMode, setMockMode] = useState(false);
   const mockImageRef = useRef(null);
   const [currentSide, setCurrentSide] = useState("Front");
@@ -316,10 +300,83 @@ const Designer = ({ productKey } = {}) => {
   const [uploadAcked, setUploadAcked] = useState(false);
   const [copyrightModalOpen, setCopyrightModalOpen] = useState(false);
   const pendingUploadRef = useRef(false);
+  const [abuseModalOpen, setAbuseModalOpen] = useState(false);
+  const pendingAddTextRef = useRef(false);
 
   const [hasSelection, setHasSelection] = useState(false);
 
   const preview3dMountRef = useRef(null);
+
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Map category/subcategory names to internal cloth keys
+  const mapToClothKey = (catName = "", subName = "") => {
+    const cat = String(catName || "").toLowerCase();
+    const sub = String(subName || "").toLowerCase();
+    // Prefer subcategory hints first — they are more specific.
+    if (sub.includes("crop") && sub.includes("hoodie")) return "womenCropHoodie";
+    if (sub.includes("hoodie")) return "hoodie";
+    if (sub.includes("sweatshirt")) return "sweatshirt";
+    if (sub.includes("tshirt") || sub.includes("t-shirt") || sub.includes("tee")) {
+      if (cat.includes("women")) return "women";
+      if (cat.includes("men")) return "men";
+      return "men";
+    }
+
+    // Fall back to broad category name if subcategory gives no hint.
+    if (cat.includes("women")) return "women";
+    if (cat.includes("men")) return "men";
+
+    return "men";
+  };
+
+  // Read query params (category, subcategory) and map to cloth key
+  useEffect(() => {
+    const catId = searchParams.get("category");
+    const subId = searchParams.get("subcategory");
+    if (!catId && !subId) return;
+
+    (async () => {
+      try {
+        let catName = "";
+        let subName = "";
+
+        if (catId) {
+          const catRes = await getAllCategoriesForWebsite();
+          const cats = (catRes && catRes.data) || catRes || [];
+          const found = Array.isArray(cats)
+            ? cats.find((c) => String(c._id) === String(catId))
+            : null;
+          catName = found?.name || "";
+        }
+
+        if (subId) {
+          const subRes = await getSubcategoryByIdApi(subId);
+          const subObj = (subRes && subRes.data) || subRes || {};
+          subName = subObj?.name || "";
+        }
+
+        const key = mapToClothKey(catName, subName);
+        // If the Fabric canvas is already initialized, trigger a proper
+        // cloth change so the canvas background rebuilds immediately.
+        if (canvasReady) {
+          try {
+            await handleClothChange(key);
+          } catch (e) {
+            // fallback to setting state
+            setCloth(key);
+          }
+        } else {
+          setCloth(key);
+        }
+
+        setSelectedColor(getDefaultColorForCloth(key));
+      } catch (e) {
+        // ignore errors and keep defaults
+      }
+    })();
+  }, [searchParams]);
 
   // On mobile, prevent page/container scrolling while interacting with Fabric.
   const isTouchInteractingRef = useRef(false);
@@ -342,10 +399,11 @@ const Designer = ({ productKey } = {}) => {
   };
 
   useEffect(() => {
+    // Read upload acknowledgement from localStorage so the copyright
+    // modal is shown only once per user (browser).
     try {
-      setUploadAcked(
-        window.localStorage.getItem(UPLOAD_COPYRIGHT_ACK_KEY) === "1"
-      );
+      const seen = window.localStorage.getItem("designer_upload_ack_seen");
+      setUploadAcked(!!seen);
     } catch (e) {
       setUploadAcked(false);
     }
@@ -357,18 +415,336 @@ const Designer = ({ productKey } = {}) => {
     } catch (e) {}
   };
 
+  const openFontPicker = () => {
+    try {
+      if (fontFileInputRef.current) fontFileInputRef.current.click();
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    customFontsRef.current = Array.isArray(customFonts) ? customFonts : [];
+  }, [customFonts]);
+
+  const getFontMimeType = (fileName) => {
+    const name = String(fileName || "").toLowerCase();
+    if (name.endsWith(".woff2")) return "font/woff2";
+    if (name.endsWith(".woff")) return "font/woff";
+    if (name.endsWith(".otf")) return "font/otf";
+    if (name.endsWith(".ttf")) return "font/ttf";
+    return "application/octet-stream";
+  };
+
+  const mergeFontsByFamily = (a, b) => {
+    const listA = Array.isArray(a) ? a : [];
+    const listB = Array.isArray(b) ? b : [];
+    const seen = new Set();
+    const out = [];
+    [...listA, ...listB].forEach((item) => {
+      const family = item && item.family ? String(item.family) : "";
+      if (!family) return;
+      const key = family.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({
+        id: item && item.id ? String(item.id) : undefined,
+        family,
+        sourceName: item && item.sourceName ? String(item.sourceName) : "",
+        mime: item && item.mime ? String(item.mime) : "",
+        size: typeof item?.size === "number" ? item.size : undefined,
+      });
+    });
+    return out;
+  };
+
+  const isIndexedDbAvailable = () => {
+    try {
+      return typeof window !== "undefined" && !!window.indexedDB;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const openFontsDb = () => {
+    return new Promise((resolve, reject) => {
+      if (!isIndexedDbAvailable()) {
+        reject(new Error("IndexedDB not available"));
+        return;
+      }
+      let req;
+      try {
+        req = window.indexedDB.open(CUSTOM_FONTS_DB_NAME, CUSTOM_FONTS_DB_VERSION);
+      } catch (e) {
+        reject(e);
+        return;
+      }
+
+      req.onupgradeneeded = () => {
+        try {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(CUSTOM_FONTS_STORE)) {
+            const store = db.createObjectStore(CUSTOM_FONTS_STORE, { keyPath: "id" });
+            try {
+              store.createIndex("ts", "ts", { unique: false });
+            } catch (e) {}
+          }
+        } catch (e) {}
+      };
+
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error || new Error("Failed to open IndexedDB"));
+    });
+  };
+
+  const idbGetAllFonts = async () => {
+    const db = await openFontsDb();
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction(CUSTOM_FONTS_STORE, "readonly");
+        const store = tx.objectStore(CUSTOM_FONTS_STORE);
+        const items = [];
+
+        // Prefer getAll when available.
+        if (typeof store.getAll === "function") {
+          const req = store.getAll();
+          req.onsuccess = () => resolve(Array.isArray(req.result) ? req.result : []);
+          req.onerror = () => resolve([]);
+        } else {
+          const cursorReq = store.openCursor();
+          cursorReq.onsuccess = () => {
+            const cursor = cursorReq.result;
+            if (cursor) {
+              items.push(cursor.value);
+              cursor.continue();
+            } else {
+              resolve(items);
+            }
+          };
+          cursorReq.onerror = () => resolve([]);
+        }
+      } catch (e) {
+        resolve([]);
+      }
+    }).finally(() => {
+      try {
+        db.close();
+      } catch (e) {}
+    });
+  };
+
+  const idbPutFont = async (record) => {
+    const db = await openFontsDb();
+    return new Promise((resolve, reject) => {
+      try {
+        const tx = db.transaction(CUSTOM_FONTS_STORE, "readwrite");
+        const store = tx.objectStore(CUSTOM_FONTS_STORE);
+        store.put(record);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error || new Error("Failed to store font"));
+        tx.onabort = () => reject(tx.error || new Error("Failed to store font"));
+      } catch (e) {
+        reject(e);
+      }
+    }).finally(() => {
+      try {
+        db.close();
+      } catch (e) {}
+    });
+  };
+
+  const idbDeleteFont = async (id) => {
+    const db = await openFontsDb();
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction(CUSTOM_FONTS_STORE, "readwrite");
+        const store = tx.objectStore(CUSTOM_FONTS_STORE);
+        store.delete(String(id));
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+        tx.onabort = () => resolve(false);
+      } catch (e) {
+        resolve(false);
+      }
+    }).finally(() => {
+      try {
+        db.close();
+      } catch (e) {}
+    });
+  };
+
+  const pruneStoredFontsIfNeeded = async () => {
+    // Keep this conservative to avoid bloating the browser storage.
+    const MAX_FONTS = 12;
+    const MAX_TOTAL_BYTES = 40 * 1024 * 1024; // 40MB
+
+    let all = [];
+    try {
+      all = await idbGetAllFonts();
+    } catch (e) {
+      return;
+    }
+    if (!Array.isArray(all) || !all.length) return;
+
+    const sorted = [...all].sort((a, b) => (a?.ts || 0) - (b?.ts || 0));
+    let total = sorted.reduce((sum, r) => sum + (Number(r?.size) || 0), 0);
+
+    const shouldPrune = () =>
+      sorted.length > MAX_FONTS || (total > MAX_TOTAL_BYTES && sorted.length > 1);
+
+    while (shouldPrune()) {
+      const oldest = sorted.shift();
+      if (!oldest || !oldest.id) break;
+      try {
+        await idbDeleteFont(oldest.id);
+      } catch (e) {}
+      total = sorted.reduce((sum, r) => sum + (Number(r?.size) || 0), 0);
+    }
+  };
+
+  const registerCustomFont = async ({ family, blobUrl }) => {
+    const fam = String(family || "");
+    const url = String(blobUrl || "");
+    if (!fam || !url) return false;
+
+    const registerByFontFaceApi = async () => {
+      if (!window.FontFace) return false;
+      if (!document.fonts || !document.fonts.add) return false;
+      const face = new FontFace(fam, `url(${url})`);
+      const loaded = await face.load();
+      document.fonts.add(loaded);
+      return true;
+    };
+
+    const registerByStyleTag = () => {
+      let styleEl = customFontStyleElRef.current;
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.setAttribute("data-designer-custom-fonts", "1");
+        document.head.appendChild(styleEl);
+        customFontStyleElRef.current = styleEl;
+      }
+      const familyCss = escapeCssString(fam);
+      const urlCss = escapeCssString(url);
+      styleEl.textContent = `${styleEl.textContent || ""}\n@font-face {\n  font-family: \"${familyCss}\";\n  src: url(\"${urlCss}\");\n  font-display: swap;\n}`;
+      return true;
+    };
+
+    try {
+      let registered = false;
+      try {
+        registered = await registerByFontFaceApi();
+      } catch (e) {
+        registered = false;
+      }
+      if (!registered) registerByStyleTag();
+
+      try {
+        if (document.fonts && document.fonts.load) {
+          await document.fonts.load(`16px "${fam}"`);
+        }
+      } catch (e) {}
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const hydrateFontsFromStorage = async () => {
+    if (!isIndexedDbAvailable()) {
+      setFontsHydrated(true);
+      return;
+    }
+
+    try {
+      const all = await idbGetAllFonts();
+      if (!Array.isArray(all) || !all.length) {
+        setFontsHydrated(true);
+        return;
+      }
+
+      const metas = [];
+      for (const rec of all) {
+        const family = rec && rec.family ? String(rec.family) : "";
+        const bytes = rec && rec.bytes;
+        if (!family || !bytes) continue;
+        const mime = String(rec?.mime || "application/octet-stream");
+        const blob = new Blob([bytes], { type: mime });
+        const blobUrl = URL.createObjectURL(blob);
+        customFontBlobUrlsRef.current = Array.isArray(customFontBlobUrlsRef.current)
+          ? [...customFontBlobUrlsRef.current, blobUrl]
+          : [blobUrl];
+
+        await registerCustomFont({ family, blobUrl });
+        metas.push({
+          id: rec && rec.id ? String(rec.id) : undefined,
+          family,
+          sourceName: rec && rec.sourceName ? String(rec.sourceName) : "",
+          mime: rec && rec.mime ? String(rec.mime) : "",
+          size: typeof rec?.size === "number" ? rec.size : undefined,
+        });
+      }
+
+      if (metas.length) {
+        setCustomFonts((prev) => mergeFontsByFamily(prev, metas));
+      }
+
+      // Re-render Fabric in case previously loaded text used these font families.
+      try {
+        const c = fabricCanvasRef.current;
+        if (c && typeof c.requestRenderAll === "function") c.requestRenderAll();
+      } catch (e) {}
+    } catch (e) {
+      // ignore
+    } finally {
+      setFontsHydrated(true);
+    }
+  };
+
+  const escapeCssString = (value) => {
+    const s = String(value ?? "");
+    return s.replace(/\\/g, "\\\\").replace(/\"/g, '\\"');
+  };
+
+  const makeSafeFontFamilyFromFileName = (fileName) => {
+    const raw = String(fileName || "")
+      .replace(/\.[^/.]+$/g, "")
+      .trim();
+    const safe = raw
+      .replace(/[_-]+/g, " ")
+      .replace(/[^a-zA-Z0-9\s]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    return safe || `Custom Font ${Date.now()}`;
+  };
+
+  useEffect(() => {
+    return () => {
+      try {
+        (customFontBlobUrlsRef.current || []).forEach((u) => {
+          try {
+            URL.revokeObjectURL(u);
+          } catch (e) {}
+        });
+      } catch (e) {}
+      customFontBlobUrlsRef.current = [];
+
+      try {
+        if (customFontStyleElRef.current) {
+          customFontStyleElRef.current.remove();
+        }
+      } catch (e) {}
+      customFontStyleElRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    hydrateFontsFromStorage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const requestUploadImage = () => {
     if (mockMode) return;
-    const acked = (() => {
-      try {
-        return (
-          uploadAcked ||
-          window.localStorage.getItem(UPLOAD_COPYRIGHT_ACK_KEY) === "1"
-        );
-      } catch (e) {
-        return uploadAcked;
-      }
-    })();
+    const acked = uploadAcked;
 
     if (acked) {
       openFilePicker();
@@ -778,13 +1154,28 @@ const Designer = ({ productKey } = {}) => {
     getBgUrlFor({ clothKey: "men", colorName: "Black", sideKey: "Front" })
   );
 
-  const [autosaveHydrated, setAutosaveHydrated] = useState(false);
   const [canvasReady, setCanvasReady] = useState(false);
-  const [autosaveReady, setAutosaveReady] = useState(false);
 
   useEffect(() => {
     clothRef.current = cloth;
   }, [cloth]);
+
+  // When the `cloth` state changes (for example via the dropdown or URL mapping),
+  // ensure the Fabric canvas is rebuilt for the new cloth if the canvas is ready.
+  useEffect(() => {
+    if (!canvasReady) return;
+
+    (async () => {
+      try {
+        await handleSideChange(currentSide || "Front", {
+          clothKey: String(cloth || "men"),
+          colorName: String(selectedColor || getDefaultColorForCloth(cloth)),
+          skipSave: true,
+        });
+      } catch (e) {}
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cloth, canvasReady]);
 
   useEffect(() => {
     sideRef.current = currentSide;
@@ -880,32 +1271,7 @@ const Designer = ({ productKey } = {}) => {
     setDesignStoreFor(cKey, sKey, json);
     syncUndoRedoFlagsForCurrent();
 
-    // Also persist to localStorage (debounced) so refresh always restores.
-    try {
-      if (!autosaveHydrated) return;
-      if (!autosaveReady) return;
-      if (!window.localStorage) return;
-      if (autosaveWriteTimerRef.current) {
-        clearTimeout(autosaveWriteTimerRef.current);
-        autosaveWriteTimerRef.current = 0;
-      }
-      autosaveWriteTimerRef.current = setTimeout(() => {
-        autosaveWriteTimerRef.current = 0;
-        try {
-          const payload = {
-            v: 1,
-            ts: Date.now(),
-            cloth: String(clothRef.current || cloth || "men"),
-            currentSide: String(sideRef.current || currentSide || "Front"),
-            selectedColor: String(
-              selectedColorRef.current || selectedColor || "Black"
-            ),
-            designStore: designStoreRef.current || designStore,
-          };
-          localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
-        } catch (e) {}
-      }, 600);
-    } catch (e) {}
+    // autosave persistence removed (no localStorage writes)
   };
 
   const scheduleCanvasCommit = () => {
@@ -935,64 +1301,12 @@ const Designer = ({ productKey } = {}) => {
     isRestoringRef.current = false;
   };
 
-  // Restore persisted work-in-progress.
-  useEffect(() => {
-    try {
-      const raw = window.localStorage ? localStorage.getItem(AUTOSAVE_KEY) : "";
-      if (!raw) {
-        autosavePayloadRef.current = null;
-        setAutosaveHydrated(true);
-        return;
-      }
-      const parsed = JSON.parse(raw);
-      autosavePayloadRef.current = parsed;
-      const savedStore = parsed && parsed.designStore;
-      if (savedStore && typeof savedStore === "object") {
-        const base = (designStoreRef && designStoreRef.current) ||
-          designStore || {
-            men: { front: null, back: null },
-            women: { front: null, back: null },
-            hoodie: { front: null, back: null },
-            womenCropHoodie: { front: null, back: null },
-            sweatshirt: { front: null, back: null },
-          };
-        const merged = { ...base, ...savedStore };
-        try {
-          designStoreRef.current = merged;
-        } catch (e) {}
-        setDesignStore(merged);
-      }
-
-      // If the parent drives productKey, let it control cloth selection.
-      const mappedFromProductKey = clothKeyFromExternalProductKey(productKey);
-      const savedCloth = String((parsed && parsed.cloth) || "");
-      const nextCloth =
-        mappedFromProductKey && CLOTH_CONFIG[mappedFromProductKey]
-          ? mappedFromProductKey
-          : savedCloth && CLOTH_CONFIG[savedCloth]
-          ? savedCloth
-          : "";
-      if (nextCloth) setCloth(nextCloth);
-
-      const savedSide = String((parsed && parsed.currentSide) || "");
-      if (savedSide === "Front" || savedSide === "Back")
-        setCurrentSide(savedSide);
-
-      const savedColor = String((parsed && parsed.selectedColor) || "");
-      if (savedColor) setSelectedColor(savedColor);
-    } catch (e) {
-      // ignore corrupt autosave
-    } finally {
-      setAutosaveHydrated(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // No persisted restore (localStorage disabled).
 
   // After autosave restore + Fabric mount, build the initial canvas once using the
   // deterministic handleSideChange() pipeline.
   useEffect(() => {
     if (!canvasReady) return;
-    if (!autosaveHydrated) return;
     if (initialCanvasBuiltRef.current) return;
     initialCanvasBuiltRef.current = true;
 
@@ -1018,11 +1332,8 @@ const Designer = ({ productKey } = {}) => {
           }
         } catch (e) {}
 
-        // Load saved JSON from the exact autosave payload first (most reliable).
-        const payloadStore = autosavePayloadRef.current?.designStore;
-        const overrideJson =
-          payloadStore?.[effectiveCloth]?.[sideLower] ||
-          designStoreRef.current?.[effectiveCloth]?.[sideLower];
+        // Load saved JSON from in-memory design store if present.
+        const overrideJson = designStoreRef.current?.[effectiveCloth]?.[sideLower];
 
         await handleSideChange(currentSide || "Front", {
           clothKey: effectiveCloth,
@@ -1033,8 +1344,7 @@ const Designer = ({ productKey } = {}) => {
       } catch (e) {
         // ignore
       } finally {
-        // Enable autosave after the canvas has been built at least once.
-        setAutosaveReady(true);
+        // Autosave persistence disabled.
 
         // Seed undo history for the current side.
         try {
@@ -1043,89 +1353,16 @@ const Designer = ({ productKey } = {}) => {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvasReady, autosaveHydrated]);
-
-  // Persist WIP to localStorage (debounced).
-  useEffect(() => {
-    if (!autosaveHydrated) return;
-    if (!autosaveReady) return;
-    const t = setTimeout(() => {
-      try {
-        if (!window.localStorage) return;
-        const payload = {
-          v: 1,
-          ts: Date.now(),
-          cloth,
-          currentSide,
-          selectedColor,
-          designStore: designStoreRef.current || designStore,
-        };
-        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
-      } catch (e) {}
-    }, 600);
-    return () => clearTimeout(t);
-  }, [
-    autosaveHydrated,
-    autosaveReady,
-    cloth,
-    currentSide,
-    selectedColor,
-    designStore,
-  ]);
+  }, [canvasReady]);
 
   const persistAutosaveNow = () => {
-    if (!autosaveHydrated) return;
-    if (!autosaveReady) return;
     try {
       // Ensure the latest Fabric state is reflected in designStore.
       commitCanvasNow();
     } catch (e) {}
-    try {
-      if (!window.localStorage) return;
-      const payload = {
-        v: 1,
-        ts: Date.now(),
-        cloth: String(clothRef.current || cloth || "men"),
-        currentSide: String(sideRef.current || currentSide || "Front"),
-        selectedColor: String(
-          selectedColorRef.current || selectedColor || "Black"
-        ),
-        designStore: designStoreRef.current || designStore,
-      };
-      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
-    } catch (e) {}
   };
 
-  // Flush autosave on refresh/navigation so work isn't lost.
-  useEffect(() => {
-    if (!autosaveHydrated) return;
-    const flush = () => {
-      try {
-        persistAutosaveNow();
-      } catch (e) {}
-    };
-
-    const onVisibility = () => {
-      try {
-        if (document && document.visibilityState === "hidden") flush();
-      } catch (e) {}
-    };
-
-    try {
-      window.addEventListener("beforeunload", flush);
-      window.addEventListener("pagehide", flush);
-      document.addEventListener("visibilitychange", onVisibility);
-    } catch (e) {}
-
-    return () => {
-      try {
-        window.removeEventListener("beforeunload", flush);
-        window.removeEventListener("pagehide", flush);
-        document.removeEventListener("visibilitychange", onVisibility);
-      } catch (e) {}
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autosaveHydrated, autosaveReady]);
+  // No unload/visibility flush required (autosave disabled).
 
   // Keyboard shortcuts: Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y redo.
   useEffect(() => {
@@ -1259,8 +1496,7 @@ const Designer = ({ productKey } = {}) => {
 
     // Clear stored JSON for both sides for this cloth.
     setDesignStore((prev) => {
-      const prevCloth =
-        prev && prev[cKey] ? prev[cKey] : { front: null, back: null };
+      const prevCloth = prev && prev[cKey] ? prev[cKey] : { front: null, back: null };
       const updated = {
         ...prev,
         [cKey]: {
@@ -1292,6 +1528,14 @@ const Designer = ({ productKey } = {}) => {
 
   // If the parent app provides a productKey like "Men/Tshirt", keep this component in sync.
   useEffect(() => {
+    // If URL query params are present, they should take precedence over
+    // a parent-supplied `productKey` (e.g., navigating from the shop).
+    try {
+      const catId = searchParams.get("category");
+      const subId = searchParams.get("subcategory");
+      if (catId || subId) return;
+    } catch (e) {}
+
     const mapped = clothKeyFromExternalProductKey(productKey);
     if (!mapped) return;
     if (mapped === cloth) return;
@@ -1751,8 +1995,28 @@ const Designer = ({ productKey } = {}) => {
           <div className="mt-2 grid grid-cols-2 gap-2">
             <button
               onClick={() => {
-                addCanvasText();
-                closeMobileToolsSheet();
+                try {
+                  const inputVal =
+                    (textInputRef.current && String(textInputRef.current.value)) || "";
+                  if (!inputVal.trim()) {
+                    alert("Please enter text before adding.");
+                    return;
+                  }
+
+                  const seen = window.localStorage.getItem(
+                    "designer_abuse_warning_seen"
+                  );
+                  if (!seen) {
+                    pendingAddTextRef.current = true;
+                    setAbuseModalOpen(true);
+                  } else {
+                    addCanvasText();
+                    closeMobileToolsSheet();
+                  }
+                } catch (e) {
+                  pendingAddTextRef.current = true;
+                  setAbuseModalOpen(true);
+                }
               }}
               disabled={mockMode}
               className="h-10 px-3 rounded-xl border border-gray-900 bg-gray-900 text-white text-[13px] font-extrabold inline-flex items-center justify-center transition-shadow hover:shadow-lg active:translate-y-px disabled:opacity-60 disabled:cursor-not-allowed"
@@ -1839,7 +2103,7 @@ const Designer = ({ productKey } = {}) => {
           </div>
         )}
 
-        <div>
+        <div className="hidden">
           <div className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-gray-500 mb-2">
             Export
           </div>
@@ -1896,7 +2160,7 @@ const Designer = ({ productKey } = {}) => {
         </div>
 
         <div className="mt-5">
-          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500 mb-3">
+          <p className="text-xs hidden font-extrabold uppercase tracking-[0.16em] text-gray-500 mb-3">
             Select Product:{" "}
             <span className="text-black">
               {CLOTH_CONFIG[cloth]?.label || cloth}
@@ -1907,7 +2171,7 @@ const Designer = ({ productKey } = {}) => {
             disabled={mockMode}
             value={cloth}
             onChange={(e) => handleClothChange(e.target.value)}
-            className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-white text-gray-900 text-sm outline-none focus:border-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed mb-[18px]"
+            className="w-full hidden h-10 px-3 rounded-lg border border-gray-200 bg-white text-gray-900 text-sm outline-none focus:border-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed mb-[18px]"
           >
             {Object.keys(CLOTH_CONFIG).map((key) => (
               <option key={key} value={key}>
@@ -1979,6 +2243,8 @@ const Designer = ({ productKey } = {}) => {
               })}
             </div>
           </div>
+
+          
         </div>
 
         {mockMode && (
@@ -2061,18 +2327,88 @@ const Designer = ({ productKey } = {}) => {
               className="w-full h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-sm outline-none focus:border-gray-900"
               onChange={handleFontFamilyChange}
             >
-              <option>Arial</option>
-              <option>Georgia</option>
-              <option>Times New Roman</option>
-              <option>Helvetica</option>
-              <option>Comic Sans MS</option>
-              <option>Dancing Script</option>
+              <option value="Arial">Arial</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Helvetica">Helvetica</option>
+              <option value="Comic Sans MS">Comic Sans MS</option>
+              <option value="Dancing Script">Dancing Script</option>
+              {Array.isArray(customFonts) && customFonts.length > 0 &&
+                customFonts.map((f) => {
+                  const family = f && f.family ? String(f.family) : "";
+                  if (!family) return null;
+                  return (
+                    <option key={`custom-font-${family}`} value={family}>
+                      {family}
+                    </option>
+                  );
+                })}
             </select>
+
+            <button
+              type="button"
+              onClick={openFontPicker}
+              className="mt-2 w-full h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[13px] font-extrabold inline-flex items-center justify-center transition-shadow hover:shadow-md active:translate-y-px"
+            >
+              Upload Custom Font
+            </button>
           </div>
         )}
       </div>
     </>
   );
+
+  const renderPricingBar = ({ variant } = {}) => {
+    const isMobile = variant === "mobile";
+    if (!pricing.supported) return null;
+
+    return (
+      <div
+        className={
+          isMobile
+            ? "md:hidden w-full px-3 pb-3"
+            : "hidden md:block w-full px-5 py-4 border-t border-gray-200 bg-white"
+        }
+      >
+        <div className="rounded-2xl border border-gray-200 bg-white p-3 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-gray-500">
+              Total
+            </div>
+            {pricing.hasAny ? (
+              <div className="text-lg font-extrabold text-gray-900">
+                ₹{pricing.total}
+                <span className="ml-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-gray-500">
+                  {pricing.mode}
+                </span>
+              </div>
+            ) : (
+              <div className="text-sm font-extrabold text-gray-900">
+                Add a design to see price
+              </div>
+            )}
+            {pricing.hasAny && (
+              <div className="text-[11px] text-gray-500">
+                ₹{pricing.subtotal} + ₹{pricing.delivery} delivery
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!pricing.hasAny) return;
+              openPreviewBothSides();
+            }}
+            disabled={mockMode || !pricing.hasAny}
+            className="shrink-0 h-11 px-4 rounded-xl border border-gray-900 bg-gray-900 text-white text-[13px] font-extrabold inline-flex items-center justify-center transition-shadow hover:shadow-lg active:translate-y-px disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   function saveCurrentSideDesign() {
     const canvas = fabricCanvasRef.current;
@@ -2096,6 +2432,62 @@ const Designer = ({ productKey } = {}) => {
       return updated;
     });
   }
+
+  // --- Pricing helpers ---
+  const hasDesignForSide = (sideKey) => {
+    try {
+      const cKey = String(cloth || "men");
+      const sKey = String(sideKey || "Front").toLowerCase();
+      const storeJson = designStoreRef.current?.[cKey]?.[sKey];
+      const hasInStore = !!(
+        storeJson &&
+        Array.isArray(storeJson.objects) &&
+        storeJson.objects.length > 0
+      );
+
+      // If this is the active side, also check the live canvas for unsaved objects
+      if (String(currentSide || "Front").toLowerCase() === sKey) {
+        const canvas = fabricCanvasRef.current;
+        if (canvas && typeof canvas.getObjects === "function") {
+          const objs = canvas.getObjects().filter((o) => {
+            if (!o) return false;
+            if (o.isClipBorder) return false;
+            if (o.isMaskImage) return false;
+            return true;
+          });
+          if (Array.isArray(objs) && objs.length > 0) return true;
+        }
+      }
+
+      return hasInStore;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const computeDesignPrice = () => {
+    const frontHas = hasDesignForSide("Front");
+    const backHas = hasDesignForSide("Back");
+    const sides = (frontHas ? 1 : 0) + (backHas ? 1 : 0);
+
+    if (sides === 0) {
+      return { hasAny: false, price: null, label: "Add a design to see price" };
+    }
+
+    // Price table (internal cloth keys)
+    const priceTable = {
+      men: { one: 599, both: 749 },
+      women: { one: 499, both: 699 },
+      hoodie: { one: 859, both: 999 },
+      womenCropHoodie: { one: 649, both: 799 },
+      sweatshirt: { one: 700, both: 850 },
+    };
+
+    const key = String(cloth || "men");
+    const entry = priceTable[key] || priceTable.men;
+    const price = sides === 2 ? entry.both : entry.one;
+    return { hasAny: true, price, label: `₹${price}` };
+  };
 
   // --- Create a new base clip and border and add border to canvas ---
   // returns the clipRect
@@ -2386,13 +2778,14 @@ const Designer = ({ productKey } = {}) => {
     beginCanvasRestore(switchToken);
 
     try {
-      const bailIfStale = () => {
-        if (switchToken !== sideSwitchTokenRef.current) {
-          endCanvasRestore(switchToken);
-          return true;
-        }
-        return false;
-      };
+
+    const bailIfStale = () => {
+      if (switchToken !== sideSwitchTokenRef.current) {
+        endCanvasRestore(switchToken);
+        return true;
+      }
+      return false;
+    };
 
       // Save current side design (per-side persistence)
       if (!opts.skipSave) saveCurrentSideDesign();
@@ -2406,14 +2799,14 @@ const Designer = ({ productKey } = {}) => {
           ? opts.colorName
           : selectedColor;
 
-      // Prepare next background path
+    // Prepare next background path
       const nextBgUrl = getBgUrlFor({
         clothKey,
         colorName: colorNameForSide,
         sideKey,
       });
       setImageUrl(nextBgUrl);
-      // ensure DOM background updates immediately (helps html2canvas captures)
+    // ensure DOM background updates immediately (helps html2canvas captures)
       try {
         if (stageRef.current) {
           stageRef.current.style.backgroundImage = `url('${nextBgUrl}')`;
@@ -2423,40 +2816,40 @@ const Designer = ({ productKey } = {}) => {
         }
       } catch (e) {}
 
-      // Clear selection before switching
+    // Clear selection before switching
       try {
         canvas.discardActiveObject();
       } catch (e) {}
 
-      // Load saved design for target side (if any)
+    // Load saved design for target side (if any)
       const saved =
         opts && opts.overrideJson
           ? opts.overrideJson
           : designStoreRef.current?.[clothKey]?.[String(sideKey).toLowerCase()];
 
-      // Clear everything and rebuild deterministically
+    // Clear everything and rebuild deterministically
       canvas.clear();
 
-      if (bailIfStale()) return;
+    if (bailIfStale()) return;
 
-      // 1) set background
+    // 1) set background
       const bgImg = await setBackgroundImageAsync(canvas, nextBgUrl);
 
-      if (bailIfStale()) return;
+    if (bailIfStale()) return;
 
-      // 2) load saved objects (if any)
+    // 2) load saved objects (if any)
       if (saved) {
         const res = await loadFromJSONAsync(canvas, saved);
 
-        if (bailIfStale()) return;
+      if (bailIfStale()) return;
 
-        if (res && res.ok === false) {
-          // If JSON load fails, don't continue with a half-loaded canvas.
-          // We still keep the background + recreated border.
-          console.warn("Side design JSON failed to load for", sideKey);
-        }
+      if (res && res.ok === false) {
+        // If JSON load fails, don't continue with a half-loaded canvas.
+        // We still keep the background + recreated border.
+        console.warn("Side design JSON failed to load for", sideKey);
+      }
 
-        // loadFromJSON can wipe background; restore
+      // loadFromJSON can wipe background; restore
         if (bgImg) {
           try {
             canvas.setBackgroundImage(bgImg, () => {});
@@ -2466,22 +2859,22 @@ const Designer = ({ productKey } = {}) => {
         }
       }
 
-      // 3) Always remove any borders that might have been serialized accidentally
+    // 3) Always remove any borders that might have been serialized accidentally
       removeAnyClipBorders(canvas);
 
-      if (bailIfStale()) return;
+    if (bailIfStale()) return;
 
-      // 4) Recreate fresh base clip + border (border is non-selectable + non-evented)
+    // 4) Recreate fresh base clip + border (border is non-selectable + non-evented)
       const baseClip = createBaseClip(canvas, { clothKey, sideKey });
       CliprectRef.current = baseClip;
 
-      // 5) Apply clip to design objects
+    // 5) Apply clip to design objects
       applyClipToObjects();
 
-      // 6) Make sure clip is not interactive
+    // 6) Make sure clip is not interactive
       lockClipBorder(canvas);
 
-      // 7) Keep border visible on top
+    // 7) Keep border visible on top
       try {
         const border = canvas.getObjects().find((o) => o && o.isClipBorder);
         if (border) canvas.bringObjectToFront(border);
@@ -2492,7 +2885,7 @@ const Designer = ({ productKey } = {}) => {
       } catch (e) {}
       canvas.requestRenderAll();
 
-      // Seed history present state for this side if needed.
+    // Seed history present state for this side if needed.
       try {
         const cKey = String(clothKey || "men");
         const sKey = String(sideKey || "Front").toLowerCase();
@@ -2747,7 +3140,12 @@ const Designer = ({ productKey } = {}) => {
 
   function handleFontFamilyChange(e) {
     const val = e.target.value;
-    setFontFamily(val);
+    applyFontFamilyToSelection(val);
+  }
+
+  function applyFontFamilyToSelection(val) {
+    const family = String(val || "Arial");
+    setFontFamily(family);
     const obj = selectedObjectRef.current;
     const canvas = fabricCanvasRef.current;
     if (
@@ -2756,15 +3154,114 @@ const Designer = ({ productKey } = {}) => {
       (obj.type === "textbox" || obj.type === "i-text" || obj.type === "text")
     ) {
       const apply = () => {
-        obj.set("fontFamily", val);
+        obj.set("fontFamily", family);
         canvas.requestRenderAll();
         scheduleCanvasCommit();
       };
       if (document.fonts && document.fonts.load) {
-        document.fonts.load(`16px "${val}"`).then(apply).catch(apply);
+        document.fonts.load(`16px "${family}"`).then(apply).catch(apply);
       } else {
         apply();
       }
+    }
+  }
+
+  async function handleFontUpload(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    // Reset immediately so selecting the same file again triggers onChange.
+    try {
+      e.target.value = "";
+    } catch (err) {}
+
+    const MAX_BYTES = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_BYTES) {
+      alert("Max font upload size is 10MB.");
+      return;
+    }
+
+    const name = String(file.name || "").toLowerCase();
+    const extOk =
+      name.endsWith(".ttf") ||
+      name.endsWith(".otf") ||
+      name.endsWith(".woff") ||
+      name.endsWith(".woff2");
+    if (!extOk) {
+      alert("Supported font files: .ttf, .otf, .woff, .woff2");
+      return;
+    }
+
+    const baseFonts = new Set([
+      "Arial",
+      "Georgia",
+      "Times New Roman",
+      "Helvetica",
+      "Comic Sans MS",
+      "Dancing Script",
+    ]);
+
+    const blobUrl = URL.createObjectURL(file);
+    customFontBlobUrlsRef.current = Array.isArray(customFontBlobUrlsRef.current)
+      ? [...customFontBlobUrlsRef.current, blobUrl]
+      : [blobUrl];
+
+    const existingFamilies = new Set([
+      ...Array.from(baseFonts),
+      ...(Array.isArray(customFonts) ? customFonts.map((f) => f && f.family) : [])
+        .filter(Boolean)
+        .map(String),
+    ]);
+
+    const baseFamily = makeSafeFontFamilyFromFileName(file.name);
+    let family = baseFamily;
+    let suffix = 2;
+    while (existingFamilies.has(family)) {
+      family = `${baseFamily} (${suffix})`;
+      suffix += 1;
+    }
+
+    const id = `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    const mime = getFontMimeType(file.name);
+
+    try {
+      // Persist bytes so refresh restores the custom font.
+      try {
+        const bytes = await file.arrayBuffer();
+        await idbPutFont({
+          id,
+          ts: Date.now(),
+          family,
+          sourceName: String(file.name || ""),
+          mime,
+          size: Number(file.size) || 0,
+          bytes,
+        });
+        await pruneStoredFontsIfNeeded();
+      } catch (err) {
+        // If storage fails (quota/unsupported), we still keep it in-memory for this session.
+      }
+
+      await registerCustomFont({ family, blobUrl });
+
+      setCustomFonts((prev) => {
+        const list = Array.isArray(prev) ? prev : [];
+        return mergeFontsByFamily(list, [
+          { id, family, sourceName: String(file.name || ""), mime, size: file.size },
+        ]);
+      });
+
+      // Convenient default: apply the newly uploaded font.
+      applyFontFamilyToSelection(family);
+    } catch (err) {
+      try {
+        URL.revokeObjectURL(blobUrl);
+      } catch (e) {}
+      customFontBlobUrlsRef.current = (customFontBlobUrlsRef.current || []).filter(
+        (u) => u !== blobUrl
+      );
+      console.warn("Font upload failed:", err);
+      alert("Failed to load this font file.");
     }
   }
 
@@ -2772,13 +3269,17 @@ const Designer = ({ productKey } = {}) => {
     const canvas = fabricCanvasRef.current;
     if (!canvas) return;
     const clipRect = CliprectRef.current;
-    const value =
-      (textInputRef.current && textInputRef.current.value) || "New Text";
+    const value = (textInputRef.current && String(textInputRef.current.value)) || "";
+    const trimmed = value.trim();
+    if (!trimmed) {
+      alert("Please enter text before adding.");
+      return;
+    }
     const ff = fontFamily || "Arial";
     const color = fontColor || "#000000";
 
     const createText = () => {
-      const text = new fabric.Textbox(value, {
+      const text = new fabric.Textbox(trimmed, {
         left: clipRect.left + 50,
         top: clipRect.top + 50,
         fontSize: 30,
@@ -2811,7 +3312,9 @@ const Designer = ({ productKey } = {}) => {
     } else {
       createText();
     }
-    textInputRef.current.value = "";
+    try {
+      if (textInputRef.current) textInputRef.current.value = "";
+    } catch (e) {}
   }
 
   function handleUpload(e) {
@@ -3245,6 +3748,80 @@ const Designer = ({ productKey } = {}) => {
     }
   }
 
+  // Capture the design layer only (transparent background), scaled.
+  const captureDesignOnlyDataUrl = async ({ scale = 4 } = {}) => {
+    const canvas = fabricCanvasRef.current;
+    if (!canvas) throw new Error("Canvas not found");
+
+    // Hide clip/border overlays so they don't appear in the exported PNG
+    const objects = canvas.getObjects ? canvas.getObjects() : [];
+    const borderObjs = (objects || []).filter(
+      (o) =>
+        o &&
+        (o.isClipBorder || (Array.isArray(o.strokeDashArray) && o.strokeDashArray.length))
+    );
+    const prevBorderVis = borderObjs.map((o) => (o ? o.visible : true));
+
+    // Temporarily remove background image/color
+    const originalBg = canvas.backgroundImage;
+    const originalBgColor = canvas.backgroundColor;
+    try {
+      try {
+        borderObjs.forEach((o) => {
+          if (o) o.visible = false;
+        });
+      } catch (e) {}
+
+      try {
+        if (typeof canvas.setBackgroundImage === "function") {
+          canvas.setBackgroundImage(null, () => {});
+        } else {
+          canvas.backgroundImage = null;
+        }
+      } catch (e) {}
+      try {
+        if (typeof canvas.setBackgroundColor === "function") {
+          canvas.setBackgroundColor(null, () => {});
+        } else {
+          canvas.backgroundColor = null;
+        }
+      } catch (e) {}
+
+      canvas.requestRenderAll && canvas.requestRenderAll();
+      await nextFrame();
+
+      const dataUrl = canvas.toDataURL({
+        format: "png",
+        multiplier: scale,
+        withoutTransform: false,
+        backgroundColor: null,
+      });
+      return dataUrl;
+    } finally {
+      try {
+        borderObjs.forEach((o, i) => {
+          if (o) o.visible = prevBorderVis[i];
+        });
+      } catch (e) {}
+
+      try {
+        if (typeof canvas.setBackgroundImage === "function") {
+          canvas.setBackgroundImage(originalBg || null, () => {});
+        } else {
+          canvas.backgroundImage = originalBg || null;
+        }
+      } catch (e) {}
+      try {
+        if (typeof canvas.setBackgroundColor === "function") {
+          canvas.setBackgroundColor(originalBgColor ?? null, () => {});
+        } else {
+          canvas.backgroundColor = originalBgColor ?? null;
+        }
+      } catch (e) {}
+      canvas.requestRenderAll && canvas.requestRenderAll();
+    }
+  };
+
   async function downloadBothSidesZip() {
     const canvas = fabricCanvasRef.current;
     if (!canvas) {
@@ -3272,6 +3849,19 @@ const Designer = ({ productKey } = {}) => {
         zip.file(`Design_${indiaIsoSafe}_${sideKey}_full-mockup.png`, base64, {
           base64: true,
         });
+        // Also include design-only (transparent background) for this side
+        try {
+          const designOnlyUrl = await captureDesignOnlyDataUrl({ scale: 4 });
+          const designOnlyBase64 = String(designOnlyUrl).split(",")[1] || "";
+          if (designOnlyBase64) {
+            zip.file(`Design_${indiaIsoSafe}_${sideKey}_design.png`, designOnlyBase64, {
+              base64: true,
+            });
+          }
+        } catch (err) {
+          // If design-only capture fails, continue without blocking zip creation
+          console.warn(`Design-only capture failed for ${sideKey}:`, err);
+        }
       }
 
       const blob = await zip.generateAsync({ type: "blob" });
@@ -3669,48 +4259,30 @@ const Designer = ({ productKey } = {}) => {
       } catch (err) {}
     }
   }
-  const [searchParams] = useSearchParams();
-
-  const categoryFromUrl = searchParams.get("category");
-  const subCategoryFromUrl = searchParams.get("subcategory");
 
   useEffect(() => {
-    const fetchCategoryAndSub = async () => {
-      try {
-        if (!categoryFromUrl) return;
-
-        const catRes = await getCategoryByIdApi(categoryFromUrl);
-        const subRes = subCategoryFromUrl
-          ? await getSubcategoryByIdApi(subCategoryFromUrl)
-          : null;
-
-        const category = catRes.data;
-        const subCategory = subRes?.data;
-        console.log("Category ", category?.name);
-
-        const clothKey = resolveClothConfig(category, subCategory);
-        console.log("Clothkey ", clothKey);
-        if (!clothKey) return;
-
-        // 🔥 IMPORTANT: use handleClothChange
-        if (clothKey !== cloth) {
-          await handleClothChange(clothKey);
-        }
-      } catch (err) {
-        console.error(err);
-      }
+    // Prevent body scrolling while Designer is open
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
     };
-
-    fetchCategoryAndSub();
-  }, [categoryFromUrl, subCategoryFromUrl]);
+  }, []);
 
   return (
-    <div className="md:mt-35 mt-30 w-full bg-gray-50 text-gray-900 flex flex-col md:flex-row min-h-screen py-20">
+    <div className="h-screen w-screen overflow-hidden bg-gray-50 text-gray-900 flex flex-col md:flex-row">
       <input
         ref={fileInputRef}
         type="file"
         accept="image/jpeg,image/png,.jpg,.jpeg,.png"
         onChange={handleUpload}
+        className="hidden"
+      />
+      <input
+        ref={fontFileInputRef}
+        type="file"
+        accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2"
+        onChange={handleFontUpload}
         className="hidden"
       />
       {/* LEFT PANEL */}
@@ -3729,7 +4301,7 @@ const Designer = ({ productKey } = {}) => {
 
       <div
         ref={containerRef}
-        className={`relative flex-1 flex items-center justify-center overflow-auto overscroll-contain [WebkitOverflowScrolling:touch] h-[100svh] md:h-auto min-h-0 ${NO_SCROLLBAR}`}
+        className={`relative flex-1 flex items-center justify-center overflow-hidden overscroll-contain [WebkitOverflowScrolling:touch] h-full md:h-full min-h-0 ${NO_SCROLLBAR}`}
       >
         {/* Mobile canvas-first quick access */}
         {!(
@@ -3739,7 +4311,7 @@ const Designer = ({ productKey } = {}) => {
           mobileArrangeOpen ||
           previewOpen
         ) && (
-          <div className="md:hidden  left-3 top-35 z-[50]">
+          <div className="md:hidden fixed left-3 top-3 z-[50]">
             <div className="p-1 rounded-2xl border border-gray-200 bg-white/90 backdrop-blur shadow-sm flex gap-1">
               <button
                 type="button"
@@ -3818,17 +4390,76 @@ const Designer = ({ productKey } = {}) => {
         </div>
       </div>
 
+      {/* Floating Add to Cart for desktop (right side) */}
+      <div className="hidden md:flex fixed right-6 bottom-6 z-50 flex-col items-center gap-3">
+        {/* Price pill */}
+        {(() => {
+          const p = computeDesignPrice();
+          return (
+            <div className="bg-white rounded-full px-4 py-2 flex items-center gap-4 border border-gray-100 shadow-md">
+              <div className="flex flex-col items-start">
+                <div className="text-[10px] uppercase text-gray-400 font-semibold">Price</div>
+                <div className="text-sm font-extrabold text-gray-900">{p.hasAny ? `₹${p.price}` : "Add a design"}</div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Primary Add to Cart button */}
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              openPreviewBothSides();
+            } catch (e) {}
+          }}
+          className="h-12 px-6 rounded-full bg-gray-900 text-white text-[15px] font-extrabold hover:bg-gray-800 active:translate-y-px shadow-lg"
+          aria-label="Add to cart"
+        >
+          Add to cart
+        </button>
+      </div>
+
+      {/* Mobile bottom bar: back button (left), price (center), add to cart (right) */}
+      <div className="md:hidden fixed inset-x-0 bottom-0 z-50 bg-black/95 py-3 px-4 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="h-10 px-3 rounded-lg bg-white text-black font-bold"
+        >
+          Back
+        </button>
+
+        <div className="text-white font-extrabold text-lg">{(() => {
+          const p = computeDesignPrice();
+          return p.hasAny ? `₹${p.price}` : "Add a design";
+        })()}</div>
+
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              openPreviewBothSides();
+            } catch (e) {}
+          }}
+          className="h-10 px-4 rounded-lg bg-red-600 text-white font-extrabold"
+        >
+          Add to cart
+        </button>
+      </div>
+
       {/* RIGHT SIDE THUMBNAIL SWITCHER */}
       <div className="hidden md:flex md:w-[220px] shrink-0 flex-col bg-white border-l border-gray-200">
         <div className="p-5 border-b border-gray-100">
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-gray-500">
+          <div className="text-[11px] text-center font-extrabold uppercase tracking-[0.16em] text-gray-500">
             Side
           </div>
-          <div className="text-sm font-extrabold text-gray-900 mt-1">
+          <div className="text-sm text-center font-extrabold text-gray-900 mt-1">
             {currentSide}
           </div>
         </div>
         <div className={`p-5 flex-1 overflow-auto ${NO_SCROLLBAR}`}>
+          <div className="h-full flex flex-col items-center justify-center gap-3 sm:gap-4">
           {Object.values(SIDE_CONFIG).map((side) => {
             const isActive = currentSide === side.key;
             const thumbsrc = getBgUrlFor({
@@ -3853,20 +4484,20 @@ const Designer = ({ productKey } = {}) => {
                 onMouseUp={(e) => {
                   tweenTo(e.currentTarget, { y: -4, scale: 1.02 });
                 }}
-                className={`relative flex flex-col items-center w-[100px] px-2 py-4 rounded-2xl border transition ${
+                className={`relative flex flex-col items-center w-[88px] sm:w-[100px] px-2 py-4 rounded-2xl border transition ${
                   isActive
-                    ? "border-gray-200 bg-white shadow-lg"
-                    : "border-gray-200 bg-gray-100 hover:border-gray-300"
+                    ? "border-transparent bg-white shadow-lg"
+                    : "border-transparent bg-white hover:border-transparent"
                 }`}
               >
                 {/* The Selection Ring */}
                 <div
-                  className={`pointer-events-none absolute -inset-0.5 rounded-[18px] border-2 border-black transition-opacity ${
+                  className={`pointer-events-none absolute -inset-0.5 rounded-[18px] border-2 border-white transition-opacity ${
                     isActive ? "opacity-100" : "opacity-0"
                   }`}
                 />
 
-                <div className="w-[60px] h-[60px] mb-3 flex items-center justify-center">
+                <div className="w-[56px] h-[56px] sm:w-[60px] sm:h-[60px] mb-3 flex items-center justify-center">
                   <img
                     src={thumbsrc}
                     alt={side.label}
@@ -3877,7 +4508,7 @@ const Designer = ({ productKey } = {}) => {
                 </div>
 
                 <span
-                  className={`text-[13px] font-extrabold uppercase tracking-[0.16em] ${
+                  className={`text-[12px] sm:text-[13px] font-extrabold uppercase tracking-[0.14em] ${
                     isActive ? "text-black" : "text-gray-400"
                   }`}
                 >
@@ -3886,6 +4517,7 @@ const Designer = ({ productKey } = {}) => {
               </button>
             );
           })}
+          </div>
         </div>
       </div>
 
@@ -4057,13 +4689,31 @@ const Designer = ({ productKey } = {}) => {
                   className="w-full h-11 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-sm outline-none focus:border-gray-900"
                   onChange={handleFontFamilyChange}
                 >
-                  <option>Arial</option>
-                  <option>Georgia</option>
-                  <option>Times New Roman</option>
-                  <option>Helvetica</option>
-                  <option>Comic Sans MS</option>
-                  <option>Dancing Script</option>
+                  <option value="Arial">Arial</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                  <option value="Helvetica">Helvetica</option>
+                  <option value="Comic Sans MS">Comic Sans MS</option>
+                  <option value="Dancing Script">Dancing Script</option>
+                  {Array.isArray(customFonts) && customFonts.length > 0 &&
+                    customFonts.map((f) => {
+                      const family = f && f.family ? String(f.family) : "";
+                      if (!family) return null;
+                      return (
+                        <option key={`custom-font-mobile-${family}`} value={family}>
+                          {family}
+                        </option>
+                      );
+                    })}
                 </select>
+
+                <button
+                  type="button"
+                  onClick={openFontPicker}
+                  className="mt-2 w-full h-11 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[13px] font-extrabold inline-flex items-center justify-center transition-shadow hover:shadow-md active:translate-y-px"
+                >
+                  Upload Custom Font
+                </button>
               </div>
             </div>
           </div>
@@ -4203,7 +4853,10 @@ const Designer = ({ productKey } = {}) => {
                 type="button"
                 onClick={() => {
                   try {
-                    window.localStorage.setItem(UPLOAD_COPYRIGHT_ACK_KEY, "1");
+                    window.localStorage.setItem(
+                      "designer_upload_ack_seen",
+                      "1"
+                    );
                   } catch (e) {}
                   setUploadAcked(true);
                   setCopyrightModalOpen(false);
@@ -4213,6 +4866,66 @@ const Designer = ({ productKey } = {}) => {
                     setTimeout(() => {
                       openFilePicker();
                     }, 0);
+                  }
+                }}
+                className="flex-1 h-10 px-3 rounded-xl border border-gray-900 bg-gray-900 text-white text-[13px] font-extrabold"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Abuse warning shown when user attempts to add text (first time) */}
+      {abuseModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-[10030] bg-black/55 backdrop-blur-[2px] flex items-center justify-center p-4"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setAbuseModalOpen(false);
+          }}
+        >
+          <div className="w-[min(520px,92vw)] bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <div className="text-sm font-extrabold text-gray-900">Notice</div>
+                <div className="text-[11px] text-gray-500">Please read</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAbuseModalOpen(false)}
+                className="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-900 text-lg leading-none"
+                aria-label="Close notice"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-4 text-sm text-gray-800">
+              Please do not add any abusive, hateful, or offensive text in your
+              designs. Content that violates community guidelines is strictly
+              prohibited.
+            </div>
+
+            <div className="px-4 pb-4 flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    window.localStorage.setItem(
+                      "designer_abuse_warning_seen",
+                      "1"
+                    );
+                  } catch (e) {}
+                  setAbuseModalOpen(false);
+                  if (pendingAddTextRef.current) {
+                    pendingAddTextRef.current = false;
+                    try {
+                      addCanvasText();
+                      closeMobileToolsSheet();
+                    } catch (e) {}
                   }
                 }}
                 className="flex-1 h-10 px-3 rounded-xl border border-gray-900 bg-gray-900 text-white text-[13px] font-extrabold"
@@ -4320,7 +5033,7 @@ const Designer = ({ productKey } = {}) => {
                 onClick={closePreview}
                 className="px-3.5 py-2.5 rounded-xl border border-gray-200 bg-green-600 text-white font-bold hover:bg-green-700 active:translate-y-px"
               >
-                Close
+                Confirm and Proceed
               </button>
             </div>
           </div>

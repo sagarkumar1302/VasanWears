@@ -43,13 +43,19 @@ const SearchBar = ({ searchModel, topBar }) => {
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-        className="w-full pr-6 pl-12 text-lg outline-none border border-slate-100/35 mx-auto placeholder:text-white py-2 rounded-xl text-white"
+        className="w-full pr-6 pl-12 text-lg outline-none border border-slate-100/35 mx-auto placeholder:text-white py-2 rounded-bl-xl rounded-tl-xl md:rounded-r-none text-white"
       />
 
       <RiSearch2Line
         className="text-white w-7 absolute left-6 md:left-12 xl:left-52 cursor-pointer"
         onClick={handleSearch}
       />
+      <div className="bg-white px-4 py-2.5 rounded-r-xl md:hidden flex">
+        <RiSearch2Line
+          className="text-primary2 w-7  left-6 md:left-12 xl:left-52 cursor-pointer "
+          onClick={handleSearch}
+        />
+      </div>
     </div>
   );
 };
