@@ -12,10 +12,10 @@ const CTASection = () => {
       {/* Content */}
       <div className="container mx-auto px-4 relative z-50">
         <h2 className="text-3xl md:text-4xl font-bold">
-          Bring your ideas to life in minutes
+          Turn Your Ideas Into Wearable Identity
         </h2>
         <p className="mt-3 mb-8">
-          Print shirts for yourself or your business
+          Design custom apparel for yourself or your brand — printed with care.
         </p>
 
         <Link

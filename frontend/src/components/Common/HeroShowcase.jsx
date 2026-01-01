@@ -8,12 +8,13 @@ const HeroShowcase = () => {
         {/* LEFT SIDE IMAGES */}
         <div>
           <h2 className="text-3xl md:text-5xl font-bold leading-tight">
-            Free and easy way to  bring your ideas to life
+            Free and easy way to bring your ideas to life
           </h2>
 
           <p className="text-primary5 mt-4 max-w-md mb-8">
-            Lorem ipsum det, cowec tetur duis necgi det, consec t eturlagix
-            adipisicing eliet, cowec tetopak.
+            Design your own custom T-shirt in minutes using our easy-to-use
+            online designer. Upload your artwork, customize the layout, preview
+            instantly, and place your order with confidence.
           </p>
           <Link
             to="/shop"
@@ -48,7 +49,10 @@ const HeroShowcase = () => {
 
           {/* Central Product Card */}
           <div className="relative bg-white p-6 rounded-2xl shadow-xl w-[320px] md:w-[250px] xl:w-[350px] z-10 md:block flex gap-4">
-            <img src="/images/hero4.png" className="rounded-lg mb-4 w-30 h-35 md:w-full md:h-full object-cover" />
+            <img
+              src="/images/hero4.png"
+              className="rounded-lg mb-4 w-30 h-35 md:w-full md:h-full object-cover"
+            />
 
             {/* Dummy details */}
             <div className="space-y-3">
@@ -64,8 +68,8 @@ const HeroShowcase = () => {
               </div>
 
               {/* Button */}
-              <Link className="py-2.5 px-4 md:px-8 rounded-xl font-semibold text-primary2 transition-all duration-300 btn-slide md:text-base text-sm w-full block text-center">
-                Save Design
+              <Link to="/shop" className="py-2.5 px-4 md:px-8 rounded-xl font-semibold text-primary2 transition-all duration-300 btn-slide md:text-base text-sm w-full block text-center">
+                See Your Idea on Apparel
               </Link>
             </div>
           </div>

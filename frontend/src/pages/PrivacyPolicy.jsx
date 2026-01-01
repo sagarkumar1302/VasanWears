@@ -3,195 +3,498 @@ import Banner from "../components/Common/Banner";
 
 const PrivacyPolicy = () => {
   return (
-    <div className="md:mt-35 mt-30">
+    <div className="md:mt-35 mt-30 bg-gray-50">
       {/* Page Banner */}
       <Banner pageTitle="Privacy Policy" />
 
       <div className="container mx-auto px-5 py-10 md:py-20">
-        <div className="bg-white rounded-xl shadow-md p-6 md:p-12 space-y-10">
-
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-12 max-w-5xl mx-auto text-gray-700 leading-relaxed">
+          
           {/* LAST UPDATED */}
-          <p className="text-sm text-primary5">
-            <span className="font-medium">Last updated:</span> December 30, 2025
+          <p className="text-sm text-primary5 mb-6">
+            <span className="font-bold uppercase tracking-wide">Last updated:</span> January 1, 2026
           </p>
 
-          {/* INTRO */}
-          <p className="text-primary6 leading-relaxed">
-            This Privacy Policy describes Our policies and procedures on the
-            collection, use and disclosure of Your information when You use the
-            Service and explains Your privacy rights and how the law protects
-            You. By using the Service, You agree to the collection and use of
-            information in accordance with this Privacy Policy.
-          </p>
+          <div className="space-y-8">
+            <section>
+              <p className="mb-4">
+                This Privacy Policy describes Our policies and procedures on the collection, use and disclosure 
+                of Your information when You use the Service and tells You about Your privacy rights and how 
+                the law protects You.
+              </p>
+              <p>
+                We use Your Personal data to provide and improve the Service. By using the Service, You agree 
+                to the collection and use of information in accordance with this Privacy Policy.
+              </p>
+            </section>
 
-          {/* INTERPRETATION */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3">
-              Interpretation and Definitions
-            </h2>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">Interpretation and Definitions</h2>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Interpretation</h3>
+              <p className="mb-6">
+                The words whose initial letters are capitalized have meanings defined under the following 
+                conditions. The following definitions shall have the same meaning regardless of whether they 
+                appear in singular or in plural.
+              </p>
 
-            <h3 className="font-medium mb-2">Interpretation</h3>
-            <p className="text-primary6">
-              Words with capitalized initial letters have meanings defined under
-              the following conditions and shall have the same meaning whether
-              they appear in singular or plural.
-            </p>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Definitions</h3>
+              <p className="mb-4 text-sm italic">For the purposes of this Privacy Policy:</p>
+              <ul className="space-y-4 list-none">
+                <li className="pl-4 border-l-2 border-primary5">
+                  <strong>Account</strong> means a unique account created for You to access our Service or parts of our Service.
+                </li>
+                <li className="pl-4 border-l-2 border-primary5">
+                  <strong>Affiliate</strong> means an entity that controls, is controlled by, or is under common control with 
+                  a party, where "control" means ownership of 50% or more of the shares, equity interest 
+                  or other securities entitled to vote for election of directors or other managing authority.
+                </li>
+                <li className="pl-4 border-l-2 border-primary5">
+                  <strong>Company</strong> (referred to as either "the Company", "We", "Us" or "Our" in this Agreement) 
+                  refers to VasanWears.
+                </li>
+                <li className="pl-4 border-l-2 border-primary5">
+                  <strong>Cookies</strong> are small files that are placed on Your computer, mobile device or any other 
+                  device by a website, containing the details of Your browsing history on that website 
+                  among its many uses.
+                </li>
+                <li className="pl-4 border-l-2 border-primary5">
+                  <strong>Country</strong> refers to: Bihar, India
+                </li>
+                <li className="pl-4 border-l-2 border-primary5">
+                  <strong>Device</strong> means any device that can access the Service such as a computer, a cell phone 
+                  or a digital tablet.
+                </li>
+                <li className="pl-4 border-l-2 border-primary5">
+                  <strong>Personal Data</strong> is any information that relates to an identified or identifiable individual.
+                </li>
+                <li className="pl-4 border-l-2 border-primary5">
+                  <strong>Service</strong> refers to the Website.
+                </li>
+                <li className="pl-4 border-l-2 border-primary5">
+                  <strong>Service Provider</strong> means any natural or legal person who processes the data on behalf 
+                  of the Company. It refers to third-party companies or individuals employed by the 
+                  Company to facilitate the Service, to provide the Service on behalf of the Company, to 
+                  perform services related to the Service or to assist the Company in analyzing how the 
+                  Service is used.
+                </li>
+                <li className="pl-4 border-l-2 border-primary5">
+                  <strong>Usage Data</strong> refers to data collected automatically, either generated by the use of the 
+                  Service or from the Service infrastructure itself (for example, the duration of a page visit).
+                </li>
+                <li className="pl-4 border-l-2 border-primary5">
+                  <strong>Website</strong> refers to VasanWears, accessible from <a href="https://www.vasanwears.in/" className="text-primary5 hover:underline">https://www.vasanwears.in/</a>
+                </li>
+                <li className="pl-4 border-l-2 border-primary5">
+                  <strong>You</strong> means the individual accessing or using the Service, or the company, or other legal 
+                  entity on behalf of which such individual is accessing or using the Service, as applicable.
+                </li>
+              </ul>
+            </section>
 
-            <h3 className="font-medium mt-4 mb-2">Definitions</h3>
-            <ul className="list-disc pl-6 text-primary6 space-y-2">
-              <li><strong>Account:</strong> A unique account created to access our Service.</li>
-              <li><strong>Affiliate:</strong> An entity under common control.</li>
-              <li><strong>Company:</strong> VasanWears.</li>
-              <li><strong>Cookies:</strong> Small files stored on your device.</li>
-              <li><strong>Country:</strong> Bihar, India.</li>
-              <li><strong>Device:</strong> Any device accessing the Service.</li>
-              <li><strong>Personal Data:</strong> Information identifying an individual.</li>
-              <li><strong>Service:</strong> The Website.</li>
-              <li><strong>Service Provider:</strong> Third parties processing data.</li>
-              <li><strong>Usage Data:</strong> Data collected automatically.</li>
-              <li><strong>Website:</strong> https://www.vasanwears.in</li>
-              <li><strong>You:</strong> The individual using the Service.</li>
-            </ul>
-          </section>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">Collecting and Using Your Personal Data</h2>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Types of Data Collected</h3>
+              <h4 className="font-bold text-gray-800 mt-4 mb-2">Personal Data</h4>
+              <p className="mb-4">
+                While using Our Service, We may ask You to provide Us with certain personally identifiable 
+                information that can be used to contact or identify You. Personally identifiable information may 
+                include, but is not limited to:
+              </p>
+              <ul className="list-disc pl-8 mb-6 space-y-1">
+                <li>Email address</li>
+                <li>First name and last name</li>
+                <li>Phone number</li>
+                <li>Address, State, Province, ZIP/Postal code, City</li>
+                <li>Usage Data</li>
+              </ul>
 
-          {/* DATA COLLECTION */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3">
-              Collecting and Using Your Personal Data
-            </h2>
+              <h4 className="font-bold text-gray-800 mb-2">Usage Data</h4>
+              <div className="space-y-4">
+                <p>Usage Data is collected automatically when using the Service.</p>
+                <p>
+                  Usage Data may include information such as Your Device's Internet Protocol address (e.g. IP 
+                  address), browser type, browser version, the pages of our Service that You visit, the time and 
+                  date of Your visit, the time spent on those pages, unique device identifiers and other diagnostic 
+                  data.
+                </p>
+                <p>
+                  When You access the Service by or through a mobile device, We may collect certain information 
+                  automatically, including, but not limited to, the type of mobile device You use, Your mobile 
+                  device's unique ID, the IP address of Your mobile device, Your mobile operating system, the type 
+                  of mobile Internet browser You use, unique device identifiers and other diagnostic data.
+                </p>
+                <p>
+                  We may also collect information that Your browser sends whenever You visit Our Service or 
+                  when You access the Service by or through a mobile device.
+                </p>
+              </div>
+            </section>
 
-            <h3 className="font-medium mb-2">Types of Data Collected</h3>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">Tracking Technologies and Cookies</h2>
+              <p className="mb-4">
+                We use Cookies and similar tracking technologies to track the activity on Our Service and store 
+                certain information. Tracking technologies We use include beacons, tags, and scripts to collect 
+                and track information and to improve and analyze Our Service. The technologies We use may 
+                include:
+              </p>
+              <ul className="list-disc pl-8 mb-6 space-y-4">
+                <li>
+                  <strong>Cookies or Browser Cookies.</strong> A cookie is a small file placed on Your Device. You can 
+                  instruct Your browser to refuse all Cookies or to indicate when a Cookie is being sent. 
+                  However, if You do not accept Cookies, You may not be able to use some parts of our 
+                  Service. Unless you have adjusted Your browser setting so that it will refuse Cookies, our 
+                  Service may use Cookies.
+                </li>
+                <li>
+                  <strong>Web Beacons.</strong> Certain sections of our Service and our emails may contain small 
+                  electronic files known as web beacons (also referred to as clear gifs, pixel tags, and 
+                  single-pixel gifs) that permit the Company, for example, to count users who have visited 
+                  those pages or opened an email and for other related website statistics (for example, 
+                  recording the popularity of a certain section and verifying system and server integrity).
+                </li>
+              </ul>
+              <p className="mb-4">
+                Cookies can be "Persistent" or "Session" Cookies. Persistent Cookies remain on Your personal 
+                computer or mobile device when You go offline, while Session Cookies are deleted as soon as 
+                You close Your web browser.
+              </p>
+              
+              <h3 className="text-xl font-semibold text-gray-800 mt-6 mb-4">We use both Session and Persistent Cookies for the purposes set out below:</h3>
+              
+              <div className="space-y-6">
+                <div className="bg-gray-50 p-5 rounded-lg border">
+                  <p><strong>Necessary / Essential Cookies</strong></p>
+                  <p>Type: Session Cookies</p>
+                  <p>Administered by: Us</p>
+                  <p className="mt-2">Purpose: These Cookies are essential to provide You with services available through the Website and to enable You to use some of its features. They help to authenticate users and prevent fraudulent use of user accounts. Without these Cookies, the services that You have asked for cannot be provided, and We only use these Cookies to provide You with those services.</p>
+                </div>
 
-            <p className="font-medium mt-3">Personal Data</p>
-            <ul className="list-disc pl-6 text-primary6 space-y-2">
-              <li>Email address</li>
-              <li>First and last name</li>
-              <li>Phone number</li>
-              <li>Address, State, ZIP code, City</li>
-            </ul>
+                <div className="bg-gray-50 p-5 rounded-lg border">
+                  <p><strong>Cookies Policy / Notice Acceptance Cookies</strong></p>
+                  <p>Type: Persistent Cookies</p>
+                  <p>Administered by: Us</p>
+                  <p className="mt-2">Purpose: These Cookies identify if users have accepted the use of cookies on the Website.</p>
+                </div>
 
-            <p className="font-medium mt-4">Usage Data</p>
-            <p className="text-primary6">
-              Usage Data is collected automatically and may include IP address,
-              browser type, pages visited, and time spent on pages.
-            </p>
-          </section>
+                <div className="bg-gray-50 p-5 rounded-lg border">
+                  <p><strong>Functionality Cookies</strong></p>
+                  <p>Type: Persistent Cookies</p>
+                  <p>Administered by: Us</p>
+                  <p className="mt-2">Purpose: These Cookies allow us to remember choices You make when You use the Website, such as remembering your login details or language preference. The purpose of these Cookies is to provide You with a more personal experience and to avoid You having to re-enter your preferences every time You use the Website.</p>
+                </div>
+              </div>
+              <p className="mt-4">For more information about the cookies we use and your choices regarding cookies, please visit our Cookies Policy or the Cookies section of our Privacy Policy.</p>
+            </section>
 
-          {/* COOKIES */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3">
-              Tracking Technologies & Cookies
-            </h2>
-            <p className="text-primary6">
-              We use Cookies, web beacons, tags, and scripts to track activity
-              and improve the Service. Cookies may be Session or Persistent.
-            </p>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">Use of Your Personal Data</h2>
+              <p className="mb-4">The Company may use Personal Data for the following purposes:</p>
+              <ul className="list-disc pl-8 space-y-3 mb-6">
+                <li><strong>To provide and maintain our Service</strong>, including to monitor the usage of our Service.</li>
+                <li><strong>To manage Your Account:</strong> to manage Your registration as a user of the Service. The Personal Data You provide can give You access to different functionalities of the Service that are available to You as a registered user.</li>
+                <li><strong>For the performance of a contract:</strong> the development, compliance and undertaking of the purchase contract for the products, items or services You have purchased or of any other contract with Us through the Service.</li>
+                <li><strong>To contact You:</strong> To contact You by email, telephone calls, SMS, or other equivalent forms of electronic communication, such as a mobile application's push notifications regarding updates or informative communications related to the functionalities, products or contracted services, including the security updates, when necessary or reasonable for their implementation.</li>
+                <li><strong>To provide You with news, special offers, and general information</strong> about other goods, services and events which We offer that are similar to those that you have already purchased or inquired about unless You have opted not to receive such information.</li>
+                <li><strong>To manage Your requests:</strong> To attend and manage Your requests to Us.</li>
+                <li><strong>For business transfers:</strong> We may use Your information to evaluate or conduct a merger, divestiture, restructuring, reorganization, dissolution, or other sale or transfer of some or all of Our assets, whether as a going concern or as part of bankruptcy, liquidation, or similar proceeding, in which Personal Data held by Us about our Service users is among the assets transferred.</li>
+                <li><strong>For other purposes:</strong> We may use Your information for other purposes, such as data analysis, identifying usage trends, determining the effectiveness of our promotional campaigns and to evaluate and improve our Service, products, services, marketing and your experience.</li>
+              </ul>
 
-            <ul className="list-disc pl-6 text-primary6 space-y-2 mt-3">
-              <li><strong>Essential Cookies:</strong> Required for site functionality.</li>
-              <li><strong>Acceptance Cookies:</strong> Store cookie consent.</li>
-              <li><strong>Functionality Cookies:</strong> Remember preferences.</li>
-            </ul>
-          </section>
+              <p className="mb-4 font-semibold">We may share Your personal information in the following situations:</p>
+              <ul className="list-disc pl-8 space-y-3">
+                <li><strong>With Service Providers:</strong> We may share Your personal information with Service Providers to monitor and analyze the use of our Service, to contact You.</li>
+                <li><strong>For business transfers:</strong> We may share or transfer Your personal information in connection with, or during negotiations of, any merger, sale of Company assets, financing, or acquisition of all or a portion of Our business to another company.</li>
+                <li><strong>With Affiliates:</strong> We may share Your information with Our affiliates, in which case we will require those affiliates to honor this Privacy Policy. Affiliates include Our parent company and any other subsidiaries, joint venture partners or other companies that We control or that are under common control with Us.</li>
+                <li><strong>With Your consent:</strong> We may disclose Your personal information for any other purpose with Your consent.</li>
+              </ul>
+            </section>
 
-          {/* USE OF DATA */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3">
-              Use of Your Personal Data
-            </h2>
-            <ul className="list-disc pl-6 text-primary6 space-y-2">
-              <li>Provide and maintain the Service</li>
-              <li>Manage your account</li>
-              <li>Process orders and payments</li>
-              <li>Send service-related communications</li>
-              <li>Improve services and marketing</li>
-            </ul>
-          </section>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">Retention of Your Personal Data</h2>
+              <p className="mb-4">
+                The Company will retain Your Personal Data only for as long as is necessary for the purposes set 
+                out in this Privacy Policy. We will retain and use Your Personal Data to the extent necessary to 
+                comply with our legal obligations (for example, if we are required to retain your data to comply 
+                with applicable laws), resolve disputes, and enforce our legal agreements and policies.
+              </p>
+              <p>
+                The Company will also retain Usage Data for internal analysis purposes. Usage Data is generally 
+                retained for a shorter period of time, except when this data is used to strengthen the security or 
+                to improve the functionality of Our Service, or We are legally obligated to retain this data for 
+                longer periods.
+              </p>
+            </section>
 
-          {/* THIRD PARTIES */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3">
-              Third-Party Services
-            </h2>
-            <ul className="list-disc pl-6 text-primary6 space-y-2">
-              <li>Payments: Razorpay</li>
-              <li>Email: Resend</li>
-              <li>Advertising & Social Media Platforms</li>
-            </ul>
-          </section>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">Transfer of Your Personal Data</h2>
+              <p className="mb-4">
+                Your information, including Personal Data, is processed at the Company's operating offices and 
+                in any other places where the parties involved in the processing are located. It means that this 
+                information may be transferred to — and maintained on — computers located outside of Your 
+                state, province, country or other governmental jurisdiction where the data protection laws may 
+                differ from those from Your jurisdiction.
+              </p>
+              <p className="mb-4">
+                Your consent to this Privacy Policy followed by Your submission of such information represents 
+                Your agreement to that transfer.
+              </p>
+              <p>
+                The Company will take all steps reasonably necessary to ensure that Your data is treated 
+                securely and in accordance with this Privacy Policy and no transfer of Your Personal Data will 
+                take place to an organization or a country unless there are adequate controls in place including 
+                the security of Your data and other personal information.
+              </p>
+            </section>
 
-          {/* DATA RIGHTS */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3">
-              Your Data Protection Rights
-            </h2>
-            <p className="text-primary6">
-              Depending on your location, you may have rights under GDPR,
-              CCPA/CPRA, or other data protection laws, including access,
-              correction, deletion, and portability of your data.
-            </p>
-          </section>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">Delete Your Personal Data</h2>
+              <p className="mb-4">
+                You have the right to delete or request that We assist in deleting the Personal Data that We have 
+                collected about You.
+              </p>
+              <p className="mb-4">
+                Our Service may give You the ability to delete certain information about You from within the 
+                Service.
+              </p>
+              <p className="mb-4">
+                You may update, amend, or delete Your information at any time by signing in to Your Account, if 
+                you have one, and visiting the account settings section that allows you to manage Your personal 
+                information. You may also contact Us to request access to, correct, or delete any personal 
+                information that You have provided to Us.
+              </p>
+              <p>
+                Please note, however, that We may need to retain certain information when we have a legal 
+                obligation or lawful basis to do so.
+              </p>
+            </section>
 
-          {/* SECURITY */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3">
-              Security of Your Personal Data
-            </h2>
-            <p className="text-primary6">
-              We use commercially reasonable measures to protect your data, but
-              no method of transmission over the Internet is 100% secure.
-            </p>
-          </section>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">Disclosure of Your Personal Data</h2>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Business Transactions</h3>
+              <p className="mb-6">
+                If the Company is involved in a merger, acquisition or asset sale, Your Personal Data may be 
+                transferred. We will provide notice before Your Personal Data is transferred and becomes 
+                subject to a different Privacy Policy.
+              </p>
+              
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Law enforcement</h3>
+              <p className="mb-6">
+                Under certain circumstances, the Company may be required to disclose Your Personal Data if 
+                required to do so by law or in response to valid requests by public authorities (e.g. a court or a 
+                government agency).
+              </p>
 
-          {/* CHILDREN */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3">
-              Children’s Privacy
-            </h2>
-            <p className="text-primary6">
-              Our Service does not address anyone under the age of 13, and we do
-              not knowingly collect data from children.
-            </p>
-          </section>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Email Communications</h3>
+              <p className="mb-4">
+                We may use your Personal Data to contact you with service-related communications, including 
+                order confirmations, payment notifications, shipping updates, account-related information, and 
+                customer support responses.
+              </p>
+              <p className="mb-4">
+                For the purpose of sending emails, we use Resend, a third-party email delivery service provider. 
+                Resend processes email-related data on our behalf solely to deliver such communications. 
+                Resend’s use of your information is governed by its Privacy Policy, which can be reviewed at: <a href="https://resend.com/legal/privacy-policy" className="text-primary5 hover:underline">https://resend.com/legal/privacy-policy</a>
+              </p>
+              <p className="mb-6">
+                We do not send marketing or promotional emails unless you have explicitly opted in to receive 
+                such communications.
+              </p>
 
-          {/* CHANGES */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3">
-              Changes to This Privacy Policy
-            </h2>
-            <p className="text-primary6">
-              We may update this Privacy Policy periodically. Changes are
-              effective once posted on this page.
-            </p>
-          </section>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Payments</h3>
+              <p className="mb-4">
+                We use third-party payment processors to handle payments made through our Service. 
+                Payments are securely processed by Razorpay.
+              </p>
+              <p className="mb-4">
+                When you make a payment, your payment information (such as credit/debit card details, UPI 
+                information, or other banking details) is provided directly to Razorpay. We do not store or 
+                process your full payment information on our servers.
+              </p>
+              <p className="mb-4">
+                Razorpay’s processing of your Personal Data is subject to its Privacy Policy, which can be 
+                accessed at: <a href="https://razorpay.com/privacy/" className="text-primary5 hover:underline">https://razorpay.com/privacy/</a>
+              </p>
+              <p className="mb-6">
+                We receive only limited information from Razorpay necessary to confirm payment status and 
+                fulfill your order.
+              </p>
 
-          {/* CONTACT */}
-          <section>
-            <h2 className="text-xl font-semibold mb-3">
-              Contact Us
-            </h2>
-            <p className="text-primary6">
-              Email:{" "}
-              <a
-                href="mailto:info@vasanwears.in"
-                className="text-primary5 underline"
-              >
-                info@vasanwears.in
-              </a>
-            </p>
-            <p className="text-primary6">
-              Contact Page:{" "}
-              <a
-                href="https://www.vasanwears.in/contact-us"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary5 underline"
-              >
-                https://www.vasanwears.in/contact-us
-              </a>
-            </p>
-          </section>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Advertising and Social Media Platforms</h3>
+              <p className="mb-4">
+                We may use third-party social media and advertising platforms to promote our products and 
+                services, including:
+              </p>
+              <ul className="list-disc pl-8 mb-4 space-y-1">
+                <li>Facebook: <a href="https://www.facebook.com/privacy/policy" className="text-primary5 hover:underline text-sm">https://www.facebook.com/privacy/policy</a></li>
+                <li>Instagram: <a href="https://privacycenter.instagram.com/policy" className="text-primary5 hover:underline text-sm">https://privacycenter.instagram.com/policy</a></li>
+                <li>X (formerly Twitter): <a href="https://twitter.com/en/privacy" className="text-primary5 hover:underline text-sm">https://twitter.com/en/privacy</a></li>
+              </ul>
+              <p className="mb-4">
+                These third-party platforms may collect information about you when you interact with our 
+                advertisements or social media pages, in accordance with their own privacy policies.
+              </p>
+              <p className="mb-6">
+                We do not control and are not responsible for the data collection practices of these third-party 
+                platforms. Any interaction with our content on such platforms is governed by their respective 
+                privacy policies.
+              </p>
+            </section>
 
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">International Users & Data Protection Laws</h2>
+              <p className="mb-4">
+                Vasanwears is an Indian startup company, operating from India, and is primarily governed by 
+                applicable Indian laws.
+              </p>
+              <p className="mb-4">
+                However, since our website is accessible globally, we have included the following disclosures to 
+                address privacy rights of users from other regions, where applicable.
+              </p>
+              
+              <h3 className="text-xl font-semibold text-gray-800 mt-6 mb-2">CCPA & CPRA Privacy Rights (California Residents)</h3>
+              <p className="mb-4">This section applies only to users who reside in the State of California, USA.</p>
+              <p className="mb-4">
+                Under the California Consumer Privacy Act (CCPA), as amended by the California Privacy 
+                Rights Act (CPRA), California residents may have the following rights:
+              </p>
+              <ul className="list-disc pl-8 mb-4 space-y-2">
+                <li>The right to request disclosure of the categories and specific pieces of Personal Data collected</li>
+                <li>The right to request deletion of Personal Data, subject to legal exceptions</li>
+                <li>The right to request correction of inaccurate Personal Data</li>
+                <li>The right to opt out of the sale or sharing of Personal Data, if applicable</li>
+                <li>The right not to receive discriminatory treatment for exercising privacy rights</li>
+              </ul>
+              <p className="mb-4 font-semibold italic">Vasanwears does not sell or share Personal Data as defined under CCPA/CPRA.</p>
+              <p className="mb-6">
+                California residents may exercise their rights by contacting us using the information provided in 
+                the Contact Us section. Requests will be handled in accordance with applicable laws.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">GDPR Data Protection Rights (EEA Users)</h3>
+              <p className="mb-4">
+                If you are located in the European Economic Area (EEA), you may have certain data protection 
+                rights under the General Data Protection Regulation (GDPR).
+              </p>
+              <p className="mb-4">These rights may include:</p>
+              <ul className="list-disc pl-8 mb-4 space-y-2">
+                <li>The right to access your Personal Data</li>
+                <li>The right to request correction of inaccurate or incomplete data</li>
+                <li>The right to request erasure of Personal Data, subject to legal obligations</li>
+                <li>The right to restrict or object to processing</li>
+                <li>The right to data portability</li>
+                <li>The right to withdraw consent at any time</li>
+              </ul>
+              <p className="mb-4 italic">
+                Vasanwears processes Personal Data on the basis of legitimate business interests, 
+                contractual necessity, and user consent, where applicable.
+              </p>
+              <p className="mb-6">
+                EEA users may exercise their rights by contacting us. We will respond within a reasonable 
+                timeframe and in accordance with applicable law.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">CalOPPA Compliance (California Online Privacy Protection Act)</h3>
+              <p className="mb-4">
+                In accordance with the California Online Privacy Protection Act (CalOPPA), we agree to the 
+                following:
+              </p>
+              <ul className="list-disc pl-8 mb-4 space-y-2">
+                <li>Users can visit our website anonymously</li>
+                <li>Our Privacy Policy link includes the word “Privacy” and is easily accessible</li>
+                <li>Users will be notified of any Privacy Policy changes on this page</li>
+                <li>Users can contact us to request updates or corrections to their Personal Data</li>
+              </ul>
+              <p className="mb-6">
+                CalOPPA applies only to users from California and does not override Indian laws governing our 
+                operations.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">Other legal requirements</h2>
+              <p className="mb-4">
+                The Company may disclose Your Personal Data in the good faith belief that such action is 
+                necessary to:
+              </p>
+              <ul className="list-disc pl-8 space-y-2">
+                <li>Comply with a legal obligation</li>
+                <li>Protect and defend the rights or property of the Company</li>
+                <li>Prevent or investigate possible wrongdoing in connection with the Service</li>
+                <li>Protect the personal safety of Users of the Service or the public</li>
+                <li>Protect against legal liability</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">Security of Your Personal Data</h2>
+              <p>
+                The security of Your Personal Data is important to Us, but remember that no method of 
+                transmission over the Internet, or method of electronic storage is 100% secure. While We strive 
+                to use commercially reasonable means to protect Your Personal Data, We cannot guarantee its 
+                absolute security.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">Children's Privacy</h2>
+              <p className="mb-4">
+                Our Service does not address anyone under the age of 13. We do not knowingly collect 
+                personally identifiable information from anyone under the age of 13. If You are a parent or 
+                guardian and You are aware that Your child has provided Us with Personal Data, please contact 
+                Us. If We become aware that We have collected Personal Data from anyone under the age of 13 
+                without verification of parental consent, We take steps to remove that information from Our 
+                servers.
+              </p>
+              <p>
+                If We need to rely on consent as a legal basis for processing Your information and Your country 
+                requires consent from a parent, We may require Your parent's consent before We collect and 
+                use that information.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">Links to Other Websites</h2>
+              <p className="mb-4">
+                Our Service may contain links to other websites that are not operated by Us. If You click on a 
+                third party link, You will be directed to that third party's site. We strongly advise You to review the 
+                Privacy Policy of every site You visit.
+              </p>
+              <p>
+                We have no control over and assume no responsibility for the content, privacy policies or 
+                practices of any third party sites or services.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">Changes to this Privacy Policy</h2>
+              <p className="mb-4">
+                We may update Our Privacy Policy from time to time. We will notify You of any changes by 
+                posting the new Privacy Policy on this page.
+              </p>
+              <p className="mb-4">
+                We will let You know via email and/or a prominent notice on Our Service, prior to the change 
+                becoming effective and update the "Last updated" date at the top of this Privacy Policy.
+              </p>
+              <p>
+                You are advised to review this Privacy Policy periodically for any changes. Changes to this 
+                Privacy Policy are effective when they are posted on this page.
+              </p>
+            </section>
+
+            <section className="bg-gray-50 p-8 rounded-xl border border-gray-200 text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 underline decoration-primary5 underline-offset-8">Contact Us</h2>
+              <p className="mb-6">If you have any questions about this Privacy Policy, You can contact us:</p>
+              <div className="flex flex-col md:flex-row justify-center gap-4">
+                <a href="mailto:info@vasanwears.in" className="px-6 py-3 bg-primary5 text-white rounded-lg font-medium hover:bg-primary5/90 transition-colors">
+                  By email: info@vasanwears.in
+                </a>
+                <a href="https://www.vasanwears.in/contact-us" target="_blank" rel="noreferrer" className="px-6 py-3 border border-primary5 text-primary5 rounded-lg font-medium hover:bg-primary5/5 transition-colors">
+                  Visit our Contact Page
+                </a>
+              </div>
+            </section>
+          </div>
         </div>
       </div>
     </div>

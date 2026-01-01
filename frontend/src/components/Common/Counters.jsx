@@ -112,25 +112,25 @@ const Counters = () => {
           <div className="flex items-center gap-2 text-primary font-semibold mb-3">
             <RiFlashlightLine />
             <span className="uppercase tracking-wide text-sm">
-              Teespace in numbers
+              VasanWears in Numbers
             </span>
           </div>
 
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Print shirts for yourself or your online business
+            Custom Apparel for Creators & Businesses
           </h2>
 
           <p className="text-gray-600 leading-relaxed mb-8 max-w-lg">
-            Fast print, flyer, and pamphlet printing organization. Pleased with
-            our past. Printing for what’s to come. What’s more, we do it right!
-            A full administration printing background.
+            Whether you’re creating for yourself or building a brand, VasanWears
+            transforms creativity into wearable identity. Design freely, preview
+            instantly, and trust us to print and deliver with care.
           </p>
 
-          <Link
+          <Link to="/shop"
             className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
-             transition-all duration-300 btn-slide md:text-base text-sm"
+   transition-all duration-300 btn-slide md:text-base text-sm"
           >
-            Explore More
+            Start Designing
           </Link>
         </div>
       </div>

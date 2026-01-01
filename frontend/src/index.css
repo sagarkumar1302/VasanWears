@@ -135,3 +135,24 @@ input[type="checkbox"]:checked::after {
 input[type="radio"] {
   accent-color: var(--color-primary5); /* your color */
 }
+
+@layer utilities {
+  .animate-butterfly {
+    animation: butterfly 6s ease-in-out infinite;
+  }
+
+  @keyframes butterfly {
+    0%, 100% {
+      transform: translateY(0px) translateX(0px) rotate(-1deg);
+    }
+    25% {
+      transform: translateY(-12px) translateX(8px) rotate(1deg);
+    }
+    50% {
+      transform: translateY(-5px) translateX(-6px) rotate(-1.5deg);
+    }
+    75% {
+      transform: translateY(-15px) translateX(4px) rotate(0.5deg);
+    }
+  }
+}

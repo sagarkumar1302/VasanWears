@@ -11,8 +11,9 @@ const HowItWorks = () => {
             How to create custom shirts
           </h2>
           <p className="text-primary5 mt-3 max-w-2xl mx-auto">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur
-            minima ipsum libero, veritatis odio deserunt.
+            Design your own custom T-shirt in just three easy steps — upload
+            your design, customize and review it, then place your order and
+            enjoy your personalized product.
           </p>
         </div>
 
@@ -37,8 +38,9 @@ const HowItWorks = () => {
                 Add your shirt design
               </h4>
               <p className="text-primary5">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed,
-                fugiat exercitationem soluta vitae natus temporibus.
+                Upload your artwork or add text and start designing. You can
+                resize, move, and position your design exactly the way you want
+                on the shirt.
               </p>
             </div>
           </div>
@@ -61,8 +63,9 @@ const HowItWorks = () => {
                 Custom artwork & review
               </h4>
               <p className="text-primary5">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed,
-                fugiat exercitationem soluta vitae natus temporibus.
+                Adjust the design, preview it, and make sure everything looks
+                perfect. Check the placement, size, and details before
+                finalizing your design.
               </p>
             </div>
           </div>
@@ -84,8 +87,9 @@ const HowItWorks = () => {
                 Enjoy your product
               </h4>
               <p className="text-primary5">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed,
-                fugiat exercitationem soluta vitae natus temporibus.
+                Place your order and get your custom T-shirt delivered to your
+                doorstep. Your shirt is printed with care and shipped safely to
+                you.
               </p>
             </div>
           </div>

@@ -9,36 +9,37 @@ import {
 
 const features = [
   {
-    title: "Premium quality shirts",
-    desc: "Lorem ipsum det, consec tetur duis nec fringi det, consec",
+    title: "Premium Quality Apparel",
+    desc: "We use comfortable, durable fabrics and high-quality printing to ensure every piece looks great and feels even better.",
     icon: RiTShirt2Line,
   },
   {
-    title: "Outstanding quality",
-    desc: "Lorem ipsum det, consec tetur duis nec fringi det, consec",
+    title: "Creator-First Platform",
+    desc: "Your designs are showcased with your name, and you earn credits when people buy what you create — your creativity gets rewarded.",
     icon: RiStarSmileLine,
   },
   {
-    title: "Secure payment",
-    desc: "Lorem ipsum det, consec tetur duis nec fringi det, consec",
+    title: "Secure Payments",
+    desc: "All payments are processed through trusted and secure gateways, so your transactions are always safe and protected.",
     icon: RiSecurePaymentLine,
   },
   {
-    title: "Custom size & style",
-    desc: "Lorem ipsum det, consec tetur duis nec fringi det, consec",
+    title: "Custom Fit & Style",
+    desc: "Choose your size, style, and placement freely to design apparel that truly matches your personality.",
     icon: RiRulerLine,
   },
   {
-    title: "Worldwide shipping",
-    desc: "Lorem ipsum det, consec tetur duis nec fringi det, consec",
+    title: "Reliable Delivery",
+    desc: "We work with trusted fulfilment partners to ensure your custom apparel is printed carefully and delivered reliably.",
     icon: RiGlobalLine,
   },
   {
-    title: "No order minimums",
-    desc: "Lorem ipsum det, consec tetur duis nec fringi det, consec",
+    title: "No Minimum Orders",
+    desc: "Order just one piece or many — there’s no minimum quantity, so creativity is never restricted.",
     icon: RiInfinityLine,
   },
 ];
+
 
 const Features = () => {
   return (

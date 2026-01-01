@@ -68,8 +68,11 @@ const TopBar = ({ visible }) => {
           <span>🔥 Free shipping on all U.S. orders $50+</span>
         </div>
         <div className="contact md:block hidden">
-          <Link to="tel:+91 9999999999">+91 9999999999</Link>
+          <a href="mailto:info@vasanwears.in" className="hover:text-primary1 font-semibold">info@vasanwears.in</a>
         </div>
+        {/* <div className="contact md:block hidden">
+          <Link to="tel:+91 9999999999">+91 9999999999</Link>
+        </div> */}
       </div>
     </div>
   );

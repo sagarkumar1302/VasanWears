@@ -76,21 +76,21 @@ const ContactUs = () => {
                 title="Our Address"
                 text="KP Road, Gaya, 823001"
               />
-              <ContactItem
+              {/* <ContactItem
                 icon={<RiPhoneLine size={22} />}
                 title="Phone"
-                text="+91 98765 43210"
-              />
+                text="+91 74639 06412"
+              /> */}
               <ContactItem
                 icon={<RiMailLine size={22} />}
                 title="Email"
                 text="info@vasanwears.in"
               />
-              <ContactItem
+              {/* <ContactItem
                 icon={<RiTimeLine size={22} />}
                 title="Working Hours"
                 text="Mon – Sat : 10:00 AM – 7:00 PM"
-              />
+              /> */}
             </div>
           </div>
 

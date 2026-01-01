@@ -21,8 +21,6 @@ const Footer = () => {
       return;
     }
 
-    
-
     try {
       setLoading(true);
 
@@ -49,11 +47,13 @@ const Footer = () => {
               <img src={logo} alt="Vasan Wears Logo" className="w-[40%] mb-4" />
             </Link>
             <p className="text-primary5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Vasan comes from the Sanskrit word “Vastra,” meaning clothing.
+              Rooted in our culture and heritage, VasanWears brings this legacy
+              into modern fashion.
             </p>
-            <p className="text-primary5">hello@teespace.io</p>
-            <p className="text-primar leading-relaxed">
-              3665 Paseo Place, Suite 0960 <br /> San Diego
+            <p className="text-primary5">info@vasanwears.in</p>
+            <p className="text-primary leading-relaxed">
+              KP Road, Gaya, 823001 <br /> Gaya,Bihar
             </p>
           </div>
 
@@ -68,7 +68,7 @@ const Footer = () => {
                 <Link to="/about">About</Link>
               </li>
               <li>
-                <Link to="/blogs">Blogs</Link>
+                <Link to="/blogs">Blog</Link>
               </li>
               <li>
                 <Link to="/shop">Shop</Link>
@@ -84,10 +84,10 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-4">Services</h4>
             <ul className="space-y-3 text-primary5">
               <li>
-                <Link to="/design">Design Your Tshirt</Link>
+                <Link to="/design">Design Your T-Shirt</Link>
               </li>
               <li>
-                <Link to="/terms-and-condition/">Terms & Condition</Link>
+                <Link to="/terms-and-condition/">Terms & Conditions</Link>
               </li>
               <li>
                 <Link to="/privacy-policy/">Privacy Policy</Link>

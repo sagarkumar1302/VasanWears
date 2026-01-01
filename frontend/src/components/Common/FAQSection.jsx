@@ -12,15 +12,23 @@ const faqs = [
   },
   {
     q: "Can I upload my own design?",
-    a: "Yes! You can upload PNG, JPG, and SVG files. Our editor also lets you add text, shapes, and clipart.",
-  },
-  {
-    q: "Is there a minimum order quantity?",
-    a: "No! You can order a single custom t-shirt or as many as you want.",
+    a: "Yes! You can upload PNG, JPG, or JPEG files. Please make sure you own the rights to the design and avoid uploading copyrighted content.",
   },
   {
     q: "Which printing methods do you use?",
-    a: "We use DTG (Direct-to-Garment) and screen printing depending on the design and quantity.",
+    a: "We use DTF (Direct-to-Film) printing for vibrant, durable designs on high-quality apparel.",
+  },
+  {
+    q: "What if I want different printing options?",
+    a: "Currently, we specialize in DTF printing. If you have specific needs, please contact our support team for assistance.",
+  },
+  {
+    q: "What is the time period for cancellation of an order?",
+    a: "You can cancel or modify your order within 24 hours of placing it. After that, the order enters production and cannot be changed.",
+  },
+  {
+    q: "What is your return policy?",
+    a: "Returns or replacements are accepted only for defective or incorrect items. Please contact support within 48 hours of delivery with clear photos for verification.",
   },
 ];
 
@@ -51,7 +59,9 @@ const FAQSection = () => {
               onClick={() => toggleFAQ(i)}
             >
               <div className="flex justify-between items-center">
-                <h5 className="text-lg md:text-2xl  font-medium text-primary3">{item.q}</h5>
+                <h5 className="text-lg md:text-2xl  font-medium text-primary3">
+                  {item.q}
+                </h5>
 
                 {openIndex === i ? (
                   <RiSubtractLine size={22} className="text-primary3" />

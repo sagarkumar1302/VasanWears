@@ -8,23 +8,23 @@ import {
 
 const features = [
   {
-    title: "Design Anything Easily",
+    title: "Design Your Apparel, Effortlessly",
     shortTitle: "Design",
-    desc: "Access thousands of graphics, fonts, cliparts and ready-to-use designs for your T-shirts.",
+    desc: "Create custom T-shirts, hoodies, and sweatshirts using our simple online designer. Upload your artwork, explore ready-to-use elements, and see your design come to life instantly.",
     icon: <RiBrushLine size={42} className="text-primary" />,
     img: "/images/slider.jpg",
   },
   {
     title: "Customize With Fonts & Graphics",
     shortTitle: "Customize",
-    desc: "Choose from a wide library of fonts, quick presets, and free icons to create unique ideas.",
+    desc: "Personalize your apparel with fonts, custom font uploads, graphics, and ready-made presets. Preview your design instantly and order with confidence — no design experience needed.",
     icon: <RiFontSize2 size={42} className="text-primary" />,
     img: "/images/slider2.jpg",
   },
   {
-    title: "Upload & Use Your Own Images",
-    shortTitle: "Upload & Use",
-    desc: "Upload your own photos, logos, and artwork to personalize your custom apparel.",
+    title: "Preview & Order With Confidence",
+    shortTitle: "Preview & Order",
+    desc: "See exactly how your design will look before placing your order. Make final adjustments, review every detail, and order your custom apparel with complete confidence.",
     icon: <RiImageLine size={42} className="text-primary" />,
     img: "/images/slider3.jpg",
   },
