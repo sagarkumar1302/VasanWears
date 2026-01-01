@@ -8,8 +8,6 @@ import * as THREE from "three";
 import { getAllCategoriesForWebsite } from "../utils/productApi";
 import { getSubcategoryByIdApi } from "../utils/subCategoryApi";
 
- 
-
 const CUSTOM_FONTS_DB_NAME = "designer_custom_fonts_db_v1";
 const CUSTOM_FONTS_DB_VERSION = 1;
 const CUSTOM_FONTS_STORE = "fonts";
@@ -229,7 +227,6 @@ const clothKeyFromExternalProductKey = (productKey) => {
 };
 
 const Designer = ({ productKey } = {}) => {
-  
   const NO_SCROLLBAR =
     "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0";
 
@@ -246,12 +243,12 @@ const Designer = ({ productKey } = {}) => {
 
   const historyRef = useRef({});
   const commitTimerRef = useRef(0);
-  
+
   const clothRef = useRef("men");
   const sideRef = useRef("Front");
   const selectedColorRef = useRef("Black");
   const initialCanvasBuiltRef = useRef(false);
-  
+
   const baseSizeRef = useRef({ width: 1800, height: 1200 });
   const textInputRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -315,10 +312,19 @@ const Designer = ({ productKey } = {}) => {
     const cat = String(catName || "").toLowerCase();
     const sub = String(subName || "").toLowerCase();
     // Prefer subcategory hints first — they are more specific.
-    if (sub.includes("crop") && sub.includes("hoodie")) return "womenCropHoodie";
-    if (sub.includes("hoodie")) return "hoodie";
+    if (sub.includes("crop") && sub.includes("hoodie"))
+      return "womenCropHoodie";
+    if (sub.includes("hoodie")) {
+      // Prefer a women-specific hoodie variant when the category indicates women.
+      if (cat.includes("women")) return "womenCropHoodie";
+      return "hoodie";
+    }
     if (sub.includes("sweatshirt")) return "sweatshirt";
-    if (sub.includes("tshirt") || sub.includes("t-shirt") || sub.includes("tee")) {
+    if (
+      sub.includes("tshirt") ||
+      sub.includes("t-shirt") ||
+      sub.includes("tee")
+    ) {
       if (cat.includes("women")) return "women";
       if (cat.includes("men")) return "men";
       return "men";
@@ -472,7 +478,10 @@ const Designer = ({ productKey } = {}) => {
       }
       let req;
       try {
-        req = window.indexedDB.open(CUSTOM_FONTS_DB_NAME, CUSTOM_FONTS_DB_VERSION);
+        req = window.indexedDB.open(
+          CUSTOM_FONTS_DB_NAME,
+          CUSTOM_FONTS_DB_VERSION
+        );
       } catch (e) {
         reject(e);
         return;
@@ -482,7 +491,9 @@ const Designer = ({ productKey } = {}) => {
         try {
           const db = req.result;
           if (!db.objectStoreNames.contains(CUSTOM_FONTS_STORE)) {
-            const store = db.createObjectStore(CUSTOM_FONTS_STORE, { keyPath: "id" });
+            const store = db.createObjectStore(CUSTOM_FONTS_STORE, {
+              keyPath: "id",
+            });
             try {
               store.createIndex("ts", "ts", { unique: false });
             } catch (e) {}
@@ -491,7 +502,8 @@ const Designer = ({ productKey } = {}) => {
       };
 
       req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error || new Error("Failed to open IndexedDB"));
+      req.onerror = () =>
+        reject(req.error || new Error("Failed to open IndexedDB"));
     });
   };
 
@@ -506,7 +518,8 @@ const Designer = ({ productKey } = {}) => {
         // Prefer getAll when available.
         if (typeof store.getAll === "function") {
           const req = store.getAll();
-          req.onsuccess = () => resolve(Array.isArray(req.result) ? req.result : []);
+          req.onsuccess = () =>
+            resolve(Array.isArray(req.result) ? req.result : []);
           req.onerror = () => resolve([]);
         } else {
           const cursorReq = store.openCursor();
@@ -539,8 +552,10 @@ const Designer = ({ productKey } = {}) => {
         const store = tx.objectStore(CUSTOM_FONTS_STORE);
         store.put(record);
         tx.oncomplete = () => resolve(true);
-        tx.onerror = () => reject(tx.error || new Error("Failed to store font"));
-        tx.onabort = () => reject(tx.error || new Error("Failed to store font"));
+        tx.onerror = () =>
+          reject(tx.error || new Error("Failed to store font"));
+        tx.onabort = () =>
+          reject(tx.error || new Error("Failed to store font"));
       } catch (e) {
         reject(e);
       }
@@ -588,7 +603,8 @@ const Designer = ({ productKey } = {}) => {
     let total = sorted.reduce((sum, r) => sum + (Number(r?.size) || 0), 0);
 
     const shouldPrune = () =>
-      sorted.length > MAX_FONTS || (total > MAX_TOTAL_BYTES && sorted.length > 1);
+      sorted.length > MAX_FONTS ||
+      (total > MAX_TOTAL_BYTES && sorted.length > 1);
 
     while (shouldPrune()) {
       const oldest = sorted.shift();
@@ -624,7 +640,9 @@ const Designer = ({ productKey } = {}) => {
       }
       const familyCss = escapeCssString(fam);
       const urlCss = escapeCssString(url);
-      styleEl.textContent = `${styleEl.textContent || ""}\n@font-face {\n  font-family: \"${familyCss}\";\n  src: url(\"${urlCss}\");\n  font-display: swap;\n}`;
+      styleEl.textContent = `${
+        styleEl.textContent || ""
+      }\n@font-face {\n  font-family: \"${familyCss}\";\n  src: url(\"${urlCss}\");\n  font-display: swap;\n}`;
       return true;
     };
 
@@ -670,7 +688,9 @@ const Designer = ({ productKey } = {}) => {
         const mime = String(rec?.mime || "application/octet-stream");
         const blob = new Blob([bytes], { type: mime });
         const blobUrl = URL.createObjectURL(blob);
-        customFontBlobUrlsRef.current = Array.isArray(customFontBlobUrlsRef.current)
+        customFontBlobUrlsRef.current = Array.isArray(
+          customFontBlobUrlsRef.current
+        )
           ? [...customFontBlobUrlsRef.current, blobUrl]
           : [blobUrl];
 
@@ -1333,7 +1353,8 @@ const Designer = ({ productKey } = {}) => {
         } catch (e) {}
 
         // Load saved JSON from in-memory design store if present.
-        const overrideJson = designStoreRef.current?.[effectiveCloth]?.[sideLower];
+        const overrideJson =
+          designStoreRef.current?.[effectiveCloth]?.[sideLower];
 
         await handleSideChange(currentSide || "Front", {
           clothKey: effectiveCloth,
@@ -1496,7 +1517,8 @@ const Designer = ({ productKey } = {}) => {
 
     // Clear stored JSON for both sides for this cloth.
     setDesignStore((prev) => {
-      const prevCloth = prev && prev[cKey] ? prev[cKey] : { front: null, back: null };
+      const prevCloth =
+        prev && prev[cKey] ? prev[cKey] : { front: null, back: null };
       const updated = {
         ...prev,
         [cKey]: {
@@ -1997,7 +2019,9 @@ const Designer = ({ productKey } = {}) => {
               onClick={() => {
                 try {
                   const inputVal =
-                    (textInputRef.current && String(textInputRef.current.value)) || "";
+                    (textInputRef.current &&
+                      String(textInputRef.current.value)) ||
+                    "";
                   if (!inputVal.trim()) {
                     alert("Please enter text before adding.");
                     return;
@@ -2243,8 +2267,6 @@ const Designer = ({ productKey } = {}) => {
               })}
             </div>
           </div>
-
-          
         </div>
 
         {mockMode && (
@@ -2333,7 +2355,8 @@ const Designer = ({ productKey } = {}) => {
               <option value="Helvetica">Helvetica</option>
               <option value="Comic Sans MS">Comic Sans MS</option>
               <option value="Dancing Script">Dancing Script</option>
-              {Array.isArray(customFonts) && customFonts.length > 0 &&
+              {Array.isArray(customFonts) &&
+                customFonts.length > 0 &&
                 customFonts.map((f) => {
                   const family = f && f.family ? String(f.family) : "";
                   if (!family) return null;
@@ -2778,14 +2801,13 @@ const Designer = ({ productKey } = {}) => {
     beginCanvasRestore(switchToken);
 
     try {
-
-    const bailIfStale = () => {
-      if (switchToken !== sideSwitchTokenRef.current) {
-        endCanvasRestore(switchToken);
-        return true;
-      }
-      return false;
-    };
+      const bailIfStale = () => {
+        if (switchToken !== sideSwitchTokenRef.current) {
+          endCanvasRestore(switchToken);
+          return true;
+        }
+        return false;
+      };
 
       // Save current side design (per-side persistence)
       if (!opts.skipSave) saveCurrentSideDesign();
@@ -2799,14 +2821,14 @@ const Designer = ({ productKey } = {}) => {
           ? opts.colorName
           : selectedColor;
 
-    // Prepare next background path
+      // Prepare next background path
       const nextBgUrl = getBgUrlFor({
         clothKey,
         colorName: colorNameForSide,
         sideKey,
       });
       setImageUrl(nextBgUrl);
-    // ensure DOM background updates immediately (helps html2canvas captures)
+      // ensure DOM background updates immediately (helps html2canvas captures)
       try {
         if (stageRef.current) {
           stageRef.current.style.backgroundImage = `url('${nextBgUrl}')`;
@@ -2816,40 +2838,40 @@ const Designer = ({ productKey } = {}) => {
         }
       } catch (e) {}
 
-    // Clear selection before switching
+      // Clear selection before switching
       try {
         canvas.discardActiveObject();
       } catch (e) {}
 
-    // Load saved design for target side (if any)
+      // Load saved design for target side (if any)
       const saved =
         opts && opts.overrideJson
           ? opts.overrideJson
           : designStoreRef.current?.[clothKey]?.[String(sideKey).toLowerCase()];
 
-    // Clear everything and rebuild deterministically
+      // Clear everything and rebuild deterministically
       canvas.clear();
-
-    if (bailIfStale()) return;
-
-    // 1) set background
-      const bgImg = await setBackgroundImageAsync(canvas, nextBgUrl);
-
-    if (bailIfStale()) return;
-
-    // 2) load saved objects (if any)
-      if (saved) {
-        const res = await loadFromJSONAsync(canvas, saved);
 
       if (bailIfStale()) return;
 
-      if (res && res.ok === false) {
-        // If JSON load fails, don't continue with a half-loaded canvas.
-        // We still keep the background + recreated border.
-        console.warn("Side design JSON failed to load for", sideKey);
-      }
+      // 1) set background
+      const bgImg = await setBackgroundImageAsync(canvas, nextBgUrl);
 
-      // loadFromJSON can wipe background; restore
+      if (bailIfStale()) return;
+
+      // 2) load saved objects (if any)
+      if (saved) {
+        const res = await loadFromJSONAsync(canvas, saved);
+
+        if (bailIfStale()) return;
+
+        if (res && res.ok === false) {
+          // If JSON load fails, don't continue with a half-loaded canvas.
+          // We still keep the background + recreated border.
+          console.warn("Side design JSON failed to load for", sideKey);
+        }
+
+        // loadFromJSON can wipe background; restore
         if (bgImg) {
           try {
             canvas.setBackgroundImage(bgImg, () => {});
@@ -2859,22 +2881,22 @@ const Designer = ({ productKey } = {}) => {
         }
       }
 
-    // 3) Always remove any borders that might have been serialized accidentally
+      // 3) Always remove any borders that might have been serialized accidentally
       removeAnyClipBorders(canvas);
 
-    if (bailIfStale()) return;
+      if (bailIfStale()) return;
 
-    // 4) Recreate fresh base clip + border (border is non-selectable + non-evented)
+      // 4) Recreate fresh base clip + border (border is non-selectable + non-evented)
       const baseClip = createBaseClip(canvas, { clothKey, sideKey });
       CliprectRef.current = baseClip;
 
-    // 5) Apply clip to design objects
+      // 5) Apply clip to design objects
       applyClipToObjects();
 
-    // 6) Make sure clip is not interactive
+      // 6) Make sure clip is not interactive
       lockClipBorder(canvas);
 
-    // 7) Keep border visible on top
+      // 7) Keep border visible on top
       try {
         const border = canvas.getObjects().find((o) => o && o.isClipBorder);
         if (border) canvas.bringObjectToFront(border);
@@ -2885,7 +2907,7 @@ const Designer = ({ productKey } = {}) => {
       } catch (e) {}
       canvas.requestRenderAll();
 
-    // Seed history present state for this side if needed.
+      // Seed history present state for this side if needed.
       try {
         const cKey = String(clothKey || "men");
         const sKey = String(sideKey || "Front").toLowerCase();
@@ -3208,7 +3230,10 @@ const Designer = ({ productKey } = {}) => {
 
     const existingFamilies = new Set([
       ...Array.from(baseFonts),
-      ...(Array.isArray(customFonts) ? customFonts.map((f) => f && f.family) : [])
+      ...(Array.isArray(customFonts)
+        ? customFonts.map((f) => f && f.family)
+        : []
+      )
         .filter(Boolean)
         .map(String),
     ]);
@@ -3247,7 +3272,13 @@ const Designer = ({ productKey } = {}) => {
       setCustomFonts((prev) => {
         const list = Array.isArray(prev) ? prev : [];
         return mergeFontsByFamily(list, [
-          { id, family, sourceName: String(file.name || ""), mime, size: file.size },
+          {
+            id,
+            family,
+            sourceName: String(file.name || ""),
+            mime,
+            size: file.size,
+          },
         ]);
       });
 
@@ -3257,9 +3288,9 @@ const Designer = ({ productKey } = {}) => {
       try {
         URL.revokeObjectURL(blobUrl);
       } catch (e) {}
-      customFontBlobUrlsRef.current = (customFontBlobUrlsRef.current || []).filter(
-        (u) => u !== blobUrl
-      );
+      customFontBlobUrlsRef.current = (
+        customFontBlobUrlsRef.current || []
+      ).filter((u) => u !== blobUrl);
       console.warn("Font upload failed:", err);
       alert("Failed to load this font file.");
     }
@@ -3269,7 +3300,8 @@ const Designer = ({ productKey } = {}) => {
     const canvas = fabricCanvasRef.current;
     if (!canvas) return;
     const clipRect = CliprectRef.current;
-    const value = (textInputRef.current && String(textInputRef.current.value)) || "";
+    const value =
+      (textInputRef.current && String(textInputRef.current.value)) || "";
     const trimmed = value.trim();
     if (!trimmed) {
       alert("Please enter text before adding.");
@@ -3758,7 +3790,8 @@ const Designer = ({ productKey } = {}) => {
     const borderObjs = (objects || []).filter(
       (o) =>
         o &&
-        (o.isClipBorder || (Array.isArray(o.strokeDashArray) && o.strokeDashArray.length))
+        (o.isClipBorder ||
+          (Array.isArray(o.strokeDashArray) && o.strokeDashArray.length))
     );
     const prevBorderVis = borderObjs.map((o) => (o ? o.visible : true));
 
@@ -3854,9 +3887,13 @@ const Designer = ({ productKey } = {}) => {
           const designOnlyUrl = await captureDesignOnlyDataUrl({ scale: 4 });
           const designOnlyBase64 = String(designOnlyUrl).split(",")[1] || "";
           if (designOnlyBase64) {
-            zip.file(`Design_${indiaIsoSafe}_${sideKey}_design.png`, designOnlyBase64, {
-              base64: true,
-            });
+            zip.file(
+              `Design_${indiaIsoSafe}_${sideKey}_design.png`,
+              designOnlyBase64,
+              {
+                base64: true,
+              }
+            );
           }
         } catch (err) {
           // If design-only capture fails, continue without blocking zip creation
@@ -4398,8 +4435,12 @@ const Designer = ({ productKey } = {}) => {
           return (
             <div className="bg-white rounded-full px-4 py-2 flex items-center gap-4 border border-gray-100 shadow-md">
               <div className="flex flex-col items-start">
-                <div className="text-[10px] uppercase text-gray-400 font-semibold">Price</div>
-                <div className="text-sm font-extrabold text-gray-900">{p.hasAny ? `₹${p.price}` : "Add a design"}</div>
+                <div className="text-[10px] uppercase text-gray-400 font-semibold">
+                  Price
+                </div>
+                <div className="text-sm font-extrabold text-gray-900">
+                  {p.hasAny ? `₹${p.price}` : "Add a design"}
+                </div>
               </div>
             </div>
           );
@@ -4430,10 +4471,12 @@ const Designer = ({ productKey } = {}) => {
           Back
         </button>
 
-        <div className="text-white font-extrabold text-lg">{(() => {
-          const p = computeDesignPrice();
-          return p.hasAny ? `₹${p.price}` : "Add a design";
-        })()}</div>
+        <div className="text-white font-extrabold text-lg">
+          {(() => {
+            const p = computeDesignPrice();
+            return p.hasAny ? `₹${p.price}` : "Add a design";
+          })()}
+        </div>
 
         <button
           type="button"
@@ -4460,63 +4503,63 @@ const Designer = ({ productKey } = {}) => {
         </div>
         <div className={`p-5 flex-1 overflow-auto ${NO_SCROLLBAR}`}>
           <div className="h-full flex flex-col items-center justify-center gap-3 sm:gap-4">
-          {Object.values(SIDE_CONFIG).map((side) => {
-            const isActive = currentSide === side.key;
-            const thumbsrc = getBgUrlFor({
-              clothKey: cloth,
-              colorName: selectedColor,
-              sideKey: side.key,
-            });
+            {Object.values(SIDE_CONFIG).map((side) => {
+              const isActive = currentSide === side.key;
+              const thumbsrc = getBgUrlFor({
+                clothKey: cloth,
+                colorName: selectedColor,
+                sideKey: side.key,
+              });
 
-            return (
-              <button
-                key={side.key}
-                onClick={() => handleSideChange(side.key)}
-                onMouseEnter={(e) => {
-                  tweenTo(e.currentTarget, { y: -4, scale: 1.02 });
-                }}
-                onMouseLeave={(e) => {
-                  tweenTo(e.currentTarget, { y: 0, scale: 1 });
-                }}
-                onMouseDown={(e) => {
-                  tweenTo(e.currentTarget, { scale: 0.95, duration: 0.08 });
-                }}
-                onMouseUp={(e) => {
-                  tweenTo(e.currentTarget, { y: -4, scale: 1.02 });
-                }}
-                className={`relative flex flex-col items-center w-[88px] sm:w-[100px] px-2 py-4 rounded-2xl border transition ${
-                  isActive
-                    ? "border-transparent bg-white shadow-lg"
-                    : "border-transparent bg-white hover:border-transparent"
-                }`}
-              >
-                {/* The Selection Ring */}
-                <div
-                  className={`pointer-events-none absolute -inset-0.5 rounded-[18px] border-2 border-white transition-opacity ${
-                    isActive ? "opacity-100" : "opacity-0"
-                  }`}
-                />
-
-                <div className="w-[56px] h-[56px] sm:w-[60px] sm:h-[60px] mb-3 flex items-center justify-center">
-                  <img
-                    src={thumbsrc}
-                    alt={side.label}
-                    className={`max-w-full max-h-full object-contain ${
-                      isActive ? "" : "grayscale opacity-60"
-                    }`}
-                  />
-                </div>
-
-                <span
-                  className={`text-[12px] sm:text-[13px] font-extrabold uppercase tracking-[0.14em] ${
-                    isActive ? "text-black" : "text-gray-400"
+              return (
+                <button
+                  key={side.key}
+                  onClick={() => handleSideChange(side.key)}
+                  onMouseEnter={(e) => {
+                    tweenTo(e.currentTarget, { y: -4, scale: 1.02 });
+                  }}
+                  onMouseLeave={(e) => {
+                    tweenTo(e.currentTarget, { y: 0, scale: 1 });
+                  }}
+                  onMouseDown={(e) => {
+                    tweenTo(e.currentTarget, { scale: 0.95, duration: 0.08 });
+                  }}
+                  onMouseUp={(e) => {
+                    tweenTo(e.currentTarget, { y: -4, scale: 1.02 });
+                  }}
+                  className={`relative flex flex-col items-center w-[88px] sm:w-[100px] px-2 py-4 rounded-2xl border transition ${
+                    isActive
+                      ? "border-transparent bg-white shadow-lg"
+                      : "border-transparent bg-white hover:border-transparent"
                   }`}
                 >
-                  {side.label}
-                </span>
-              </button>
-            );
-          })}
+                  {/* The Selection Ring */}
+                  <div
+                    className={`pointer-events-none absolute -inset-0.5 rounded-[18px] border-2 border-white transition-opacity ${
+                      isActive ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+
+                  <div className="w-[56px] h-[56px] sm:w-[60px] sm:h-[60px] mb-3 flex items-center justify-center">
+                    <img
+                      src={thumbsrc}
+                      alt={side.label}
+                      className={`max-w-full max-h-full object-contain ${
+                        isActive ? "" : "grayscale opacity-60"
+                      }`}
+                    />
+                  </div>
+
+                  <span
+                    className={`text-[12px] sm:text-[13px] font-extrabold uppercase tracking-[0.14em] ${
+                      isActive ? "text-black" : "text-gray-400"
+                    }`}
+                  >
+                    {side.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -4695,12 +4738,16 @@ const Designer = ({ productKey } = {}) => {
                   <option value="Helvetica">Helvetica</option>
                   <option value="Comic Sans MS">Comic Sans MS</option>
                   <option value="Dancing Script">Dancing Script</option>
-                  {Array.isArray(customFonts) && customFonts.length > 0 &&
+                  {Array.isArray(customFonts) &&
+                    customFonts.length > 0 &&
                     customFonts.map((f) => {
                       const family = f && f.family ? String(f.family) : "";
                       if (!family) return null;
                       return (
-                        <option key={`custom-font-mobile-${family}`} value={family}>
+                        <option
+                          key={`custom-font-mobile-${family}`}
+                          value={family}
+                        >
                           {family}
                         </option>
                       );
@@ -4890,7 +4937,9 @@ const Designer = ({ productKey } = {}) => {
           <div className="w-[min(520px,92vw)] bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
               <div>
-                <div className="text-sm font-extrabold text-gray-900">Notice</div>
+                <div className="text-sm font-extrabold text-gray-900">
+                  Notice
+                </div>
                 <div className="text-[11px] text-gray-500">Please read</div>
               </div>
               <button
