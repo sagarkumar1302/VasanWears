@@ -4,7 +4,7 @@ const ZigZag = () => {
       <div className="grid md:grid-cols-2 gap-10 items-center">
         <div className="order-2 md:order-1">
           <span className="text-primary font-semibold uppercase text-sm">
-            Who we are
+            Who we are Nikhil
           </span>
           <h2 className="text-3xl md:text-4xl font-bold mt-2">
             Create stunning print for your business
