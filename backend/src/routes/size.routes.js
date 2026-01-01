@@ -11,7 +11,7 @@ import adminVerifyJwt from "../middleware/adminAuth.middleware.js";
 const router = express.Router();
 
 router.post("/", adminVerifyJwt, createSize);
-router.get("/", adminVerifyJwt, getAllSizes);
+router.get("/", getAllSizes);
 router.get("/websizes", getAllSizesWebsite);
 router.patch("/:sizeId", adminVerifyJwt, updateSize);
 router.delete("/:sizeId", adminVerifyJwt, deleteSize);

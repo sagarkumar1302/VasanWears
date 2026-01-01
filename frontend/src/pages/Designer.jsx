@@ -1,10 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
+import { addToCartApi } from "../utils/cartApi";
+import { useCartStore } from "../store/cartStore";
 import * as fabric from "fabric";
 import html2canvas from "html2canvas";
 import JSZip from "jszip";
 import { gsap } from "gsap";
 import * as THREE from "three";
+import { getAllSizesApi } from "../utils/productApi";
 import { getAllCategoriesForWebsite } from "../utils/productApi";
 import { getSubcategoryByIdApi } from "../utils/subCategoryApi";
 
@@ -304,8 +308,60 @@ const Designer = ({ productKey } = {}) => {
 
   const preview3dMountRef = useRef(null);
 
+  // Product picker state (used when Designer opened without product context)
+  const [productPickerOpen, setProductPickerOpen] = useState(false);
+  const [productPickerValues, setProductPickerValues] = useState({ productId: "", colorName: "", sizeName: "" });
+  const [sizesList, setSizesList] = useState([]);
+
+  useEffect(() => {
+    if (!productPickerOpen) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await getAllSizesApi();
+        // API returns ApiResponse-like object; try to extract array
+        const sizes = Array.isArray(res?.data) ? res.data : res?.data?.data || res?.data || [];
+        if (!cancelled) setSizesList(sizes);
+      } catch (err) {
+        console.error("Failed to fetch sizes for product picker", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [productPickerOpen]);
+
+  // Also fetch sizes on mount so the main UI size selector is available
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await getAllSizesApi();
+        const sizes = Array.isArray(res?.data) ? res.data : res?.data?.data || res?.data || [];
+        if (!cancelled) setSizesList(sizes);
+      } catch (err) {
+        console.error("Failed to fetch sizes on mount", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Set a sensible default size when sizes arrive
+  const [selectedSize, setSelectedSize] = useState("");
+  const selectedSizeRef = useRef("");
+  useEffect(() => {
+    if (sizesList && sizesList.length > 0 && !selectedSize) {
+      setSelectedSize(sizesList[0].name);
+      selectedSizeRef.current = sizesList[0].name;
+    }
+  }, [sizesList, selectedSize]);
+
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
+  const fetchCart = useCartStore((s) => s.fetchCart);
 
   // Map category/subcategory names to internal cloth keys
   const mapToClothKey = (catName = "", subName = "") => {
@@ -1170,6 +1226,7 @@ const Designer = ({ productKey } = {}) => {
   const [hoveredColorName, setHoveredColorName] = useState(null);
 
   const [selectedColor, setSelectedColor] = useState("Black");
+  
   const [imageUrl, setImageUrl] = useState(() =>
     getBgUrlFor({ clothKey: "men", colorName: "Black", sideKey: "Front" })
   );
@@ -4154,6 +4211,52 @@ const Designer = ({ productKey } = {}) => {
     setPreviewStaticImages({ Front: null, Back: null });
   }
 
+  // Add to cart helper used by modal and direct flows
+  async function performAddToCart({ productId, colorId, sizeId, colorName, sizeName }) {
+    try {
+      saveCurrentSideDesign();
+
+      const designImagesPayload = {
+        Front: previewStaticImages?.Front || previewImages?.Front || null,
+        Back: previewStaticImages?.Back || previewImages?.Back || null,
+      };
+
+      const designDataPayload = designStoreRef.current?.[String(cloth || "men")] || null;
+
+      if (!productId) {
+        toast.error("Product ID is required to add to cart");
+        return;
+      }
+
+      toast.loading("Adding to cart...");
+
+      await addToCartApi({
+        productId,
+        colorId: colorId || undefined,
+        sizeId: sizeId || undefined,
+        colorName: colorName || selectedColor,
+        sizeName: sizeName || undefined,
+        designImages: designImagesPayload,
+        designData: designDataPayload,
+        quantity: 1,
+      });
+
+      toast.dismiss();
+      await fetchCart();
+      toast.success("Added to cart");
+      setProductPickerOpen(false);
+      closePreview();
+      navigate("/cart");
+    } catch (err) {
+      toast.dismiss();
+      if (err.response?.status === 401) {
+        navigate("/login", { state: { from: location.pathname + location.search } });
+      } else {
+        toast.error(err.response?.data?.message || "Add to cart failed");
+      }
+    }
+  }
+
   const nextFrame = () => {
     return new Promise((resolve) => {
       requestAnimationFrame(() => resolve());
@@ -5079,11 +5182,156 @@ const Designer = ({ productKey } = {}) => {
 
             <div className="p-3.5 border-t border-gray-200 flex justify-end bg-white">
               <button
-                onClick={closePreview}
+                onClick={async () => {
+                  // If productId is in URL, use it. Otherwise open picker modal.
+                  const productId = searchParams.get("productId");
+                  if (!productId) {
+                    setProductPickerOpen(true);
+                    // Prefill color and size values
+                    setProductPickerValues((v) => ({ ...v, colorName: selectedColor, sizeName: v.sizeName || "" }));
+                    return;
+                  }
+
+                  // Otherwise proceed immediately
+                  try {
+                    saveCurrentSideDesign();
+
+                    const colorId = searchParams.get("colorId");
+                    const sizeId = searchParams.get("sizeId");
+
+                    const designImagesPayload = {
+                      Front: previewStaticImages?.Front || previewImages?.Front || null,
+                      Back: previewStaticImages?.Back || previewImages?.Back || null,
+                    };
+
+                    const designDataPayload = designStoreRef.current?.[String(cloth || "men")] || null;
+
+                    toast.loading("Adding to cart...");
+
+                    await addToCartApi({
+                      productId,
+                      colorId: colorId || undefined,
+                      sizeId: sizeId || undefined,
+                      colorName: selectedColor,
+                      sizeName: undefined,
+                      designImages: designImagesPayload,
+                      designData: designDataPayload,
+                      quantity: 1,
+                    });
+
+                    toast.dismiss();
+                    await fetchCart();
+                    toast.success("Added to cart");
+                    closePreview();
+                    navigate("/cart");
+                  } catch (err) {
+                    toast.dismiss();
+                    if (err.response?.status === 401) {
+                      navigate("/login", { state: { from: location.pathname + location.search } });
+                    } else {
+                      toast.error(err.response?.data?.message || "Add to cart failed");
+                    }
+                  }
+                }}
                 className="px-3.5 py-2.5 rounded-xl border border-gray-200 bg-green-600 text-white font-bold hover:bg-green-700 active:translate-y-px"
               >
                 Confirm and Proceed
               </button>
+            </div>
+          </div>
+        </div>
+
+
+      )}
+
+      {/* Product picker modal for when productId is not in URL */}
+      {productPickerOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className={`fixed inset-0 bg-black/55 backdrop-blur-[6px] flex items-center justify-center p-4`}
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setProductPickerOpen(false);
+          }}
+        >
+          <div className="w-[min(680px,98vw)] bg-white rounded-2xl shadow border border-gray-200 p-5">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <div className="text-base font-extrabold">Provide product details</div>
+                <div className="text-xs text-gray-500">Enter product id (required) or open the product page to customize from product. Choose size (optional) from available sizes.</div>
+              </div>
+              <button
+                onClick={() => setProductPickerOpen(false)}
+                className="w-9 h-9 rounded-xl border border-gray-200 bg-white text-gray-900 text-lg leading-none"
+                aria-label="Close picker"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="grid gap-3">
+              <input
+                placeholder="Product ID (required)"
+                value={productPickerValues.productId}
+                onChange={(e) => setProductPickerValues((p) => ({ ...p, productId: e.target.value }))}
+                className="border px-4 py-2 rounded-md"
+              />
+
+              <input
+                placeholder="Color name or id (optional)"
+                value={productPickerValues.colorName}
+                onChange={(e) => setProductPickerValues((p) => ({ ...p, colorName: e.target.value }))}
+                className="border px-4 py-2 rounded-md"
+              />
+
+              <div>
+                <label className="text-xs text-gray-500">Choose size (optional)</label>
+                <select
+                  value={productPickerValues.sizeName}
+                  onChange={(e) => setProductPickerValues((p) => ({ ...p, sizeName: e.target.value }))}
+                  className="w-full border px-3 py-2 rounded-md mt-1"
+                >
+                  <option value="">-- Select size (optional) --</option>
+                  {sizesList && sizesList.length > 0 ? (
+                    sizesList.map((s) => (
+                      <option key={s._id || s.name} value={s.name || s}>
+                        {s.name || s}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">No sizes available</option>
+                  )}
+                </select>
+              </div>
+
+              <div className="flex gap-3 justify-end mt-2">
+                <button
+                  onClick={() => setProductPickerOpen(false)}
+                  className="px-3 py-2 rounded-xl border border-gray-200 bg-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    const pid = String(productPickerValues.productId || "").trim();
+                    if (!pid) {
+                      toast.error("Product ID is required");
+                      return;
+                    }
+
+                    await performAddToCart({
+                      productId: pid,
+                      colorId: undefined,
+                      sizeId: undefined,
+                      colorName: productPickerValues.colorName || selectedColor,
+                      sizeName: productPickerValues.sizeName || undefined,
+                    });
+                  }}
+                  className="px-3 py-2 rounded-xl bg-green-600 text-white"
+                >
+                  Add to Cart
+                </button>
+              </div>
             </div>
           </div>
         </div>

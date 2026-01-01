@@ -9,7 +9,8 @@ app.use(cors({
     credentials: true,
 }))
 app.use(express.json({
-    limit: "4mb"
+    // Increased size to allow base64 preview image payloads from the Designer
+    limit: "10mb"
 }))
 app.use(express.urlencoded({
     extended: true

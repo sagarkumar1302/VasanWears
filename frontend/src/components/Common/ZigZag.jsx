@@ -32,9 +32,22 @@ const ZigZag = () => {
               meaning, and depth — and VasanWears brings that legacy into modern
               fashion."
             </p>
-            <p className="text-base text-gray-700 italic leading-relaxed">Those credits can be used to get your next T-shirt absolutely free.</p>
+            <p className="text-base text-gray-700 italic leading-relaxed">
+              Those credits can be used to get your next T-shirt absolutely
+              free.
+            </p>
           </div>
-
+          <div className="pt-6 pb-2">
+            <p className="text-gray-700 leading-relaxed">
+              Founded by{" "}
+              <span className="font-semibold text-primary5">Nikhil Verma</span>{" "}
+              and{" "}
+              <span className="font-semibold text-primary5">Sagar Kumar,</span>{" "}
+              VasanWears was born from an idea envisioned by Nikhil and brought
+              to life through Sagar’s execution—together shaping a platform
+              where creativity becomes wearable identity.
+            </p>
+          </div>
           <div className="pt-4 space-y-4">
             <h3 className="text-2xl font-bold text-gray-900">Our Story</h3>
             <p className="text-gray-600 leading-relaxed">

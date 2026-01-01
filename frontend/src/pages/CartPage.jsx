@@ -81,6 +81,17 @@ const CartPage = () => {
                         </p>
 
                         <p className="text-sm">Delivery: 5–7 business days</p>
+
+                        {item.design?.images?.Front && (
+                          <div className="mt-2">
+                            <div className="text-xs text-gray-500 mb-1">Your design</div>
+                            <img
+                              src={item.design.images.Front}
+                              alt="Design preview"
+                              className="w-20 h-24 object-cover rounded-md border"
+                            />
+                          </div>
+                        )}
                       </div>
                     </Link>
                   </div>

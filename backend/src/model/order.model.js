@@ -46,6 +46,12 @@ const orderItemSchema = new mongoose.Schema(
       type: Number,
       required: true, // price * quantity
     },
+
+    // Optional design snapshot for customized products
+    design: {
+      type: Object,
+      default: null,
+    },
   },
   { _id: false }
 );

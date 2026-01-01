@@ -17,6 +17,10 @@ export const addToCartApi = async ({
     productId,
     colorId,
     sizeId,
+    colorName,
+    sizeName,
+    designImages,
+    designData,
     quantity,
 }) => {
     try {
@@ -24,6 +28,10 @@ export const addToCartApi = async ({
             productId,
             colorId,
             sizeId,
+            colorName,
+            sizeName,
+            designImages,
+            designData,
             quantity,
         });
 

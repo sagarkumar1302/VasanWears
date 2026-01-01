@@ -45,6 +45,8 @@ export const placeOrder = async (req, res) => {
       quantity: item.quantity,
       price: item.price,
       total: item.price * item.quantity,
+      // Carry over any design snapshot attached to the cart item
+      design: item.design || null,
     }));
 
     const subtotal = cart.subtotal;

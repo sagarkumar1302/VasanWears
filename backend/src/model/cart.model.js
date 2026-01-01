@@ -41,6 +41,17 @@ const cartItemSchema = new mongoose.Schema(
       required: true, // snapshot price (sale || regular)
     },
 
+    // Optional custom design attached to the cart item. This stores the
+    // (uploaded) preview images and any additional metadata needed to
+    // reproduce the customer's design at order time.
+    design: {
+      images: {
+        Front: { type: String, default: null },
+        Back: { type: String, default: null },
+      },
+      data: { type: Object, default: null },
+    },
+
     addedAt: {
       type: Date,
       default: Date.now,
