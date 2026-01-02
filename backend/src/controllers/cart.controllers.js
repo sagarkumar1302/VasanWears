@@ -7,135 +7,144 @@ import { ApiResponse } from "../utils/ApiResponse.js";
  * ADD / UPDATE CART ITEM
  */
 const addToCart = async (req, res) => {
-    try {
-        const userId = req.user._id;
-        const { productId, colorId, sizeId, quantity } = req.body;
+  try {
+    const userId = req.user._id;
+    const {
+      itemType,
+      productId,
+      colorId,
+      sizeId,
+      quantity,
+      design,
+      price,
+    } = req.body;
 
-        /* ================= VALIDATION ================= */
-        if (!productId || !colorId || !sizeId || !quantity) {
-            return res.status(400).json(
-                new ApiResponse(400, "Product, color, size and quantity are required")
-            );
-        }
-
-        if (quantity <= 0) {
-            return res
-                .status(400)
-                .json(new ApiResponse(400, "Quantity must be greater than 0"));
-        }
-
-        /* ================= FETCH PRODUCT ================= */
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res
-                .status(404)
-                .json(new ApiResponse(404, "Product not found"));
-        }
-
-        /* ================= VALIDATE SIZE ================= */
-        const validSize = product.sizes.some(
-            (s) => s.toString() === sizeId
-        );
-
-        if (!validSize) {
-            return res
-                .status(400)
-                .json(new ApiResponse(400, "Invalid size selected"));
-        }
-
-        /* ================= FIND VARIANT (COLOR ONLY) ================= */
-        const variant = product.variants.find(
-            (v) => v.color.toString() === colorId
-        );
-
-        if (!variant) {
-            return res
-                .status(404)
-                .json(new ApiResponse(404, "Selected color not available"));
-        }
-
-        /* ================= STOCK CHECK ================= */
-        if (variant.stock < quantity) {
-            return res
-                .status(400)
-                .json(new ApiResponse(400, "Insufficient stock"));
-        }
-
-        const price = variant.salePrice ?? variant.regularPrice;
-
-        /* ================= FIND / CREATE CART ================= */
-        let cart = await Cart.findOne({ user: userId });
-        if (!cart) {
-            cart = await Cart.create({
-                user: userId,
-                items: [],
-                subtotal: 0,
-            });
-        }
-
-        /* ================= UPDATE CART ITEM ================= */
-        const existingItem = cart.items.find(
-            (item) =>
-                item.product.toString() === productId &&
-                item.color.toString() === colorId &&
-                item.size.toString() === sizeId
-        );
-
-        if (existingItem) {
-            existingItem.quantity += quantity;
-        } else {
-            cart.items.push({
-                product: productId,
-                variant: variant._id, // color-based variant
-                color: colorId,
-                size: sizeId,
-                sku: variant.sku,
-                quantity,
-                price,
-            });
-        }
-
-        /* ================= RECALCULATE TOTAL ================= */
-        cart.subtotal = cart.items.reduce(
-            (sum, item) => sum + item.price * item.quantity,
-            0
-        );
-
-        await cart.save();
-
-        return res
-            .status(200)
-            .json(new ApiResponse(200, "Item added to cart", cart));
-    } catch (error) {
-        return res
-            .status(500)
-            .json(new ApiResponse(500, error.message));
+    if (!itemType || !quantity || quantity < 1) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, "Invalid cart data"));
     }
+
+    let cart = await Cart.findOne({ user: userId });
+    if (!cart) {
+      cart = await Cart.create({ user: userId, items: [], subtotal: 0 });
+    }
+
+    /* =========================
+       CATALOG PRODUCT
+       ========================= */
+    if (itemType === "catalog") {
+      if (!productId || !colorId || !sizeId) {
+        return res
+          .status(400)
+          .json(new ApiResponse(400, "Product, color and size are required"));
+      }
+
+      const product = await Product.findById(productId);
+      if (!product) {
+        return res
+          .status(404)
+          .json(new ApiResponse(404, "Product not found"));
+      }
+
+      const variant = product.variants.find(
+        (v) => v.color.toString() === colorId
+      );
+
+      if (!variant) {
+        return res
+          .status(404)
+          .json(new ApiResponse(404, "Color variant not found"));
+      }
+
+      if (variant.stock < quantity) {
+        return res
+          .status(400)
+          .json(new ApiResponse(400, "Insufficient stock"));
+      }
+
+      const finalPrice = variant.salePrice ?? variant.regularPrice;
+
+      const existingItem = cart.items.find(
+        (item) =>
+          item.itemType === "catalog" &&
+          item.product?.toString() === productId &&
+          item.color?.toString() === colorId &&
+          item.size?.toString() === sizeId
+      );
+
+      if (existingItem) {
+        existingItem.quantity += quantity;
+      } else {
+        cart.items.push({
+          itemType: "catalog",
+          product: productId,
+          variant: variant._id,
+          color: colorId,
+          size: sizeId,
+          sku: variant.sku,
+          quantity,
+          price: finalPrice,
+        });
+      }
+    }
+
+    /* =========================
+       CUSTOM DESIGN PRODUCT
+       ========================= */
+    if (itemType === "custom") {
+      if (!design || !design.images || !price) {
+        return res
+          .status(400)
+          .json(new ApiResponse(400, "Design and price required"));
+      }
+
+      cart.items.push({
+        itemType: "custom",
+        design, // snapshot (designId + images + title)
+        quantity,
+        price,
+      });
+    }
+
+    cart.subtotal = cart.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    await cart.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Item added to cart", cart));
+  } catch (error) {
+    return res
+      .status(500)
+      .json(new ApiResponse(500, error.message));
+  }
 };
 
 const getCart = async (req, res) => {
-    try {
-        let cart = await Cart.findOne({ user: req.user._id })
-            .populate("items.product")
-            .populate("items.color")
-            .populate("items.size");
+  try {
+    const cart = await Cart.findOne({ user: req.user._id })
+      .populate("items.product")
+      .populate("items.color")
+      .populate("items.size")
+      .populate("items.design.designId");
 
-        if (!cart) {
-            cart = {
-                items: [],
-                subtotal: 0,
-            };
-        }
-
-        return res.status(200).json(
-            new ApiResponse(200, "Cart fetched successfully", cart)
-        );
-    } catch (error) {
-        return res
-            .status(500)
-            .json(new ApiResponse(500, error.message));
-    }
+    return res.status(200).json(
+      new ApiResponse(200, "Cart fetched successfully", cart || {
+        items: [],
+        subtotal: 0,
+      })
+    );
+  } catch (error) {
+    return res
+      .status(500)
+      .json(new ApiResponse(500, error.message));
+  }
 };
+
 
 const removeFromCart = async (req, res) => {
     try {
@@ -198,56 +207,58 @@ const clearCart = async (req, res) => {
 };
 
 const updateCartItem = async (req, res) => {
-    try {
-        const { itemId } = req.params;
-        const { quantity } = req.body;
+  try {
+    const { itemId } = req.params;
+    const { quantity } = req.body;
 
-        if (!quantity || quantity < 1) {
-            return res
-                .status(400)
-                .json(new ApiResponse(400, "Quantity must be at least 1"));
-        }
-
-        const cart = await Cart.findOne({ user: req.user._id });
-        if (!cart) {
-            return res
-                .status(404)
-                .json(new ApiResponse(404, "Cart not found"));
-        }
-
-        const item = cart.items.id(itemId);
-        if (!item) {
-            return res
-                .status(404)
-                .json(new ApiResponse(404, "Item not found"));
-        }
-
-        // OPTIONAL (RECOMMENDED): stock check
-        const product = await Product.findById(item.product);
-        const variant = product?.variants?.id(item.variant);
-
-        if (!variant || variant.stock < quantity) {
-            return res
-                .status(400)
-                .json(new ApiResponse(400, "Insufficient stock"));
-        }
-
-        item.quantity = quantity;
-
-        cart.subtotal = cart.items.reduce(
-            (sum, item) => sum + item.price * item.quantity,
-            0
-        );
-
-        await cart.save();
-
-        res.status(200).json(
-            new ApiResponse(200, "Item quantity updated successfully", cart)
-        );
-    } catch (error) {
-        res.status(500).json(new ApiResponse(500, error.message));
+    if (!quantity || quantity < 1) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, "Quantity must be at least 1"));
     }
+
+    const cart = await Cart.findOne({ user: req.user._id });
+    if (!cart) {
+      return res
+        .status(404)
+        .json(new ApiResponse(404, "Cart not found"));
+    }
+
+    const item = cart.items.id(itemId);
+    if (!item) {
+      return res
+        .status(404)
+        .json(new ApiResponse(404, "Item not found"));
+    }
+
+    if (item.itemType === "catalog") {
+      const product = await Product.findById(item.product);
+      const variant = product?.variants?.id(item.variant);
+
+      if (!variant || variant.stock < quantity) {
+        return res
+          .status(400)
+          .json(new ApiResponse(400, "Insufficient stock"));
+      }
+    }
+
+    item.quantity = quantity;
+
+    cart.subtotal = cart.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    await cart.save();
+
+    res.status(200).json(
+      new ApiResponse(200, "Item quantity updated successfully", cart)
+    );
+  } catch (error) {
+    res.status(500).json(new ApiResponse(500, error.message));
+  }
 };
+
 
 
 export { addToCart, getCart, removeFromCart, clearCart, updateCartItem };

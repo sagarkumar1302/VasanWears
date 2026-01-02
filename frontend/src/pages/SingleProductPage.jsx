@@ -196,20 +196,24 @@ const SingleProductPage = () => {
     }
   };
   const handleColorChange = (colorId) => {
-    const variant = product.variants.find((v) => v.color === colorId);
+  const variant = product.variants.find(
+    (v) =>
+      v.color?._id?.toString() === colorId ||
+      v.color?.toString() === colorId
+  );
 
-    if (!variant) return;
+  if (!variant) return;
 
-    setSelectedVariant(variant);
-    setSelectedColor(colorId);
-    setSelectedIndex(0);
+  setSelectedVariant(variant);
+  setSelectedColor(colorId);
+  setSelectedIndex(0);
 
-    // 🔗 Update URL (KEEP SIZE)
-    navigate(
-      `/shop/${product._id}/${product.slug}?variant=${variant._id}&size=${selectedSize}`,
-      { replace: true }
-    );
-  };
+  navigate(
+    `/shop/${product._id}/${product.slug}?variant=${variant._id}&size=${selectedSize}`,
+    { replace: true }
+  );
+};
+
 
   const handleSizeChange = (sizeId) => {
     setSelectedSize(sizeId);
@@ -269,30 +273,28 @@ const SingleProductPage = () => {
     });
   };
   const handleAddToCart = async () => {
-    if (!selectedColor || !selectedSize) {
-      toast.error("Please select color and size");
+    if (!selectedVariant || !selectedSize) {
+      toast.error("Select color and size");
       return;
     }
 
     try {
       toast.loading("Adding to cart...");
       await addToCartApi({
+        itemType: "catalog",
         productId: product._id,
+        variantId: selectedVariant._id,
         colorId: selectedColor,
         sizeId: selectedSize,
         quantity: cartCount,
       });
+
       toast.dismiss();
-      await fetchCart(); // 🔥 REAL-TIME UPDATE
+      await fetchCart();
       toast.success("Added to cart");
     } catch (err) {
-      if (err.response?.status === 401) {
-        navigate("/login", {
-          state: { from: location.pathname + location.search },
-        });
-      } else {
-        toast.error(err.response?.data?.message || "Add to cart failed");
-      }
+      toast.dismiss();
+      toast.error(err.response?.data?.message || "Failed");
     }
   };
 

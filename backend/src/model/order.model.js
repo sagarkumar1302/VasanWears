@@ -3,34 +3,73 @@ import mongoose from "mongoose";
 /* ================= ORDER ITEM ================= */
 const orderItemSchema = new mongoose.Schema(
   {
-    product: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+    itemType: {
+      type: String,
+      enum: ["catalog", "custom"],
       required: true,
     },
 
+    /* =========================
+       CATALOG PRODUCT
+       ========================= */
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: function () {
+        return this.itemType === "catalog";
+      },
+    },
+
     variant: {
-      type: mongoose.Schema.Types.ObjectId, // Product.variants._id
-      required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      required: function () {
+        return this.itemType === "catalog";
+      },
     },
 
     color: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Color",
-      required: true,
+      required: function () {
+        return this.itemType === "catalog";
+      },
     },
 
     size: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Size",
-      default: null, // free-size products
+      default: null,
     },
 
     sku: {
       type: String,
-      required: true,
+      required: function () {
+        return this.itemType === "catalog";
+      },
     },
 
+    /* =========================
+       CUSTOM DESIGN
+       ========================= */
+    design: {
+      designId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Design",
+      },
+
+      title: String,
+
+      images: {
+        front: String,
+        back: String,
+        frontDesignArea: String,
+        backDesignArea: String,
+      },
+    },
+
+    /* =========================
+       COMMON FIELDS
+       ========================= */
     quantity: {
       type: Number,
       required: true,
@@ -39,22 +78,17 @@ const orderItemSchema = new mongoose.Schema(
 
     price: {
       type: Number,
-      required: true, // snapshot price at purchase time
+      required: true, // snapshot price
     },
 
     total: {
       type: Number,
       required: true, // price * quantity
     },
-
-    // Optional design snapshot for customized products
-    design: {
-      type: Object,
-      default: null,
-    },
   },
   { _id: false }
 );
+
 
 /* ================= SHIPPING ADDRESS ================= */
 const shippingAddressSchema = new mongoose.Schema(

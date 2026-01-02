@@ -48,6 +48,7 @@ import TermsAndCondition from "./pages/TermsAndCondition";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CancellationPolicy from "./pages/CancellationPolicy";
 import ContactUs from "./pages/ContactUs";
+import CreateDesign from "./pages/CreateDesign";
 const App = () => {
   const setUser = useAuthStore((s) => s.setUser);
   const setAuthChecked = useAuthStore((s) => s.setAuthChecked);
@@ -102,6 +103,7 @@ const App = () => {
           <Route path="*" element={<NotFound />} />
 
           <Route element={<ProtectedRoute />}>
+            <Route path="/create-design" element={<CreateDesign />}></Route>
             <Route path="/design" element={<Designer />}></Route>
             <Route path="/cart" element={<CartPage />}></Route>
             <Route path="/wishlist" element={<Wishlist />}></Route>

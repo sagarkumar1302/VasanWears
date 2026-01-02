@@ -27,7 +27,7 @@ export const placeOrder = async (req, res) => {
     }
 
     const cart = await Cart.findOne({ user: userId }).populate(
-      "items.product items.color items.size"
+      "items.product items.color items.size items.design.designId"
     );
 
     if (!cart || cart.items.length === 0) {
@@ -36,18 +36,38 @@ export const placeOrder = async (req, res) => {
         .json(new ApiResponse(400, "Cart is empty"));
     }
 
-    const orderItems = cart.items.map((item) => ({
-      product: item.product._id,
-      variant: item.variant,
-      color: item.color._id,
-      size: item.size?._id || null,
-      sku: item.sku,
-      quantity: item.quantity,
-      price: item.price,
-      total: item.price * item.quantity,
-      // Carry over any design snapshot attached to the cart item
-      design: item.design || null,
-    }));
+    /* ================= BUILD ORDER ITEMS ================= */
+    const orderItems = cart.items.map((item) => {
+      // ---------- CATALOG ----------
+      if (item.itemType === "catalog") {
+        return {
+          itemType: "catalog",
+          product: item.product,
+          variant: item.variant,
+          color: item.color,
+          size: item.size || null,
+          sku: item.sku,
+          quantity: item.quantity,
+          price: item.price,
+          total: item.price * item.quantity,
+        };
+      }
+
+      // ---------- CUSTOM DESIGN ----------
+      return {
+        itemType: "custom",
+        quantity: item.quantity,
+        price: item.price,
+        total: item.price * item.quantity,
+
+        // snapshot for production
+        design: {
+          designId: item.design.designId,
+          title: item.design.title,
+          images: item.design.images,
+        },
+      };
+    });
 
     const subtotal = cart.subtotal;
     const totalAmount = subtotal - discount + deliveryCharge;
@@ -103,10 +123,9 @@ export const placeOrder = async (req, res) => {
         buttonText: "View Order",
         buttonLink: `${process.env.ADMIN_PANEL_URL}/orders/${order._id}`,
       });
-
-      return res.status(201).json(
-        new ApiResponse(201, "COD order placed", { order })
-      );
+      return res
+        .status(201)
+        .json(new ApiResponse(201, "COD order placed", { order }));
     }
 
     /* ================= ONLINE ================= */
@@ -142,23 +161,23 @@ export const placeOrder = async (req, res) => {
 };
 
 
-export const getMyOrders = async (req, res) => {
-  try {
-    const orders = await Order.find({ user: req.user._id })
-      .populate("items.product items.color items.size paymentId")
-      .sort({ createdAt: -1 });
 
-    res.status(200).json(
-      new ApiResponse(200, "Orders fetched successfully", orders)
-    );
-  } catch (error) {
-    res.status(500).json(new ApiResponse(500, error.message));
-  }
+export const getMyOrders = async (req, res) => {
+  const orders = await Order.find({ user: req.user._id })
+    .populate(
+      "items.product items.color items.size items.design.designId paymentId"
+    )
+    .sort({ createdAt: -1 });
+
+  res.status(200).json(
+    new ApiResponse(200, "Orders fetched successfully", orders)
+  );
 };
+
 export const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
-      .populate("items.product items.color items.size paymentId");
+      .populate("items.product items.color items.size paymentId items.design.designId");
 
     if (!order) {
       return res

@@ -1,58 +1,125 @@
-import { ApiResponse } from "../utils/ApiResponse.js";
 import { Design } from "../model/design.model.js";
-import { User } from "../model/user.model.js";
-const createDesign = async (req, res) => {
-    try {
-        const { title, images, product, isPublic } = req.body;
-        const design = await Design.create({
-            title,
-            images,
-            product,
-            isPublic,
-            createdBy: req.user._id,
-        });
-        return res
-            .status(201)
-            .json(new ApiResponse(201, "Design created successfully", design));
-    } catch (error) {
-        return res
-            .status(500)
-            .json(new ApiResponse(500, error.message));
+import { asyncHandler } from "../utils/AsyncHandler.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { uploadBase64ToS3 } from "../utils/uploadToS3.js";
+
+/**
+ * CREATE DESIGN
+ */
+export const createDesign = asyncHandler(async (req, res) => {
+  const { title, images, sellPrice, isPublic } = req.body;
+
+  if (!title || !images?.front || !sellPrice) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, "Required fields missing"));
+  }
+
+  // Upload images (base64) to S3
+  const uploadedImages = {};
+  for (const key of Object.keys(images)) {
+    if (images[key]) {
+      uploadedImages[key] = await uploadBase64ToS3(images[key], "designs");
     }
-};
-const getAllDesigns = async (req, res) => {
-    const designs = await Design.find({ isPublic: true })
-        .populate("createdBy", "name")
-        .sort({ likesCount: -1 });
+  }
 
-    res.json(new ApiResponse(200, "Designs fetched successfully", designs));
-};
-const toggleLikeDesign = async (req, res) => {
-    const design = await Design.findById(req.params.id);
+  const design = await Design.create({
+    title,
+    images: uploadedImages,
+    sellPrice,
+    isPublic,
+    createdBy: req.user._id,
+  });
 
-    const userId = req.user._id.toString();
+  res.status(201).json(
+    new ApiResponse(201, "Design created successfully", design)
+  );
+});
 
-    const alreadyLiked = design.likedBy.includes(userId);
+/**
+ * LIKE / UNLIKE DESIGN
+ */
+export const toggleLikeDesign = asyncHandler(async (req, res) => {
+  const { id } = req.params;
 
-    if (alreadyLiked) {
-        design.likedBy.pull(userId);
-        design.likesCount--;
-    } else {
-        design.likedBy.push(userId);
-        design.likesCount++;
+  const design = await Design.findById(id);
+  if (!design) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, "Design not found"));
+  }
 
-        // ⭐ ADD POINT TO CREATOR
-        await User.findByIdAndUpdate(design.createdBy, {
-            $inc: { points: 1 },
-        });
-    }
+  const userId = req.user._id;
+  const alreadyLiked = design.likedBy.includes(userId);
 
-    await design.save();
+  if (alreadyLiked) {
+    design.likedBy.pull(userId);
+    design.likesCount -= 1;
+  } else {
+    design.likedBy.push(userId);
+    design.likesCount += 1;
+  }
 
-    res.json(new ApiResponse(200, "Design like status toggled", {
-        likesCount: design.likesCount,
-        likedBy: design.likedBy,
-    }));
-};
+  await design.save();
 
-export { createDesign, getAllDesigns, toggleLikeDesign };
+  res.json(
+    new ApiResponse(200, "Like status updated", {
+      likesCount: design.likesCount,
+      liked: !alreadyLiked,
+    })
+  );
+});
+
+/**
+ * GET ALL PUBLIC DESIGNS
+ */
+export const getAllDesigns = asyncHandler(async (req, res) => {
+  const designs = await Design.find({ isPublic: true })
+    .populate("createdBy", "name email")
+    .sort({ createdAt: -1 });
+
+  res.json(
+    new ApiResponse(200, "Designs fetched successfully", designs)
+  );
+});
+
+/**
+ * GET DESIGNS OF LOGGED-IN USER
+ */
+export const getMyDesigns = asyncHandler(async (req, res) => {
+  const designs = await Design.find({ createdBy: req.user._id })
+    .sort({ createdAt: -1 });
+
+  res.json(
+    new ApiResponse(200, "Your designs fetched successfully", designs)
+  );
+});
+
+/**
+ * UPDATE DESIGN (publish / unpublish)
+ */
+export const updateDesignVisibility = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { isPublic } = req.body;
+
+  const design = await Design.findById(id);
+  if (!design) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, "Design not found"));
+  }
+
+  // only owner or admin
+  if (design.createdBy.toString() !== req.user._id.toString()) {
+    return res
+      .status(403)
+      .json(new ApiResponse(403, "Not authorized"));
+  }
+
+  design.isPublic = isPublic;
+  await design.save();
+
+  res.json(
+    new ApiResponse(200, "Design updated successfully", design)
+  );
+});

@@ -30,6 +30,7 @@ import orderRoutes from "./routes/order.routes.js"
 import paymentRoutes from "./routes/payment.routes.js"
 import subscriberRoutes from "./routes/subscriber.routes.js"
 import contactRoutes from "./routes/contact.routes.js"
+import designRoutes from "./routes/design.routes.js"
 app.use("/api/colors", colorRoutes);
 app.use("/api/sizes", sizeRoutes);
 app.use("/api/user", userRouter)
@@ -43,4 +44,5 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/subscribers", subscriberRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/designs", designRoutes);
 export {app}

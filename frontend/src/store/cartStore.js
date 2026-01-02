@@ -17,8 +17,8 @@ export const useCartStore = create((set, get) => ({
     try {
       const res = await getCartApi();
       const cart = res.data || { items: [], subtotal: 0 };
-      console.log("Cart 1",cart);
-      
+      console.log("Cart 1", cart);
+
       const totalQty = cart.items.reduce(
         (sum, item) => sum + item.quantity,
         0
@@ -39,25 +39,42 @@ export const useCartStore = create((set, get) => ({
   updateQty: async (itemId, quantity) => {
     if (quantity < 1) return;
 
-    // 🔥 Optimistic UI
-    set((state) => ({
-      items: state.items.map((i) =>
+    set((state) => {
+      const updatedItems = state.items.map((i) =>
         i._id === itemId ? { ...i, quantity } : i
-      ),
-      subtotal: state.items.reduce(
-        (sum, i) =>
-          sum +
-          (i._id === itemId ? quantity : i.quantity) * i.price,
-        0
-      ),
-    }));
+      );
+
+      return {
+        items: updatedItems,
+        subtotal: updatedItems.reduce(
+          (sum, i) => sum + i.price * i.quantity,
+          0
+        ),
+      };
+    });
 
     try {
       await updateCartItemApi(itemId, quantity);
-      await get().fetchCart(); // sync
+      await get().fetchCart();
     } catch {
-      await get().fetchCart(); // rollback
+      await get().fetchCart();
     }
+  },
+
+  getItemDisplayData: (item) => {
+    if (item.itemType === "custom") {
+      return {
+        title: item.design?.title || "Custom Design",
+        image: item.design?.images?.front,
+        price: item.price,
+      };
+    }
+
+    return {
+      title: item.product?.title,
+      image: item.product?.featuredImage,
+      price: item.price,
+    };
   },
 
   /* ================= REMOVE ITEM ================= */

@@ -2,34 +2,71 @@ import mongoose from "mongoose";
 
 const cartItemSchema = new mongoose.Schema(
   {
+    itemType: {
+      type: String,
+      enum: ["catalog", "custom"],
+      required: true,
+    },
+
+    /* =========================
+       NORMAL CATALOG PRODUCT
+       ========================= */
     product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
-      required: true,
+      required: function () {
+        return this.itemType === "catalog";
+      },
     },
 
     variant: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true, // Product.variants._id
+      required: function () {
+        return this.itemType === "catalog";
+      },
     },
 
     color: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Color",
-      required: true,
+      required: function () {
+        return this.itemType === "catalog";
+      },
     },
 
     size: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Size",
-      default: null, // null = free size / any size
+      default: null,
     },
 
     sku: {
       type: String,
-      required: true,
     },
 
+    /* =========================
+       CUSTOM DESIGN PRODUCT
+       ========================= */
+    design: {
+      designId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Design",
+      },
+
+      // 🔒 SNAPSHOT (required for safety)
+      title: String,
+
+      images: {
+        front: String,
+        back: String,
+        frontDesignArea: String,
+        backDesignArea: String,
+      },
+    },
+
+    /* =========================
+       COMMON FIELDS
+       ========================= */
     quantity: {
       type: Number,
       min: 1,
@@ -38,18 +75,7 @@ const cartItemSchema = new mongoose.Schema(
 
     price: {
       type: Number,
-      required: true, // snapshot price (sale || regular)
-    },
-
-    // Optional custom design attached to the cart item. This stores the
-    // (uploaded) preview images and any additional metadata needed to
-    // reproduce the customer's design at order time.
-    design: {
-      images: {
-        Front: { type: String, default: null },
-        Back: { type: String, default: null },
-      },
-      data: { type: Object, default: null },
+      required: true,
     },
 
     addedAt: {
@@ -66,7 +92,7 @@ const cartSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true, // ONE CART PER USER ✅
+      unique: true,
     },
 
     items: [cartItemSchema],

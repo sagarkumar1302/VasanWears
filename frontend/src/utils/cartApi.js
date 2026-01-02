@@ -14,24 +14,22 @@ export const getCartApi = async () => {
 };
 
 export const addToCartApi = async ({
+    itemType,
     productId,
+    variantId,
     colorId,
     sizeId,
-    colorName,
-    sizeName,
-    designImages,
-    designData,
+    designId,
     quantity,
 }) => {
     try {
         const res = await API.post("/cart/add", {
+            itemType,
             productId,
+            variantId,
             colorId,
             sizeId,
-            colorName,
-            sizeName,
-            designImages,
-            designData,
+            designId,
             quantity,
         });
 

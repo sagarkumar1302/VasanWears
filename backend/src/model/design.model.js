@@ -9,12 +9,8 @@ const designSchema = new mongoose.Schema(
     images: {
       front: String,
       back: String,
-    },
-
-    product: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
-      required: true,
+      frontDesignArea: String,
+      backDesignArea: String,
     },
 
     createdBy: {
@@ -34,6 +30,10 @@ const designSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    sellPrice: {
+      type: Number,
+      required: true,
+    },
 
     isPublic: {
       type: Boolean,
@@ -44,6 +44,6 @@ const designSchema = new mongoose.Schema(
 );
 
 export const Design = mongoose.model(
-    "Design",
-    designSchema
+  "Design",
+  designSchema
 );
