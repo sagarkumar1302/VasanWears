@@ -65,6 +65,17 @@ const orderItemSchema = new mongoose.Schema(
         frontDesignArea: String,
         backDesignArea: String,
       },
+      size: {
+        id: mongoose.Schema.Types.ObjectId, // optional
+        name: String, // "S", "M", "L"
+      },
+
+      // 🎨 Selected color (snapshot)
+      color: {
+        id: mongoose.Schema.Types.ObjectId, // optional
+        name: String,
+        hexCode: String,
+      },
     },
 
     /* =========================

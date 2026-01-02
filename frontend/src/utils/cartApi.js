@@ -16,28 +16,38 @@ export const getCartApi = async () => {
 export const addToCartApi = async ({
     itemType,
     productId,
-    variantId,
     colorId,
     sizeId,
-    designId,
     quantity,
+
+    // 👇 only for custom
+    design,
+    price,
 }) => {
     try {
-        const res = await API.post("/cart/add", {
+        const payload = {
             itemType,
-            productId,
-            variantId,
-            colorId,
-            sizeId,
-            designId,
             quantity,
-        });
+        };
 
+        if (itemType === "catalog") {
+            payload.productId = productId;
+            payload.colorId = colorId;
+            payload.sizeId = sizeId;
+        }
+
+        if (itemType === "custom") {
+            payload.design = design; // FULL SNAPSHOT OBJECT
+            payload.price = price;
+        }
+
+        const res = await API.post("/cart/add", payload);
         return res.data;
     } catch (err) {
         throw err;
     }
 };
+
 
 export const removeFromCartApi = async (itemId) => {
     try {

@@ -9,10 +9,17 @@ import { uploadBase64ToS3 } from "../utils/uploadToS3.js";
 export const createDesign = asyncHandler(async (req, res) => {
   const { title, images, sellPrice, isPublic } = req.body;
 
-  if (!title || !images?.front || !sellPrice) {
+  if (!title || !images || !sellPrice) {
     return res
       .status(400)
       .json(new ApiResponse(400, "Required fields missing"));
+  }
+
+  // At least one side image is required
+  if (!images.front && !images.back) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, "At least one side image is required"));
   }
 
   // Upload images (base64) to S3

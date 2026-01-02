@@ -2,10 +2,10 @@ import { Cart } from "../model/cart.model.js";
 import { Product } from "../model/product.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+const calculateSubtotal = (items) =>
+  items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-/**
- * ADD / UPDATE CART ITEM
- */
+
 const addToCart = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -32,12 +32,12 @@ const addToCart = async (req, res) => {
 
     /* =========================
        CATALOG PRODUCT
-       ========================= */
+    ========================= */
     if (itemType === "catalog") {
       if (!productId || !colorId || !sizeId) {
         return res
           .status(400)
-          .json(new ApiResponse(400, "Product, color and size are required"));
+          .json(new ApiResponse(400, "Product, color & size required"));
       }
 
       const product = await Product.findById(productId);
@@ -54,28 +54,33 @@ const addToCart = async (req, res) => {
       if (!variant) {
         return res
           .status(404)
-          .json(new ApiResponse(404, "Color variant not found"));
-      }
-
-      if (variant.stock < quantity) {
-        return res
-          .status(400)
-          .json(new ApiResponse(400, "Insufficient stock"));
+          .json(new ApiResponse(404, "Variant not found"));
       }
 
       const finalPrice = variant.salePrice ?? variant.regularPrice;
 
       const existingItem = cart.items.find(
-        (item) =>
-          item.itemType === "catalog" &&
-          item.product?.toString() === productId &&
-          item.color?.toString() === colorId &&
-          item.size?.toString() === sizeId
+        (i) =>
+          i.itemType === "catalog" &&
+          i.product?.toString() === productId &&
+          i.color?.toString() === colorId &&
+          i.size?.toString() === sizeId
       );
 
       if (existingItem) {
+        if (variant.stock < existingItem.quantity + quantity) {
+          return res
+            .status(400)
+            .json(new ApiResponse(400, "Insufficient stock"));
+        }
         existingItem.quantity += quantity;
       } else {
+        if (variant.stock < quantity) {
+          return res
+            .status(400)
+            .json(new ApiResponse(400, "Insufficient stock"));
+        }
+
         cart.items.push({
           itemType: "catalog",
           product: productId,
@@ -91,38 +96,54 @@ const addToCart = async (req, res) => {
 
     /* =========================
        CUSTOM DESIGN PRODUCT
-       ========================= */
+    ========================= */
     if (itemType === "custom") {
-      if (!design || !design.images || !price) {
+      console.log("Design: ",design);
+      
+      if (
+        !design ||
+        !design.designId ||
+        !design.images ||
+        !design.size ||
+        !design.color ||
+        !price
+      ) {
         return res
           .status(400)
-          .json(new ApiResponse(400, "Design and price required"));
+          .json(new ApiResponse(400, "Invalid custom design data"));
       }
 
-      cart.items.push({
-        itemType: "custom",
-        design, // snapshot (designId + images + title)
-        quantity,
-        price,
-      });
+      const existingCustom = cart.items.find(
+        (i) =>
+          i.itemType === "custom" &&
+          i.design.designId.toString() === design.designId &&
+          i.design.size?.name === design.size?.name &&
+          i.design.color?.name === design.color?.name
+      );
+
+      if (existingCustom) {
+        existingCustom.quantity += quantity;
+      } else {
+        cart.items.push({
+          itemType: "custom",
+          design,
+          quantity,
+          price,
+        });
+      }
     }
 
-    cart.subtotal = cart.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-
+    cart.subtotal = calculateSubtotal(cart.items);
     await cart.save();
 
-    return res
+    res
       .status(200)
       .json(new ApiResponse(200, "Item added to cart", cart));
   } catch (error) {
-    return res
-      .status(500)
-      .json(new ApiResponse(500, error.message));
+    res.status(500).json(new ApiResponse(500, error.message));
   }
 };
+
 
 const getCart = async (req, res) => {
   try {
@@ -132,79 +153,78 @@ const getCart = async (req, res) => {
       .populate("items.size")
       .populate("items.design.designId");
 
-    return res.status(200).json(
-      new ApiResponse(200, "Cart fetched successfully", cart || {
-        items: [],
-        subtotal: 0,
-      })
+    res.status(200).json(
+      new ApiResponse(
+        200,
+        "Cart fetched successfully",
+        cart || { items: [], subtotal: 0 }
+      )
     );
   } catch (error) {
-    return res
-      .status(500)
-      .json(new ApiResponse(500, error.message));
+    res.status(500).json(new ApiResponse(500, error.message));
   }
 };
 
 
+
 const removeFromCart = async (req, res) => {
-    try {
-        const { itemId } = req.params;
+  try {
+    const { itemId } = req.params;
 
-        const cart = await Cart.findOne({ user: req.user._id });
-        if (!cart) {
-            return res
-                .status(404)
-                .json(new ApiResponse(404, "Cart not found"));
-        }
-
-        const itemExists = cart.items.id(itemId);
-        if (!itemExists) {
-            return res
-                .status(404)
-                .json(new ApiResponse(404, "Item not found in cart"));
-        }
-
-        cart.items = cart.items.filter(
-            (item) => item._id.toString() !== itemId
-        );
-
-        cart.subtotal = cart.items.reduce(
-            (sum, item) => sum + item.price * item.quantity,
-            0
-        );
-
-        await cart.save();
-
-        res
-            .status(200)
-            .json(new ApiResponse(200, "Item removed from cart", cart));
-    } catch (error) {
-        res.status(500).json(new ApiResponse(500, error.message));
+    const cart = await Cart.findOne({ user: req.user._id });
+    if (!cart) {
+      return res.status(404).json(
+        new ApiResponse(404, "Cart not found")
+      );
     }
+
+    const itemExists = cart.items.id(itemId);
+    if (!itemExists) {
+      return res.status(404).json(
+        new ApiResponse(404, "Item not found")
+      );
+    }
+
+    // ✅ CORRECT WAY
+    cart.items.pull(itemId);
+
+    cart.subtotal = calculateSubtotal(cart.items);
+    await cart.save();
+
+    return res.status(200).json(
+      new ApiResponse(200, "Item removed from cart", cart)
+    );
+  } catch (error) {
+    return res.status(500).json(
+      new ApiResponse(500, error.message)
+    );
+  }
 };
+
+
 
 
 /**
  * CLEAR CART
  */
 const clearCart = async (req, res) => {
-    try {
-        const cart = await Cart.findOneAndUpdate(
-            { user: req.user._id },
-            { items: [], subtotal: 0 },
-            { new: true }
-        );
+  try {
+    const cart = await Cart.findOneAndUpdate(
+      { user: req.user._id },
+      { items: [], subtotal: 0 },
+      { new: true }
+    );
 
-        res.status(200).json(
-            new ApiResponse(200, "Cart cleared successfully", cart || {
-                items: [],
-                subtotal: 0,
-            })
-        );
-    } catch (error) {
-        res.status(500).json(new ApiResponse(500, error.message));
-    }
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, "Cart cleared successfully", cart)
+      );
+  } catch (error) {
+    res.status(500).json(new ApiResponse(500, error.message));
+  }
 };
+
 
 const updateCartItem = async (req, res) => {
   try {
@@ -243,21 +263,20 @@ const updateCartItem = async (req, res) => {
     }
 
     item.quantity = quantity;
-
-    cart.subtotal = cart.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
+    cart.subtotal = calculateSubtotal(cart.items);
 
     await cart.save();
 
-    res.status(200).json(
-      new ApiResponse(200, "Item quantity updated successfully", cart)
-    );
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, "Cart item updated successfully", cart)
+      );
   } catch (error) {
     res.status(500).json(new ApiResponse(500, error.message));
   }
 };
+
 
 
 

@@ -10,10 +10,12 @@ app.use(cors({
 }))
 app.use(express.json({
     // Increased size to allow base64 preview image payloads from the Designer
-    limit: "10mb"
+    // Now supports 3-4 high-resolution images (scale 3x-4x)
+    limit: "50mb"
 }))
 app.use(express.urlencoded({
-    extended: true
+    extended: true,
+    limit: "50mb"
 }))
 app.use(express.static("public"));
 app.use(cookieParser());

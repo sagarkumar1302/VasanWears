@@ -3,11 +3,13 @@ import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { addToCartApi } from "../utils/cartApi";
 import { useCartStore } from "../store/cartStore";
+import { useAuthStore } from "../store/useAuthStore";
 import * as fabric from "fabric";
 import html2canvas from "html2canvas";
 import JSZip from "jszip";
 import { gsap } from "gsap";
 import * as THREE from "three";
+import { createDesignApi, getMyDesignsApi } from "../utils/designApi";
 import { getAllSizesApi } from "../utils/productApi";
 import { getAllCategoriesForWebsite } from "../utils/productApi";
 import { getSubcategoryByIdApi } from "../utils/subCategoryApi";
@@ -305,12 +307,21 @@ const Designer = ({ productKey } = {}) => {
   const pendingAddTextRef = useRef(false);
 
   const [hasSelection, setHasSelection] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [savingDesign, setSavingDesign] = useState(false);
+  const [savedDesign, setSavedDesign] = useState(null);
+  const [addedToCart, setAddedToCart] = useState(false);
+  const [designChanged, setDesignChanged] = useState(false);
 
   const preview3dMountRef = useRef(null);
 
   // Product picker state (used when Designer opened without product context)
   const [productPickerOpen, setProductPickerOpen] = useState(false);
-  const [productPickerValues, setProductPickerValues] = useState({ productId: "", colorName: "", sizeName: "" });
+  const [productPickerValues, setProductPickerValues] = useState({
+    productId: "",
+    colorName: "",
+    sizeName: "",
+  });
   const [sizesList, setSizesList] = useState([]);
 
   useEffect(() => {
@@ -320,7 +331,9 @@ const Designer = ({ productKey } = {}) => {
       try {
         const res = await getAllSizesApi();
         // API returns ApiResponse-like object; try to extract array
-        const sizes = Array.isArray(res?.data) ? res.data : res?.data?.data || res?.data || [];
+        const sizes = Array.isArray(res?.data)
+          ? res.data
+          : res?.data?.data || res?.data || [];
         if (!cancelled) setSizesList(sizes);
       } catch (err) {
         console.error("Failed to fetch sizes for product picker", err);
@@ -337,7 +350,9 @@ const Designer = ({ productKey } = {}) => {
     (async () => {
       try {
         const res = await getAllSizesApi();
-        const sizes = Array.isArray(res?.data) ? res.data : res?.data?.data || res?.data || [];
+        const sizes = Array.isArray(res?.data)
+          ? res.data
+          : res?.data?.data || res?.data || [];
         if (!cancelled) setSizesList(sizes);
       } catch (err) {
         console.error("Failed to fetch sizes on mount", err);
@@ -362,6 +377,7 @@ const Designer = ({ productKey } = {}) => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const fetchCart = useCartStore((s) => s.fetchCart);
+  const user = useAuthStore((s) => s.user);
 
   // Map category/subcategory names to internal cloth keys
   const mapToClothKey = (catName = "", subName = "") => {
@@ -1226,7 +1242,7 @@ const Designer = ({ productKey } = {}) => {
   const [hoveredColorName, setHoveredColorName] = useState(null);
 
   const [selectedColor, setSelectedColor] = useState("Black");
-  
+
   const [imageUrl, setImageUrl] = useState(() =>
     getBgUrlFor({ clothKey: "men", colorName: "Black", sideKey: "Front" })
   );
@@ -1359,6 +1375,10 @@ const Designer = ({ productKey } = {}) => {
     commitTimerRef.current = setTimeout(() => {
       commitTimerRef.current = 0;
       commitCanvasNow();
+      // Mark design as changed when user modifies it
+      if (savedDesign) {
+        setDesignChanged(true);
+      }
     }, 260);
   };
 
@@ -1603,6 +1623,308 @@ const Designer = ({ productKey } = {}) => {
     try {
       persistAutosaveNow();
     } catch (e) {}
+  };
+  const computeDesignPrice = () => {
+    const frontHas = hasDesignForSide("Front");
+    const backHas = hasDesignForSide("Back");
+    const sides = (frontHas ? 1 : 0) + (backHas ? 1 : 0);
+
+    if (sides === 0) {
+      return {
+        supported: true,
+        hasAny: false,
+        price: null,
+        total: 0,
+        subtotal: 0,
+        delivery: 0,
+        mode: "",
+        label: "Add a design to see price",
+      };
+    }
+
+    // Price table (internal cloth keys)
+    const priceTable = {
+      men: { one: 599, both: 749 },
+      women: { one: 499, both: 699 },
+      hoodie: { one: 859, both: 1 },
+      womenCropHoodie: { one: 649, both: 799 },
+      sweatshirt: { one: 700, both: 850 },
+    };
+
+    const key = String(cloth || "men");
+    const entry = priceTable[key] || priceTable.men;
+    const subtotal = sides === 2 ? entry.both : entry.one;
+    const delivery = 0; // Free delivery
+    const total = subtotal + delivery;
+    const mode = sides === 2 ? "Both Sides" : "One Side";
+
+    return {
+      supported: true,
+      hasAny: true,
+      price: subtotal,
+      total,
+      subtotal,
+      delivery,
+      mode,
+      label: `₹${subtotal}`,
+    };
+  };
+  const handleSaveDesign = async () => {
+    if (savingDesign) return;
+
+    try {
+      setSavingDesign(true);
+      console.log("Starting design save...");
+
+      // Save current side design before capturing
+      saveCurrentSideDesign();
+
+      const cKey = String(clothRef.current || cloth || "men");
+      const currentStore = designStoreRef.current || {};
+      const clothStore = currentStore[cKey] || {};
+
+      // Get design JSON for both sides
+      const frontDesignJson = clothStore.front;
+      const backDesignJson = clothStore.back;
+
+      console.log("Design JSON:", { frontDesignJson, backDesignJson });
+
+      // Check if there's any design content
+      const hasDesignContent = (jsonData) => {
+        if (!jsonData || !jsonData.objects) return false;
+        return jsonData.objects.some(
+          (obj) =>
+            obj &&
+            !obj.isMaskImage &&
+            obj.type !== "rect" &&
+            !obj.absolutePositioned
+        );
+      };
+
+      const hasFront = hasDesignContent(frontDesignJson);
+      const hasBack = hasDesignContent(backDesignJson);
+
+      if (!hasFront && !hasBack) {
+        toast.error("Please add some design elements before saving");
+        setSavingDesign(false);
+        return;
+      }
+
+      console.log("Has content - Front:", hasFront, "Back:", hasBack);
+      console.log("Capturing images...");
+
+      const canvas = fabricCanvasRef.current;
+      if (!canvas) {
+        toast.error("Canvas not ready. Please try again.");
+        setSavingDesign(false);
+        return;
+      }
+
+      // Save original side to restore later
+      const originalSide = currentSide;
+
+      const images = {};
+
+      // Capture Front side if it has design
+      if (hasFront) {
+        console.log("Capturing front side...");
+
+        // Switch to front side
+        await handleSideChange("Front", {
+          clothKey: cKey,
+          colorName: selectedColor,
+          skipSave: true,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        // Capture full mockup with cloth (red border removed automatically by captureFullMockupDataUrl)
+        const frontFullMockup = await captureFullMockupDataUrl({ scale: 3 });
+        images.front = frontFullMockup;
+
+        // Capture design only (transparent background)
+        try {
+          const frontDesignOnly = await captureDesignOnlyDataUrl({ scale: 4 });
+          if (frontDesignOnly) {
+            images.frontDesignArea = frontDesignOnly;
+          }
+        } catch (err) {
+          console.warn("Front design-only capture failed:", err);
+        }
+      }
+
+      // Capture Back side if it has design
+      if (hasBack) {
+        console.log("Capturing back side...");
+
+        // Switch to back side
+        await handleSideChange("Back", {
+          clothKey: cKey,
+          colorName: selectedColor,
+          skipSave: true,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        // Capture full mockup with cloth
+        const backFullMockup = await captureFullMockupDataUrl({ scale: 3 });
+        images.back = backFullMockup;
+
+        // Capture design only (transparent background)
+        try {
+          const backDesignOnly = await captureDesignOnlyDataUrl({ scale: 4 });
+          if (backDesignOnly) {
+            images.backDesignArea = backDesignOnly;
+          }
+        } catch (err) {
+          console.warn("Back design-only capture failed:", err);
+        }
+      } else if (hasFront) {
+        // If no back design, capture back cloth without design for preview
+        console.log("Capturing back cloth (no design)...");
+
+        await handleSideChange("Back", {
+          clothKey: cKey,
+          colorName: selectedColor,
+          skipSave: true,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        const backFullMockup = await captureFullMockupDataUrl({ scale: 3 });
+        images.back = backFullMockup;
+      }
+
+      // Restore original side
+      if (currentSide !== originalSide) {
+        await handleSideChange(originalSide, {
+          clothKey: cKey,
+          colorName: selectedColor,
+          skipSave: true,
+        });
+      }
+
+      console.log("Images prepared:", Object.keys(images));
+
+      // Create design title with user name and timestamp
+      const userName = user?.name || user?.email || "Guest";
+      const timestamp = new Date().toLocaleString();
+      const designTitle = `${userName} - ${
+        CLOTH_CONFIG[cKey]?.label || "Product"
+      } - ${timestamp}`;
+
+      // Get the pricing and extract just the price number for sellPrice
+      const pricingInfo = computeDesignPrice();
+      
+      const designPayload = {
+        title: designTitle,
+        images: images,
+        sellPrice: pricingInfo.price || 0,
+        isPublic: false,
+      };
+
+      console.log("Sending design to API...");
+
+      const designResponse = await createDesignApi(designPayload);
+      console.log("Design API response:", designResponse);
+
+      const createdDesign = designResponse?.data;
+
+      if (!createdDesign || !createdDesign._id) {
+        throw new Error("Failed to create design record");
+      }
+
+      setSavedDesign(createdDesign);
+      setDesignChanged(false); // Reset design changed flag
+      toast.success("Design saved successfully!");
+      console.log("Design saved:", createdDesign);
+    } catch (error) {
+      console.error("Failed to save design:", error);
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to save design. Please try again."
+      );
+    } finally {
+      setSavingDesign(false);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    // Must have a saved design first
+    if (!savedDesign || !savedDesign._id) {
+      toast.error("Please save your design first");
+      return;
+    }
+
+    // Check if design has changed since last save
+    if (designChanged) {
+      toast.error(
+        "Design has been modified. Please save your design again before adding to cart."
+      );
+      return;
+    }
+
+    // Validate size selection
+    if (!selectedSize) {
+      toast.error("Please select a size before adding to cart");
+      return;
+    }
+
+    try {
+      setAddingToCart(true);
+
+      // Find size ID from sizesList
+      const sizeObj = sizesList.find((s) => s.name === selectedSize);
+      const sizeId = sizeObj?._id;
+
+      // Find color object
+      const colorObj = AVAILABLE_COLORS.find((c) => c.name === selectedColor);
+
+      // Prepare cart data using saved design
+      const cartData = {
+        itemType: "custom",
+        quantity: 1,
+        price: savedDesign.sellPrice || 499,
+        design: {
+          designId: savedDesign._id,
+          title: savedDesign.title,
+          images: {
+            front: savedDesign.images.front,
+            back: savedDesign.images.back,
+            frontDesignArea: savedDesign.images.frontDesignArea,
+            backDesignArea: savedDesign.images.backDesignArea,
+          },
+          size: {
+            id: sizeId,
+            name: selectedSize,
+          },
+          color: {
+            id: null,
+            name: selectedColor,
+            hexCode: colorObj?.value || "#000000",
+          },
+        },
+      };
+
+      // Add to cart
+      await addToCartApi(cartData);
+
+      // Refresh cart in the store
+      await fetchCart();
+
+      setAddedToCart(true);
+      toast.success("Custom design added to cart successfully!");
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+      toast.error(
+        error?.response?.data?.message ||
+          "Failed to add to cart. Please try again."
+      );
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
+  const handleGoToCheckout = () => {
+    navigate("/checkout");
   };
 
   // If the parent app provides a productKey like "Men/Tshirt", keep this component in sync.
@@ -2324,6 +2646,231 @@ const Designer = ({ productKey } = {}) => {
               })}
             </div>
           </div>
+
+          {/* Size Selector */}
+          <div className="relative mt-4">
+            <p className="relative z-20 text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500 mb-4">
+              Select Size:{" "}
+              <span className="text-black">{selectedSize || "None"}</span>
+            </p>
+
+            <div className="relative z-10 grid grid-cols-4 gap-2 p-2">
+              {sizesList && sizesList.length > 0 ? (
+                sizesList.map((size) => {
+                  const isActive = selectedSize === size.name;
+
+                  return (
+                    <button
+                      key={size._id || size.name}
+                      disabled={mockMode}
+                      onClick={() => {
+                        setSelectedSize(size.name);
+                        selectedSizeRef.current = size.name;
+                      }}
+                      className={`relative h-10 rounded-lg inline-flex items-center justify-center transition-all text-sm font-bold ${
+                        mockMode
+                          ? "opacity-60 cursor-not-allowed"
+                          : "cursor-pointer hover:scale-105"
+                      } ${
+                        isActive
+                          ? "border-2 border-black bg-black text-white shadow-lg"
+                          : "border border-gray-300 bg-white text-gray-700 hover:border-gray-900"
+                      }`}
+                    >
+                      {size.name}
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="col-span-4 text-xs text-gray-500 text-center py-2">
+                  No sizes available
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Save Design, Add to Cart, and Checkout Workflow */}
+          <div className="mt-6 space-y-3">
+            {!savedDesign ? (
+              <button
+                onClick={handleSaveDesign}
+                disabled={mockMode || savingDesign}
+                className={`w-full h-12 px-4 rounded-xl text-sm font-extrabold inline-flex items-center justify-center transition-all ${
+                  mockMode || savingDesign
+                    ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
+                    : "border-2 border-blue-600 bg-blue-600 text-white hover:bg-blue-700 hover:border-blue-700 hover:shadow-lg active:translate-y-px"
+                }`}
+              >
+                {savingDesign ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Saving Design...
+                  </span>
+                ) : (
+                  "Save Design"
+                )}
+              </button>
+            ) : (
+              <>
+                {designChanged && (
+                  <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-3">
+                    <p className="text-xs font-semibold text-yellow-800 flex items-center gap-2">
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Design Modified - Save Again Required
+                    </p>
+                    <p className="text-xs text-yellow-700 mt-1">
+                      You've made changes to your design. Please save again
+                      before adding to cart.
+                    </p>
+                  </div>
+                )}
+
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <p className="text-xs font-semibold text-green-700 flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Design Saved Successfully!
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1 truncate">
+                    {savedDesign.title}
+                  </p>
+                </div>
+
+                {designChanged && (
+                  <button
+                    onClick={handleSaveDesign}
+                    disabled={mockMode || savingDesign}
+                    className={`w-full h-12 px-4 rounded-xl text-sm font-extrabold inline-flex items-center justify-center transition-all ${
+                      mockMode || savingDesign
+                        ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
+                        : "border-2 border-yellow-600 bg-yellow-600 text-white hover:bg-yellow-700 hover:border-yellow-700 hover:shadow-lg active:translate-y-px"
+                    }`}
+                  >
+                    {savingDesign ? (
+                      <span className="flex items-center gap-2">
+                        <svg
+                          className="animate-spin h-4 w-4"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        Saving Changes...
+                      </span>
+                    ) : (
+                      "Save Changes"
+                    )}
+                  </button>
+                )}
+
+                {!addedToCart ? (
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={
+                      mockMode || addingToCart || !selectedSize || designChanged
+                    }
+                    className={`w-full h-12 px-4 rounded-xl text-sm font-extrabold inline-flex items-center justify-center transition-all ${
+                      mockMode || addingToCart || !selectedSize || designChanged
+                        ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
+                        : "border-2 border-green-600 bg-green-600 text-white hover:bg-green-700 hover:border-green-700 hover:shadow-lg active:translate-y-px"
+                    }`}
+                  >
+                    {addingToCart ? (
+                      <span className="flex items-center gap-2">
+                        <svg
+                          className="animate-spin h-4 w-4"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        Adding to Cart...
+                      </span>
+                    ) : (
+                      `Add to Cart ${
+                        !selectedSize
+                          ? "(Select Size)"
+                          : designChanged
+                          ? "(Save First)"
+                          : ""
+                      }`
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleGoToCheckout}
+                    className="w-full h-12 px-4 rounded-xl text-sm font-extrabold inline-flex items-center justify-center transition-all border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 hover:border-purple-700 hover:shadow-lg active:translate-y-px"
+                  >
+                    Go to Checkout →
+                  </button>
+                )}
+
+                {!selectedSize && !addedToCart && (
+                  <p className="text-xs text-red-500 mt-2 text-center">
+                    Please select a size before adding to cart
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         {mockMode && (
@@ -2437,6 +2984,41 @@ const Designer = ({ productKey } = {}) => {
       </div>
     </>
   );
+  const hasDesignForSide = (sideKey) => {
+    try {
+      const cKey = String(cloth || "men");
+      const sKey = String(sideKey || "Front").toLowerCase();
+      const storeJson = designStoreRef.current?.[cKey]?.[sKey];
+      const hasInStore = !!(
+        storeJson &&
+        Array.isArray(storeJson.objects) &&
+        storeJson.objects.length > 0
+      );
+
+      // If this is the active side, also check the live canvas for unsaved objects
+      if (String(currentSide || "Front").toLowerCase() === sKey) {
+        const canvas = fabricCanvasRef.current;
+        if (canvas && typeof canvas.getObjects === "function") {
+          const objs = canvas.getObjects().filter((o) => {
+            if (!o) return false;
+            if (o.isClipBorder) return false;
+            if (o.isMaskImage) return false;
+            return true;
+          });
+          if (Array.isArray(objs) && objs.length > 0) return true;
+        }
+      }
+
+      return hasInStore;
+    } catch (e) {
+      return false;
+    }
+  };
+  // Calculate pricing based on current design state
+
+  const pricing = React.useMemo(() => {
+    return computeDesignPrice();
+  }, [cloth, designStore, currentSide]);
 
   const renderPricingBar = ({ variant } = {}) => {
     const isMobile = variant === "mobile";
@@ -2514,60 +3096,6 @@ const Designer = ({ productKey } = {}) => {
   }
 
   // --- Pricing helpers ---
-  const hasDesignForSide = (sideKey) => {
-    try {
-      const cKey = String(cloth || "men");
-      const sKey = String(sideKey || "Front").toLowerCase();
-      const storeJson = designStoreRef.current?.[cKey]?.[sKey];
-      const hasInStore = !!(
-        storeJson &&
-        Array.isArray(storeJson.objects) &&
-        storeJson.objects.length > 0
-      );
-
-      // If this is the active side, also check the live canvas for unsaved objects
-      if (String(currentSide || "Front").toLowerCase() === sKey) {
-        const canvas = fabricCanvasRef.current;
-        if (canvas && typeof canvas.getObjects === "function") {
-          const objs = canvas.getObjects().filter((o) => {
-            if (!o) return false;
-            if (o.isClipBorder) return false;
-            if (o.isMaskImage) return false;
-            return true;
-          });
-          if (Array.isArray(objs) && objs.length > 0) return true;
-        }
-      }
-
-      return hasInStore;
-    } catch (e) {
-      return false;
-    }
-  };
-
-  const computeDesignPrice = () => {
-    const frontHas = hasDesignForSide("Front");
-    const backHas = hasDesignForSide("Back");
-    const sides = (frontHas ? 1 : 0) + (backHas ? 1 : 0);
-
-    if (sides === 0) {
-      return { hasAny: false, price: null, label: "Add a design to see price" };
-    }
-
-    // Price table (internal cloth keys)
-    const priceTable = {
-      men: { one: 599, both: 749 },
-      women: { one: 499, both: 699 },
-      hoodie: { one: 859, both: 999 },
-      womenCropHoodie: { one: 649, both: 799 },
-      sweatshirt: { one: 700, both: 850 },
-    };
-
-    const key = String(cloth || "men");
-    const entry = priceTable[key] || priceTable.men;
-    const price = sides === 2 ? entry.both : entry.one;
-    return { hasAny: true, price, label: `₹${price}` };
-  };
 
   // --- Create a new base clip and border and add border to canvas ---
   // returns the clipRect
@@ -4212,7 +4740,13 @@ const Designer = ({ productKey } = {}) => {
   }
 
   // Add to cart helper used by modal and direct flows
-  async function performAddToCart({ productId, colorId, sizeId, colorName, sizeName }) {
+  async function performAddToCart({
+    productId,
+    colorId,
+    sizeId,
+    colorName,
+    sizeName,
+  }) {
     try {
       saveCurrentSideDesign();
 
@@ -4221,7 +4755,8 @@ const Designer = ({ productKey } = {}) => {
         Back: previewStaticImages?.Back || previewImages?.Back || null,
       };
 
-      const designDataPayload = designStoreRef.current?.[String(cloth || "men")] || null;
+      const designDataPayload =
+        designStoreRef.current?.[String(cloth || "men")] || null;
 
       if (!productId) {
         toast.error("Product ID is required to add to cart");
@@ -4250,7 +4785,9 @@ const Designer = ({ productKey } = {}) => {
     } catch (err) {
       toast.dismiss();
       if (err.response?.status === 401) {
-        navigate("/login", { state: { from: location.pathname + location.search } });
+        navigate("/login", {
+          state: { from: location.pathname + location.search },
+        });
       } else {
         toast.error(err.response?.data?.message || "Add to cart failed");
       }
@@ -5188,7 +5725,11 @@ const Designer = ({ productKey } = {}) => {
                   if (!productId) {
                     setProductPickerOpen(true);
                     // Prefill color and size values
-                    setProductPickerValues((v) => ({ ...v, colorName: selectedColor, sizeName: v.sizeName || "" }));
+                    setProductPickerValues((v) => ({
+                      ...v,
+                      colorName: selectedColor,
+                      sizeName: v.sizeName || "",
+                    }));
                     return;
                   }
 
@@ -5200,11 +5741,18 @@ const Designer = ({ productKey } = {}) => {
                     const sizeId = searchParams.get("sizeId");
 
                     const designImagesPayload = {
-                      Front: previewStaticImages?.Front || previewImages?.Front || null,
-                      Back: previewStaticImages?.Back || previewImages?.Back || null,
+                      Front:
+                        previewStaticImages?.Front ||
+                        previewImages?.Front ||
+                        null,
+                      Back:
+                        previewStaticImages?.Back ||
+                        previewImages?.Back ||
+                        null,
                     };
 
-                    const designDataPayload = designStoreRef.current?.[String(cloth || "men")] || null;
+                    const designDataPayload =
+                      designStoreRef.current?.[String(cloth || "men")] || null;
 
                     toast.loading("Adding to cart...");
 
@@ -5227,9 +5775,13 @@ const Designer = ({ productKey } = {}) => {
                   } catch (err) {
                     toast.dismiss();
                     if (err.response?.status === 401) {
-                      navigate("/login", { state: { from: location.pathname + location.search } });
+                      navigate("/login", {
+                        state: { from: location.pathname + location.search },
+                      });
                     } else {
-                      toast.error(err.response?.data?.message || "Add to cart failed");
+                      toast.error(
+                        err.response?.data?.message || "Add to cart failed"
+                      );
                     }
                   }
                 }}
@@ -5240,8 +5792,6 @@ const Designer = ({ productKey } = {}) => {
             </div>
           </div>
         </div>
-
-
       )}
 
       {/* Product picker modal for when productId is not in URL */}
@@ -5257,8 +5807,14 @@ const Designer = ({ productKey } = {}) => {
           <div className="w-[min(680px,98vw)] bg-white rounded-2xl shadow border border-gray-200 p-5">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <div className="text-base font-extrabold">Provide product details</div>
-                <div className="text-xs text-gray-500">Enter product id (required) or open the product page to customize from product. Choose size (optional) from available sizes.</div>
+                <div className="text-base font-extrabold">
+                  Provide product details
+                </div>
+                <div className="text-xs text-gray-500">
+                  Enter product id (required) or open the product page to
+                  customize from product. Choose size (optional) from available
+                  sizes.
+                </div>
               </div>
               <button
                 onClick={() => setProductPickerOpen(false)}
@@ -5273,22 +5829,39 @@ const Designer = ({ productKey } = {}) => {
               <input
                 placeholder="Product ID (required)"
                 value={productPickerValues.productId}
-                onChange={(e) => setProductPickerValues((p) => ({ ...p, productId: e.target.value }))}
+                onChange={(e) =>
+                  setProductPickerValues((p) => ({
+                    ...p,
+                    productId: e.target.value,
+                  }))
+                }
                 className="border px-4 py-2 rounded-md"
               />
 
               <input
                 placeholder="Color name or id (optional)"
                 value={productPickerValues.colorName}
-                onChange={(e) => setProductPickerValues((p) => ({ ...p, colorName: e.target.value }))}
+                onChange={(e) =>
+                  setProductPickerValues((p) => ({
+                    ...p,
+                    colorName: e.target.value,
+                  }))
+                }
                 className="border px-4 py-2 rounded-md"
               />
 
               <div>
-                <label className="text-xs text-gray-500">Choose size (optional)</label>
+                <label className="text-xs text-gray-500">
+                  Choose size (optional)
+                </label>
                 <select
                   value={productPickerValues.sizeName}
-                  onChange={(e) => setProductPickerValues((p) => ({ ...p, sizeName: e.target.value }))}
+                  onChange={(e) =>
+                    setProductPickerValues((p) => ({
+                      ...p,
+                      sizeName: e.target.value,
+                    }))
+                  }
                   className="w-full border px-3 py-2 rounded-md mt-1"
                 >
                   <option value="">-- Select size (optional) --</option>
@@ -5313,7 +5886,9 @@ const Designer = ({ productKey } = {}) => {
                 </button>
                 <button
                   onClick={async () => {
-                    const pid = String(productPickerValues.productId || "").trim();
+                    const pid = String(
+                      productPickerValues.productId || ""
+                    ).trim();
                     if (!pid) {
                       toast.error("Product ID is required");
                       return;

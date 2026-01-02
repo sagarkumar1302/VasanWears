@@ -354,16 +354,43 @@ const Checkout = () => {
               <div className="space-y-4 text-sm">
                 {items.map((item) => (
                   <div key={item._id} className="flex gap-4">
+                    {/* IMAGE */}
                     <img
-                      src={item.product?.featuredImage}
-                      alt={item.product?.title}
-                      className="w-16 h-20 object-cover rounded"
+                      src={
+                        item.itemType === "catalog"
+                          ? item.product?.featuredImage
+                          : item.design?.images?.front
+                      }
+                      alt="Order item"
+                      className="w-16 h-20 object-cover rounded border"
                     />
-                    <div>
-                      <p className="font-medium">{item.product?.title}</p>
-                      <p className="text-xs text-gray-500">
-                        Color: {item.color?.name} | Size: {item.size?.name}
+
+                    {/* DETAILS */}
+                    <div className="text-sm text-primary5">
+                      <p className="font-medium">
+                        {item.itemType === "catalog"
+                          ? item.product?.title
+                          : item.design?.title || "Custom Designed Product"}
                       </p>
+
+                      <p className="text-xs text-gray-500">
+                        Color:{" "}
+                        {item.itemType === "catalog"
+                          ? item.color?.name
+                          : item.design?.color?.name}
+                        {" | "}
+                        Size:{" "}
+                        {item.itemType === "catalog"
+                          ? item.size?.name || "Free Size"
+                          : item.design?.size?.name || "Free Size"}
+                      </p>
+
+                      {item.itemType === "custom" && (
+                        <p className="text-xs text-primary5 font-medium">
+                          Custom Print
+                        </p>
+                      )}
+
                       <p className="font-semibold mt-1">
                         ₹{item.price} × {item.quantity}
                       </p>

@@ -54,19 +54,31 @@ export const placeOrder = async (req, res) => {
       }
 
       // ---------- CUSTOM DESIGN ----------
+      // ---------- CUSTOM DESIGN ----------
       return {
         itemType: "custom",
         quantity: item.quantity,
         price: item.price,
         total: item.price * item.quantity,
 
-        // snapshot for production
         design: {
           designId: item.design.designId,
           title: item.design.title,
           images: item.design.images,
+
+          // ✅ SNAPSHOT THESE
+          size: {
+            id: item.design.size?.id || null,
+            name: item.design.size?.name || null,
+          },
+          color: {
+            id: item.design.color?.id || null,
+            name: item.design.color?.name || null,
+            hexCode: item.design.color?.hexCode || null,
+          },
         },
       };
+
     });
 
     const subtotal = cart.subtotal;

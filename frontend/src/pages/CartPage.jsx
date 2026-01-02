@@ -61,39 +61,55 @@ const CartPage = () => {
                     >
                       ×
                     </button>
-                    <Link
-                      to={`/shop/${item.product?._id}/${item.product?.slug}?variant=${item.variant}&size=${item.size?._id}`}
-                      className="flex gap-4"
-                    >
-                      <img
-                        src={item.product?.featuredImage}
-                        alt={item.product?.title}
-                        className="w-20 h-24 object-cover rounded-md"
-                      />
+                    {item.itemType === "catalog" ? (
+                      <Link
+                        to={`/shop/${item.product?._id}/${item.product?.slug}?variant=${item.variant}&size=${item.size?._id}`}
+                        className="flex gap-4"
+                      >
+                        <img
+                          src={item.product?.featuredImage}
+                          alt={item.product?.title}
+                          className="w-20 h-24 object-cover rounded-md"
+                        />
 
-                      <div className="space-y-1 text-primary5">
-                        <h3 className="font-semibold">{item.product?.title}</h3>
+                        <div className="space-y-1 text-primary5">
+                          <h3 className="font-semibold">
+                            {item.product?.title}
+                          </h3>
 
-                        <p className="text-sm">Color: {item.color?.name}</p>
+                          <p className="text-sm">Color: {item.color?.name}</p>
+                          <p className="text-sm">
+                            Size: {item.size?.name || "Free Size"}
+                          </p>
+                          <p className="text-sm">Delivery: 5–7 business days</p>
+                        </div>
+                      </Link>
+                    ) : (
+                      /* ================= CUSTOM DESIGN ================= */
+                      <div className="flex gap-4">
+                        <img
+                          src={item.design?.images?.front}
+                          alt="Custom design"
+                          className="w-20 h-24 object-cover rounded-md border"
+                        />
 
-                        <p className="text-sm">
-                          Size: {item.size?.name || "Free Size"}
-                        </p>
+                        <div className="space-y-1 text-primary5">
+                          <h3 className="font-semibold">
+                            {item.design?.title || "Custom Designed Product"}
+                          </h3>
 
-                        <p className="text-sm">Delivery: 5–7 business days</p>
+                          <p className="text-sm">
+                            Color: {item.design?.color?.name}
+                          </p>
 
-                        {item.design?.images?.Front && (
-                          <div className="mt-2">
-                            <div className="text-xs text-gray-500 mb-1">Your design</div>
-                            <img
-                              src={item.design.images.Front}
-                              alt="Design preview"
-                              className="w-20 h-24 object-cover rounded-md border"
-                            />
-                          </div>
-                        )}
+                          <p className="text-sm">
+                            Size: {item.design?.size?.name}
+                          </p>
+
+                          <p className="text-sm">Custom Print</p>
+                        </div>
                       </div>
-                    </Link>
+                    )}
                   </div>
 
                   {/* PRICE */}
