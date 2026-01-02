@@ -15,7 +15,7 @@ const features = [
   },
   {
     title: "Creator-First Platform",
-    desc: "Your designs are showcased with your name, and you earn credits when people buy what you create — your creativity gets rewarded.",
+    desc: "Those credits can be used to get your next T-shirt absolutely free.",
     icon: RiStarSmileLine,
   },
   {

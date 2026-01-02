@@ -136,15 +136,17 @@ const AdminCategory = () => {
     try {
       setSubLoading((s) => ({ ...s, [categoryId]: true }));
 
-      const payload = {
-        name: form.name,
-        slug: form.slug,
-        published: form.published ?? true,
-      };
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("slug", form.slug);
+      formData.append("published", form.published ?? true);
 
-      const res = await addSubCategoryApi(categoryId, payload);
+      if (form.image) {
+        formData.append("image", form.image);
+      }
 
-      // Add the new subcategory to local state
+      const res = await addSubCategoryApi(categoryId, formData);
+
       setCategories((prev) =>
         prev.map((c) =>
           c._id === categoryId
@@ -153,28 +155,14 @@ const AdminCategory = () => {
         )
       );
 
-      // Clear form
-      setSubForms((s) => ({ ...s, [categoryId]: { name: "", slug: "", published: true } }));
-
-      // Indicate success briefly
-      setSubSuccess((s) => ({ ...s, [categoryId]: true }));
-
-      // Animate the newly added item when DOM updates (give React a tick)
-      setTimeout(() => {
-        const el = subItemRefs.current[res.data._id];
-        if (el) {
-          gsap.from(el, { scale: 0.98, opacity: 0, duration: 0.33, ease: "back.out(1.4)" });
-        }
-      }, 50);
-
-      setTimeout(() => setSubSuccess((s) => ({ ...s, [categoryId]: false })), 2200);
-    } catch (err) {
-      console.error("Add subcategory error", err);
+      setSubForms((s) => ({
+        ...s,
+        [categoryId]: { name: "", slug: "", published: true, image: null },
+      }));
     } finally {
       setSubLoading((s) => ({ ...s, [categoryId]: false }));
     }
   };
-
   /* Edit Category */
   const openEditCatModal = (cat) => {
     setEditCatForm({
@@ -214,7 +202,13 @@ const AdminCategory = () => {
       setTimeout(() => {
         const el = document.querySelector(`[data-cat-id="${editCatModal}"]`);
         if (el) {
-          gsap.to(el, { scale: 1.02, duration: 0.2, yoyo: true, repeat: 1, ease: "power2.inOut" });
+          gsap.to(el, {
+            scale: 1.02,
+            duration: 0.2,
+            yoyo: true,
+            repeat: 1,
+            ease: "power2.inOut",
+          });
         }
       }, 100);
 
@@ -260,39 +254,33 @@ const AdminCategory = () => {
   };
 
   const submitEditSubCategory = async () => {
-    if (!editSubForm.name || !editSubForm.slug || !editSubModal) return;
+    if (!editSubForm.name || !editSubForm.slug) return;
 
-    try {
-      setEditSubLoading(true);
-      const res = await updateSubCategoryApi(editSubModal.subId, editSubForm);
+    const formData = new FormData();
+    formData.append("name", editSubForm.name);
+    formData.append("slug", editSubForm.slug);
+    formData.append("published", editSubForm.published);
 
-      setCategories((prev) =>
-        prev.map((c) =>
-          c._id === editSubModal.catId
-            ? {
-                ...c,
-                subCategories: c.subCategories.map((s) =>
-                  s._id === editSubModal.subId ? res.data : s
-                ),
-              }
-            : c
-        )
-      );
-
-      // Animate updated item
-      setTimeout(() => {
-        const el = subItemRefs.current[editSubModal.subId];
-        if (el) {
-          gsap.to(el, { scale: 1.02, duration: 0.2, yoyo: true, repeat: 1, ease: "power2.inOut" });
-        }
-      }, 100);
-
-      closeEditSubModal();
-    } catch (err) {
-      console.error("Update subcategory error", err);
-    } finally {
-      setEditSubLoading(false);
+    if (editSubForm.image) {
+      formData.append("image", editSubForm.image);
     }
+
+    const res = await updateSubCategoryApi(editSubModal.subId, formData);
+
+    setCategories((prev) =>
+      prev.map((c) =>
+        c._id === editSubModal.catId
+          ? {
+              ...c,
+              subCategories: c.subCategories.map((s) =>
+                s._id === editSubModal.subId ? res.data : s
+              ),
+            }
+          : c
+      )
+    );
+
+    closeEditSubModal();
   };
 
   /* Delete Subcategory */
@@ -331,7 +319,12 @@ const AdminCategory = () => {
       if (Number(k) || k) {
         // if this is not the open one, collapse
         if (k !== openCategory) {
-          gsap.to(el, { height: 0, opacity: 0, duration: 0.25, ease: "power2.out" });
+          gsap.to(el, {
+            height: 0,
+            opacity: 0,
+            duration: 0.25,
+            ease: "power2.out",
+          });
         }
       }
     });
@@ -440,7 +433,9 @@ const AdminCategory = () => {
                   <div className="py-4 space-y-3">
                     {/* Existing Subcategories */}
                     {cat.subCategories?.length === 0 ? (
-                      <p className="text-xs text-gray-400">No subcategories found</p>
+                      <p className="text-xs text-gray-400">
+                        No subcategories found
+                      </p>
                     ) : (
                       cat.subCategories.map((sub) => (
                         <div
@@ -448,10 +443,18 @@ const AdminCategory = () => {
                           ref={(el) => (subItemRefs.current[sub._id] = el)}
                           className="flex justify-between bg-white p-3 rounded sub-item"
                         >
-                          <div>
-                            <p className="text-sm font-medium">{sub.name}</p>
-                            <p className="text-xs text-gray-400">{sub.slug}</p>
-                            <p className="text-xs text-gray-400">By {sub.author?.name || "Admin"}</p>
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={sub.image}
+                              alt={sub.name}
+                              className="h-8 w-8 rounded object-cover bg-gray-100"
+                            />
+                            <div>
+                              <p className="text-sm font-medium">{sub.name}</p>
+                              <p className="text-xs text-gray-400">
+                                {sub.slug}
+                              </p>
+                            </div>
                           </div>
                           <div className="flex gap-2">
                             <button
@@ -462,7 +465,10 @@ const AdminCategory = () => {
                             </button>
                             <button
                               onClick={() =>
-                                setDeleteSubConfirm({ catId: cat._id, subId: sub._id })
+                                setDeleteSubConfirm({
+                                  catId: cat._id,
+                                  subId: sub._id,
+                                })
                               }
                               className="hover:text-red-700"
                             >
@@ -475,7 +481,26 @@ const AdminCategory = () => {
 
                     {/* Add Subcategory */}
                     <div className="bg-white p-3 rounded space-y-2 border">
-                      <p className="text-xs font-semibold text-gray-600">Add Subcategory</p>
+                      <p className="text-xs font-semibold text-gray-600">
+                        Add Subcategory
+                      </p>
+                      <label className="flex items-center gap-2 text-xs cursor-pointer">
+                        <PhotoIcon className="h-4 w-4" />
+                        Upload Image
+                        <input
+                          type="file"
+                          hidden
+                          onChange={(e) =>
+                            setSubForms((prev) => ({
+                              ...prev,
+                              [cat._id]: {
+                                ...prev[cat._id],
+                                image: e.target.files[0],
+                              },
+                            }))
+                          }
+                        />
+                      </label>
 
                       <input
                         placeholder="Subcategory Name"
@@ -511,14 +536,18 @@ const AdminCategory = () => {
                         <button
                           onClick={() => addSubCategory(cat._id)}
                           disabled={subLoading[cat._id]}
-                          className="bg-indigo-600 text-white px-3 py-1 rounded text-sm disabled:opacity-60">
-                          {subLoading[cat._id] ? "Adding..." : "Add Subcategory"}
+                          className="bg-indigo-600 text-white px-3 py-1 rounded text-sm disabled:opacity-60"
+                        >
+                          {subLoading[cat._id]
+                            ? "Adding..."
+                            : "Add Subcategory"}
                         </button>
 
                         {subSuccess[cat._id] && (
-                          <p className="text-sm text-green-600 font-medium">Added ✓</p>
+                          <p className="text-sm text-green-600 font-medium">
+                            Added ✓
+                          </p>
                         )}
-
                       </div>
                     </div>
                   </div>
@@ -647,7 +676,8 @@ const AdminCategory = () => {
           <div className="bg-white rounded-lg shadow-lg p-6 w-80">
             <h2 className="text-lg font-semibold mb-2">Delete Category?</h2>
             <p className="text-sm text-gray-600 mb-4">
-              This action cannot be undone. All subcategories will also be deleted.
+              This action cannot be undone. All subcategories will also be
+              deleted.
             </p>
             <div className="flex gap-2">
               <button
@@ -673,6 +703,20 @@ const AdminCategory = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-96">
             <h2 className="text-lg font-semibold mb-4">Edit Subcategory</h2>
+            <label className="flex items-center gap-2 text-sm mb-3 cursor-pointer">
+              <PhotoIcon className="h-5 w-5" />
+              Change Image
+              <input
+                type="file"
+                hidden
+                onChange={(e) =>
+                  setEditSubForm({
+                    ...editSubForm,
+                    image: e.target.files[0],
+                  })
+                }
+              />
+            </label>
 
             <input
               placeholder="Subcategory Name"

@@ -13,6 +13,9 @@ const subCategorySchema = new mongoose.Schema(
       required: true,
       lowercase: true,
     },
+    image: {
+      type: String,
+    },
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
