@@ -113,6 +113,14 @@ export const getDesignById = asyncHandler(async (req, res) => {
     new ApiResponse(200, "Design fetched successfully", design)
   );
 });
+export const getDesignByUserId = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const designs = await Design.find({ createdBy: userId })
+    .sort({ createdAt: -1 });
+  res.json(
+    new ApiResponse(200, "User's designs fetched successfully", designs)
+  );
+});
 /**
  * UPDATE DESIGN (publish / unpublish)
  */

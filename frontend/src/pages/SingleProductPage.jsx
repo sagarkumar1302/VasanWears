@@ -6,6 +6,8 @@ import {
   RiHeartFill,
   RiHeartLine,
 } from "@remixicon/react";
+import credits1 from "../assets/gif/Credits1.gif";
+import credits2 from "../assets/gif/Credits2.gif";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useCartStore } from "../store/cartStore";
@@ -420,7 +422,7 @@ const SingleProductPage = () => {
             </div>
 
             {/* Main Image / Video */}
-            <div className="relative w-full h-[450px] md:h-fit xl:h-[800px] bg-primary3 rounded-xl overflow-hidden">
+            <div className="relative w-full h-[450px] md:h-fit xl:h-[800px] bg-[#faf7f2] rounded-xl overflow-hidden">
               {selectedMedia?.type === "image" ? (
                 <img
                   src={selectedMedia?.src}
@@ -469,6 +471,13 @@ const SingleProductPage = () => {
                   <RiHeartLine className="xl:h-8 xl:w-8 w-5 h-5 hover:text-primary1 transition" />
                 )}
               </button>
+              <div className="absolute bottom-5 right-5 bg-white px-2 py-1 rounded-xl">
+                <Link to={`/designs-collections/users/${product?.credits?._id}`} className="flex justify-center items-center gap-2">
+                  <img src={credits1} alt="Credits" className="w-10"/>
+                  <span>Credit by </span>
+                  <span className="font-bold">{product?.credits?.fullName}</span>
+                </Link>
+              </div>
             </div>
           </div>
 

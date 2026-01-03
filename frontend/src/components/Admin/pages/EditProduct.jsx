@@ -6,8 +6,14 @@ import {
   deleteProductApi,
   getProductBySlugApi,
   updateProductApi,
+  getAllColorsApi,
+  getAllSizesApi
 } from "../../../utils/productApi";
-import { API, getAllCategoriesWithSubCatApi } from "../../../utils/adminApi";
+
+import {
+  getAllUsersExceptAdminsApi,
+  getAllCategoriesWithSubCatApi,
+} from "../../../utils/adminApi";
 const EditProduct = () => {
   const navigate = useNavigate();
   const { slug } = useParams();
@@ -50,21 +56,34 @@ const EditProduct = () => {
 
   const [availableColors, setAvailableColors] = useState([]);
   const [availableSizes, setAvailableSizes] = useState([]);
+  const [users, setUsers] = useState([]);
 
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedSizes, setSelectedSizes] = useState([]);
+  const [selectedCredit, setSelectedCredit] = useState("");
   useEffect(() => {
     fetchAttributes();
   }, []);
 
   const fetchAttributes = async () => {
-    const [colorsRes, sizesRes] = await Promise.all([
-      API.get("/colors"),
-      API.get("/sizes"),
+    const [colorsRes, sizesRes, usersRes] = await Promise.all([
+      getAllColorsApi(),
+      getAllSizesApi(),
+      getAllUsersExceptAdminsApi(),
     ]);
 
-    setAvailableColors(colorsRes.data.data);
-    setAvailableSizes(sizesRes.data.data);
+    setAvailableColors(colorsRes.data);
+    setAvailableSizes(sizesRes.data);
+
+    // Sort users by fullName and email
+    console.log("Users ::",usersRes.data);
+    
+    const sortedUsers = (usersRes.data || []).sort((a, b) => {
+      const nameCompare = a.fullName.localeCompare(b.fullName);
+      if (nameCompare !== 0) return nameCompare;
+      return a.email.localeCompare(b.email);
+    });
+    setUsers(sortedUsers);
   };
 
   const [loading, setLoading] = useState(false);
@@ -152,7 +171,7 @@ const EditProduct = () => {
   };
 
   /* ================= SUBMIT ================= */
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -160,7 +179,6 @@ const EditProduct = () => {
       toast.error("Required fields are missing");
       return;
     }
-    
 
     try {
       setLoading(true);
@@ -170,7 +188,6 @@ const EditProduct = () => {
       }
 
       const formData = new FormData();
-
 
       // TEXT FIELDS
       formData.append("title", form.title);
@@ -228,6 +245,11 @@ const EditProduct = () => {
       formData.append("sizes", JSON.stringify(savedSizes));
       formData.append("colors", JSON.stringify(savedColors));
       formData.append("tags", JSON.stringify(tags));
+
+      // Add credits field
+      if (selectedCredit) {
+        formData.append("credits", selectedCredit);
+      }
 
       if (slug && productId) {
         await updateProductApi(productId, formData);
@@ -308,7 +330,6 @@ const EditProduct = () => {
     toast.success("Attributes saved");
   };
 
-  
   const allColorIds = availableColors.map((c) => c._id);
   const allSizeIds = availableSizes.map((s) => s._id);
   const fetchProduct = async () => {
@@ -358,9 +379,12 @@ const EditProduct = () => {
       setGallery(p.gallery || []);
       setProductId(p._id || null);
 
-      // populate design images (backend uses `desginImage` field)
-      
-
+      // Set credits if exists
+      if (p.credits) {
+        setSelectedCredit(
+          typeof p.credits === "object" ? p.credits._id : p.credits
+        );
+      }
 
       setAttributeSaved(true);
     } catch (err) {
@@ -487,7 +511,6 @@ const EditProduct = () => {
           </div>
         </div>
         {/* DESIGN IMAGES */}
-        
 
         {/* VARIANTS */}
         <div className="border p-4 rounded space-y-3">
@@ -774,6 +797,35 @@ const EditProduct = () => {
             ))}
           </div>
         </div>
+        {/* CREDITS */}
+        <div className="border p-4 rounded space-y-3">
+          <h3 className="font-medium">Design Credits</h3>
+          <p className="text-xs text-gray-500">
+            Select the designer who created this design. Defaults to
+            "VasanWears" if none selected.
+          </p>
+
+          <select
+            value={selectedCredit}
+            onChange={(e) => setSelectedCredit(e.target.value)}
+            className="border p-2 rounded w-full"
+          >
+            <option value="">VasanWears (Default)</option>
+            {users.map((user) => (
+              <option key={user._id} value={user._id}>
+                {user.fullName} - {user.email}
+              </option>
+            ))}
+          </select>
+
+          {selectedCredit && (
+            <div className="text-xs text-green-600">
+              ✓ Credits assigned to{" "}
+              {users.find((u) => u._id === selectedCredit)?.fullName}
+            </div>
+          )}
+        </div>
+
         {/* TAGS */}
         <div className="border p-4 rounded space-y-3">
           <h3 className="font-medium">Product Tags</h3>

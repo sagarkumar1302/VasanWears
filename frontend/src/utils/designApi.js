@@ -44,3 +44,12 @@ export const getDesignByIdApi = async (designId) => {
         throw err;
     }
 };
+export const getDesignsByUserIdApi = async (userId) => {
+    try {
+        const res = await API.post(`/designs/user/${userId}`);
+        return res.data;
+    }
+    catch (err) {
+        throw err;
+    }
+};

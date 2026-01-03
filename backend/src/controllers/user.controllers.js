@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 import { uploadToS3 } from "../utils/uploadToS3.js";
 const isProd = process.env.NODE_ENV === "production";
 
-const options  = {
+const options = {
     httpOnly: true,
     secure: isProd,                     // ✅ true only in production
     sameSite: isProd ? "none" : "lax",   // ✅ Safari-safe
@@ -289,6 +289,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             })
         );
 });
+
 
 
 export { registerUser, loginUser, currentUser, userProfile, googleLogin, logoutHandler, generateAccessAndRefreshToken, refreshAccessToken };

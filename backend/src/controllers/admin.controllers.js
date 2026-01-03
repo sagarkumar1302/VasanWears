@@ -164,6 +164,14 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             })
         );
 });
+const getAllUsersExceptAdmins = asyncHandler(async (req, res) => {
+    const users = await User.find({ role: { $ne: "admin" } }).select(
+        "-password -refreshToken"
+    );
 
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "Users fetched successfully", users));
+});
 
-export { adminLoginUser, currentUser, logoutHandler, generateAccessAndRefreshToken, refreshAccessToken };
+export { adminLoginUser, currentUser, logoutHandler, generateAccessAndRefreshToken, refreshAccessToken, getAllUsersExceptAdmins };

@@ -51,6 +51,7 @@ import ContactUs from "./pages/ContactUs";
 import CreateDesign from "./pages/CreateDesign";
 import UsersDesigns from "./pages/DesignsCollection";
 import SingleDesign from "./pages/SingleDesign";
+import SingleUserDesign from "./pages/SingleUserDesign";
 const App = () => {
   const setUser = useAuthStore((s) => s.setUser);
   const setAuthChecked = useAuthStore((s) => s.setAuthChecked);
@@ -108,6 +109,7 @@ const App = () => {
             <Route path="/create-design/" element={<CreateDesign />}></Route>
             <Route path="/designs-collections/" element={<UsersDesigns />}></Route>
             <Route path="/designs-collections/:designId/" element={<SingleDesign />}></Route>
+            <Route path="/designs-collections/users/:userDesignId/" element={<SingleUserDesign />}></Route>
             <Route path="/design/" element={<Designer />}></Route>
             <Route path="/cart/" element={<CartPage />}></Route>
             <Route path="/wishlist/" element={<Wishlist />}></Route>

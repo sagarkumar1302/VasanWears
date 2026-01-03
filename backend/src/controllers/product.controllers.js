@@ -189,6 +189,10 @@ const createProduct = asyncHandler(async (req, res) => {
       .status(400)
       .json(new ApiResponse(400, "Tags must be an array"));
   }
+
+  /* ================= CREDITS ================= */
+  const credits = req.body.credits || null;
+
   /* ================= CREATE PRODUCT ================= */
 
   const product = await Product.create({
@@ -205,6 +209,7 @@ const createProduct = asyncHandler(async (req, res) => {
     hoverImage: hoverImageUrl,
     gallery: galleryMedia,
     status,
+    credits,
 
     author: req.adminuser._id,
   });
@@ -237,6 +242,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     subCategory,
     variants,
     status,
+
   } = req.body;
 
   /* ================= BASIC FIELDS ================= */
@@ -278,6 +284,11 @@ const updateProduct = asyncHandler(async (req, res) => {
     }
 
     product.tags = tags; // ✅ overwrite safely
+  }
+
+  /* ================= CREDITS ================= */
+  if (req.body.credits !== undefined) {
+    product.credits = req.body.credits || null;
   }
 
   /* ================= SUBCATEGORY VALIDATION ================= */
@@ -438,6 +449,10 @@ const getProductById = asyncHandler(async (req, res) => {
       path: "subCategory",
       select: "name", // ✅ only name
     })
+    .populate({
+      path: "credits",
+      select: "fullName", // ✅ only name
+    })
     .lean();
 
   if (!product) {
@@ -472,6 +487,10 @@ const getProductBySlug = asyncHandler(async (req, res) => {
     .populate({
       path: "sizes",
       select: "name", // ✅ only name
+    })
+    .populate({
+      path: "credits",
+      select: "fullName", // ✅ only fullName
     })
     .lean();
 
@@ -581,6 +600,10 @@ const getAllProductsForWebsite = asyncHandler(async (req, res) => {
     .populate({
       path: "subCategory",
       select: "name", // ✅ only name
+    })
+    .populate({
+      path: "credits",
+      select: "fullName", // ✅ only fullName
     })
     .sort({ createdAt: -1 })
     .lean();

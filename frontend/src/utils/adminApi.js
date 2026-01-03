@@ -136,7 +136,16 @@ export const getProductByIdAdminApi = async (id) => {
     throw err;
   }
 };
-
+export const getAllUsersExceptAdminsApi = async () => {
+  try {
+    const res = await API.get("/admin/all-users");
+    return res.data;
+  }
+  catch (err) {
+    console.error("Get Users Error:", err);
+    throw err;
+  }
+};
 API.interceptors.response.use(
   res => res,
   async (error) => {

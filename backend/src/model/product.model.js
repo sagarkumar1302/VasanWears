@@ -117,7 +117,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    
+
 
     gallery: [
       {
@@ -165,6 +165,10 @@ const productSchema = new mongoose.Schema(
     ratingCount: {
       type: Number,
       default: 0,
+    },
+    credits: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   { timestamps: true }
