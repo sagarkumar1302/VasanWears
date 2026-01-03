@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 import { uploadToS3 } from "../utils/uploadToS3.js";
 const isProd = process.env.NODE_ENV === "production";
 
-const cookieOptions = {
+const options  = {
     httpOnly: true,
     secure: isProd,                     // ✅ true only in production
     sameSite: isProd ? "none" : "lax",   // ✅ Safari-safe
