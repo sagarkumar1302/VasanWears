@@ -96,7 +96,7 @@ const TermsAndCondition = () => {
               <h2 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">5. Order Process</h2>
               <ul className="list-disc pl-8 space-y-2">
                 <li>Orders are processed only after successful payment.</li>
-                <li>All products are custom-made and begin production shortly after order confirmation.</li>
+                <li>Since each product is custom-made, production begins 12–24 hours after confirmation. You can cancel your order within 24 hours.</li>
                 <li>Design previews shown on the website are for reference only; minor color or size variations may occur.</li>
               </ul>
             </section>

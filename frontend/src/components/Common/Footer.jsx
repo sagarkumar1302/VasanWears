@@ -53,7 +53,7 @@ const Footer = () => {
             </p>
             <p className="text-primary5">info@vasanwears.in</p>
             <p className="text-primary leading-relaxed">
-              KP Road, Gaya, 823001 <br /> Gaya,Bihar
+              KP Road, Gaya, Bihar, 823001 <br />
             </p>
           </div>
 

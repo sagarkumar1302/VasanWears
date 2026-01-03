@@ -45,8 +45,8 @@ const ZigZag3 = () => {
           {/* Final Tagline/Closing */}
           <div className="pt-6">
             {/* Added animate-butterfly class here */}
-            <div className="bg-gray-900 p-6 md:p-8 rounded-2xl shadow-xl transform animate-butterfly transition-transform duration-300">
-              <p className="text-white text-xl md:text-2xl font-bold text-center tracking-tight">
+            <div className="bg-[#FAF7F3] p-6 md:p-8 rounded-2xl shadow-xl transform animate-butterfly transition-transform duration-300">
+              <p className="text-primary5 text-xl md:text-2xl font-bold text-center tracking-tight">
                 VasanWears —{" "}
                 <span className="text-primary5 uppercase tracking-wider">
                   Wear What You Imagine

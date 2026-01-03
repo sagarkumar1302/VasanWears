@@ -64,15 +64,16 @@ const ZigZag = () => {
 
         {/* Image Content */}
         <div className="order-1 md:order-2 relative group">
-          {/* Decorative background element */}
-          <div className="absolute -inset-4 bg-primary5/5 rounded-3xl -z-10 group-hover:bg-primary5/10 transition-colors duration-500"></div>
+          {/* Decorative Ring */}
+          <div className="absolute inset-0 border-2 border-primary5/20 rounded-3xl scale-105 group-hover:scale-110 transition-transform duration-500"></div>
 
           <img
             src="/images/VasanNS.png"
-            alt="About VasanWears Branding"
-            className="rounded-2xl w-full shadow-2xl transform transition duration-500 group-hover:scale-[1.02]"
+            alt="VasanWears Vision"
+            className="rounded-2xl w-full shadow-2xl relative z-10"
           />
-        </div>
+
+</div>
       </div>
     </section>
   );

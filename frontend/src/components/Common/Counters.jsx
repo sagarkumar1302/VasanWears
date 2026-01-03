@@ -23,7 +23,7 @@ const stats = [
     icon: RiShoppingBag3Line,
   },
   {
-    label: "Sold by customers through TeeSpace",
+    label: "Sold by VasanWears creators",
     value: 64,
     suffix: "M+",
     icon: RiUserStarLine,
