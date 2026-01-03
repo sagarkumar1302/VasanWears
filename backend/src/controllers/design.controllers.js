@@ -81,9 +81,9 @@ export const toggleLikeDesign = asyncHandler(async (req, res) => {
  * GET ALL PUBLIC DESIGNS
  */
 export const getAllDesigns = asyncHandler(async (req, res) => {
-  const designs = await Design.find({ isPublic: true })
-    .populate("createdBy", "name email")
-    .sort({ createdAt: -1 });
+  const designs = await Design.find()
+    .populate("createdBy", "fullName email")
+    .sort({ likesCount: -1, createdAt: -1 });
 
   res.json(
     new ApiResponse(200, "Designs fetched successfully", designs)
@@ -101,7 +101,18 @@ export const getMyDesigns = asyncHandler(async (req, res) => {
     new ApiResponse(200, "Your designs fetched successfully", designs)
   );
 });
-
+export const getDesignById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const design = await Design.findById(id).populate("createdBy", "fullName email");
+  if (!design) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, "Design not found"));
+  }
+  res.json(
+    new ApiResponse(200, "Design fetched successfully", design)
+  );
+});
 /**
  * UPDATE DESIGN (publish / unpublish)
  */

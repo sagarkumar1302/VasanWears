@@ -19,3 +19,28 @@ export const getMyDesignsApi = async () => {
         throw err;
     }
 };
+export const getAllDesignsApi = async () => {
+    try {
+        const res = await API.get("/designs");
+        return res.data;
+    } catch (err) {
+        throw err;
+    }
+}
+
+export const toggleLikeDesign = async (designId) => {
+    try {
+        const res = await API.post(`/designs/${designId}/like`);
+        return res.data;
+    } catch (err) {
+        throw err;
+    }
+}
+export const getDesignByIdApi = async (designId) => {
+    try {
+        const res = await API.post(`/designs/${designId}`);
+        return res.data;
+    } catch (err) {
+        throw err;
+    }
+};

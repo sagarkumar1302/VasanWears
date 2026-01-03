@@ -51,9 +51,11 @@ const Footer = () => {
               Rooted in our culture and heritage, VasanWears brings this legacy
               into modern fashion.
             </p>
-            <p className="text-primary5">info@vasanwears.in</p>
+            <p className="text-primary5">
+              <a href="mailto:info@vasanwears.in">info@vasanwears.in</a>
+            </p>
             <p className="text-primary leading-relaxed">
-              KP Road, Gaya, Bihar, 823001 <br />
+              📍 Gaya, Bihar – India <br />
             </p>
           </div>
 
@@ -65,16 +67,16 @@ const Footer = () => {
                 <Link to="/">Home</Link>
               </li>
               <li>
-                <Link to="/about">About</Link>
+                <Link to="/about/">About</Link>
               </li>
               <li>
-                <Link to="/blogs">Blog</Link>
+                <Link to="/blogs/">Blog</Link>
               </li>
               <li>
-                <Link to="/shop">Shop</Link>
+                <Link to="/shop/">Shop</Link>
               </li>
               <li>
-                <Link to="/contact-us">Contact Us</Link>
+                <Link to="/contact-us/">Contact Us</Link>
               </li>
             </ul>
           </div>
@@ -84,7 +86,7 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-4">Services</h4>
             <ul className="space-y-3 text-primary5">
               <li>
-                <Link to="/design">Design Your T-Shirt</Link>
+                <Link to="/design/">Design Your T-Shirt</Link>
               </li>
               <li>
                 <Link to="/terms-and-condition/">Terms & Conditions</Link>
@@ -98,7 +100,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/designs-collection/">Designs</Link>
+                <Link to="/designs-collections/">Designs Collection</Link>
               </li>
             </ul>
           </div>
@@ -108,19 +110,19 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-4">Useful links</h4>
             <ul className="space-y-3 text-primary5">
               <li>
-                <Link to="/my-account">My Account</Link>
+                <Link to="/my-account/">My Account</Link>
               </li>
               <li>
-                <Link to="/my-account/order">Orders</Link>
+                <Link to="/my-account/order/">Orders</Link>
               </li>
               <li>
-                <Link to="/my-account/coupons">Coupons</Link>
+                <Link to="/my-account/coupons/">Coupons</Link>
               </li>
               <li>
-                <Link to="/wishlist">My Wishlist</Link>
+                <Link to="/wishlist/">My Wishlist</Link>
               </li>
               <li>
-                <Link to="/cart">Cart</Link>
+                <Link to="/cart/">Cart</Link>
               </li>
             </ul>
           </div>

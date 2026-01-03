@@ -196,24 +196,22 @@ const SingleProductPage = () => {
     }
   };
   const handleColorChange = (colorId) => {
-  const variant = product.variants.find(
-    (v) =>
-      v.color?._id?.toString() === colorId ||
-      v.color?.toString() === colorId
-  );
+    const variant = product.variants.find(
+      (v) =>
+        v.color?._id?.toString() === colorId || v.color?.toString() === colorId
+    );
 
-  if (!variant) return;
+    if (!variant) return;
 
-  setSelectedVariant(variant);
-  setSelectedColor(colorId);
-  setSelectedIndex(0);
+    setSelectedVariant(variant);
+    setSelectedColor(colorId);
+    setSelectedIndex(0);
 
-  navigate(
-    `/shop/${product._id}/${product.slug}?variant=${variant._id}&size=${selectedSize}`,
-    { replace: true }
-  );
-};
-
+    navigate(
+      `/shop/${product._id}/${product.slug}?variant=${variant._id}&size=${selectedSize}`,
+      { replace: true }
+    );
+  };
 
   const handleSizeChange = (sizeId) => {
     setSelectedSize(sizeId);
@@ -587,7 +585,7 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
 
             {/* Share */}
             {/* Pincode Checker */}
-            <div className="mt-6">
+            <div className="mt-6 hidden">
               <p className="font-medium mb-2">Check Delivery:</p>
 
               <div className="flex gap-3">

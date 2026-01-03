@@ -49,6 +49,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CancellationPolicy from "./pages/CancellationPolicy";
 import ContactUs from "./pages/ContactUs";
 import CreateDesign from "./pages/CreateDesign";
+import UsersDesigns from "./pages/DesignsCollection";
+import SingleDesign from "./pages/SingleDesign";
 const App = () => {
   const setUser = useAuthStore((s) => s.setUser);
   const setAuthChecked = useAuthStore((s) => s.setAuthChecked);
@@ -81,50 +83,52 @@ const App = () => {
       <ScrollToHash />
       <Routes>
         <Route element={<ProtectedRoute />}>
-          <Route path="/design" element={<Designer />}></Route>
+          <Route path="/design/" element={<Designer />}></Route>
         </Route>
         <Route element={<UserLayout />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/shop" element={<ShopPage />} />
-          <Route path="/shop/:id/:slug" element={<SingleProductPage />} />
-          <Route path="/blogs" element={<BlogsPage />} />
-          <Route path="/blogs/:blogId" element={<SingleBlogPage />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/terms-and-condition" element={<TermsAndCondition />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/about/" element={<AboutPage />} />
+          <Route path="/shop/" element={<ShopPage />} />
+          <Route path="/shop/:id/:slug/" element={<SingleProductPage />} />
+          <Route path="/blogs/" element={<BlogsPage />} />
+          <Route path="/blogs/:blogId/" element={<SingleBlogPage />} />
+          <Route path="/forgot-password/" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token/" element={<ResetPassword />} />
+          <Route path="/terms-and-condition/" element={<TermsAndCondition />} />
+          <Route path="/privacy-policy/" element={<PrivacyPolicy />} />
           <Route
-            path="/refund-and-cancellation"
+            path="/refund-and-cancellation/"
             element={<CancellationPolicy />}
           />
-          <Route path="/contact-us" element={<ContactUs />} />
+          <Route path="/contact-us/" element={<ContactUs />} />
 
           <Route path="*" element={<NotFound />} />
 
           <Route element={<ProtectedRoute />}>
-            <Route path="/create-design" element={<CreateDesign />}></Route>
-            <Route path="/design" element={<Designer />}></Route>
-            <Route path="/cart" element={<CartPage />}></Route>
-            <Route path="/wishlist" element={<Wishlist />}></Route>
-            <Route path="/checkout" element={<Checkout />}></Route>
-            <Route path="/thank-you" element={<ThankYou />}></Route>
-            <Route path="/my-account" element={<MyAccount />}>
+            <Route path="/create-design/" element={<CreateDesign />}></Route>
+            <Route path="/designs-collections/" element={<UsersDesigns />}></Route>
+            <Route path="/designs-collections/:designId/" element={<SingleDesign />}></Route>
+            <Route path="/design/" element={<Designer />}></Route>
+            <Route path="/cart/" element={<CartPage />}></Route>
+            <Route path="/wishlist/" element={<Wishlist />}></Route>
+            <Route path="/checkout/" element={<Checkout />}></Route>
+            <Route path="/thank-you/" element={<ThankYou />}></Route>
+            <Route path="/my-account/" element={<MyAccount />}>
               <Route
                 path="profile-information"
                 element={<ProfileInformation />}
               />
-              <Route path="addresses" element={<ManageAddress />} />
-              <Route path="orders" element={<Orders />} />
-              <Route path="orders/:id" element={<SingleOrder />} />
-              <Route path="coupons" element={<Coupons />} />
+              <Route path="addresses/" element={<ManageAddress />} />
+              <Route path="orders/" element={<Orders />} />
+              <Route path="orders/:id/" element={<SingleOrder />} />
+              <Route path="coupons/" element={<Coupons />} />
               <Route index element={<MyAccountRightSide />} />
             </Route>
           </Route>
         </Route>
         <Route element={<PublicRoute />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login/" element={<LoginPage />} />
+          <Route path="/register/" element={<RegisterPage />} />
         </Route>
         {/* //Admin Layout */}
         <Route element={<AdminPublicRoute />}>
@@ -133,14 +137,14 @@ const App = () => {
         <Route element={<AdminProtectedRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="dashboard" />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="dashboard/" element={<AdminDashboard />} />
             <Route path="products">
-              <Route path="all-products" element={<AdminProductList />} />
-              <Route path="add" element={<AddProduct />} />
-              <Route path=":slug/edit" element={<EditProduct />} />
-              <Route path="category" element={<AdminCategory />} />
-              <Route path="sizes" element={<SizePage />} />
-              <Route path="color" element={<ColorPage />} />
+              <Route path="all-products/" element={<AdminProductList />} />
+              <Route path="add/" element={<AddProduct />} />
+              <Route path=":slug/edit/" element={<EditProduct />} />
+              <Route path="category/" element={<AdminCategory />} />
+              <Route path="sizes/" element={<SizePage />} />
+              <Route path="color/" element={<ColorPage />} />
             </Route>
 
             {/* <Route path="products" element={<Products />} /> */}

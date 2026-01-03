@@ -156,3 +156,25 @@ input[type="radio"] {
     }
   }
 }
+
+/* 3D Flip Animation Styles */
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* Line clamp utility */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

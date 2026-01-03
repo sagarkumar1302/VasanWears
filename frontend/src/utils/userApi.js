@@ -82,6 +82,3 @@ API.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-
-// Google Login API call
