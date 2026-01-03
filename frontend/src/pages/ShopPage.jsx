@@ -32,17 +32,41 @@ const ShopPage = () => {
   const productsGridRef = useRef(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const [categories, setCategories] = useState([]);
+
   useEffect(() => {
     const query = searchParams.get("search") || "";
+    const subCategoryParam = searchParams.get("subCategory") || "";
+    const categoryParam = searchParams.get("category") || "";
+
     setSearchInput(query);
     setSearch(query);
-  }, [searchParams]);
+
+    if (subCategoryParam) {
+      setSelectedSubCategory(subCategoryParam);
+      setTempSubCategory(subCategoryParam);
+    }
+
+    if (categoryParam && categories.length > 0) {
+      // Find category by name (case-insensitive)
+      const matchedCategory = categories.find(
+        (cat) => cat.name.toLowerCase() === categoryParam.toLowerCase()
+      );
+
+      if (matchedCategory) {
+        setSelectedCategory(matchedCategory._id);
+        setTempCategory(matchedCategory._id);
+        // Clear subcategory when category is set from URL
+        setSelectedSubCategory("");
+        setTempSubCategory("");
+      }
+    }
+  }, [searchParams, categories]);
 
   const [wishlistProductIds, setWishlistProductIds] = useState([]);
   const [wishlistLoadingId, setWishlistLoadingId] = useState(null);
 
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [colors, setColors] = useState([]);
   const [sizes, setSizes] = useState([]);

@@ -13,3 +13,12 @@ export const getSubcategoryByIdApi = async (subCategoryId) => {
         throw err;
     }
 };
+export const getAllSubCategoriesApi = async () => {
+    try {
+        const res = await API.get("/subcategories");
+        return res.data;
+    } catch (err) {
+        console.error("Get All SubCategories Error:", err);
+        throw err;
+    }
+};

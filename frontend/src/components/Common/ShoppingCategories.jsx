@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { getAllCategoriesAdminApi } from "../../utils/adminApi";
+import { Link } from "react-router-dom";
+import { getAllSubCategoriesApi } from "../../utils/subCategoryApi.js";
 import Loader from "./Loader";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -12,7 +13,7 @@ const ShoppingCategories = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await getAllCategoriesAdminApi();
+        const res = await getAllSubCategoriesApi();
         setCategories(res.data || []);
       } catch (err) {
         console.error("Fetch categories error", err);
@@ -66,8 +67,9 @@ const ShoppingCategories = () => {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-10 md:mt-15">
           {categories.map((cat) => (
-            <div
+            <Link
               key={cat._id}
+              to={`/shop?subCategory=${cat._id}`}
               className="cat-item flex flex-col items-center cursor-pointer"
             >
               <div className="rounded-full overflow-hidden bg-gray-100 shadow-sm hover:scale-105 transition-all duration-300">
@@ -85,7 +87,7 @@ const ShoppingCategories = () => {
               {cat.count && (
                 <span className="text-primary5 text-sm">{cat.count}</span>
               )}
-            </div>
+            </Link>
           ))}
         </div>
       </div>

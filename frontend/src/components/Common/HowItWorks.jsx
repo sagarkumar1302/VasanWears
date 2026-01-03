@@ -71,13 +71,15 @@ const HowItWorks = () => {
           </div>
 
           {/* Step 3 */}
-          <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center">
+          <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center ">
             {/* <img
               src="./images/htw2.jpg"
               className="rounded-xl shadow-md"
               alt="step"
             /> */}
-            <video src={enjoyVideo} loop muted autoPlay />
+            <div className="overflow-hidden">
+              <video src={enjoyVideo} loop muted autoPlay className="border-none -mb-5" />
+            </div>
 
             <div>
               <div className="w-15 h-15 flex items-center justify-center bg-linear-to-br from-primary4 to-primary3 text-primary2 text-2xl rounded-full mb-4 font-semibold">

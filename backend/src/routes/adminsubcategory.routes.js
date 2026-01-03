@@ -1,7 +1,7 @@
 // routes/subcategory.routes.js
 import { Router } from "express";
 import adminVerifyJwt from "../middleware/adminAuth.middleware.js";
-import { createSubCategory, deleteSubCategory, findSubCategoryById, updateSubCategory } from "../controllers/subcategory.controllers.js";
+import { createSubCategory, deleteSubCategory, findSubCategoryById, getAllSubCategories, updateSubCategory } from "../controllers/subcategory.controllers.js";
 
 import { upload } from "../middleware/multer.middleware.js";
 
@@ -17,5 +17,6 @@ router.put("/:id", upload.single("image"), adminVerifyJwt, updateSubCategory);
 // DELETE SUBCATEGORY
 router.delete("/:id", adminVerifyJwt, deleteSubCategory);
 router.get("/:id", findSubCategoryById);
+router.get("/", getAllSubCategories);
 
 export default router;

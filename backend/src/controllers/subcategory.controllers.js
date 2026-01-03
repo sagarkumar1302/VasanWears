@@ -128,4 +128,10 @@ const findSubCategoryById = asyncHandler(async (req, res) => {
     new ApiResponse(200, "SubCategory fetched successfully", subCategory)
   );
 });
-export { createSubCategory, updateSubCategory, deleteSubCategory, findSubCategoryById };
+const getAllSubCategories = asyncHandler(async (req, res) => {
+  const subCategories = await SubCategory.find({ published: true }).populate("category", "name");
+  res.status(200).json(
+    new ApiResponse(200, "SubCategories fetched successfully", subCategories)
+  );
+});
+export { createSubCategory, updateSubCategory, deleteSubCategory, findSubCategoryById, getAllSubCategories };

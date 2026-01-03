@@ -1,35 +1,54 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { RiHeartLine, RiHeartFill } from "@remixicon/react";
 import gsap from "gsap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   getAllProductsForWebsite,
   getAllCategoriesForWebsite,
 } from "../../utils/productApi";
+import { getAllSubCategoriesApi } from "../../utils/subCategoryApi";
+import { toggleWishlistApi, getWishlistApi } from "../../utils/wishlistApi";
+import toast from "react-hot-toast";
 import Loader from "../Common/Loader";
 
 const ProductShowcase = () => {
-  const [activeCategory, setActiveCategory] = useState(null);
+  const navigate = useNavigate();
+  const [activeSubCategory, setActiveSubCategory] = useState(null);
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [wishlistProductIds, setWishlistProductIds] = useState([]);
+  const [wishlistLoadingId, setWishlistLoadingId] = useState(null);
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const res = await getWishlistApi();
+        setWishlistProductIds(res.data.productIds || []);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchWishlist();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        const [prodRes, catRes] = await Promise.all([
+        const [prodRes, subCatRes] = await Promise.all([
           getAllProductsForWebsite(),
-          getAllCategoriesForWebsite(),
+          getAllSubCategoriesApi(),
         ]);
 
         setProducts(prodRes.data || []);
-        setCategories(catRes.data || []);
+        setSubCategories(subCatRes.data || []);
 
-        // 👇 set first category as default tab
-        if (catRes.data?.length) {
-          setActiveCategory(catRes.data[0]._id);
+        // 👇 set first subcategory as default tab
+        if (subCatRes.data?.length) {
+          setActiveSubCategory(subCatRes.data[0]._id);
         }
       } catch (err) {
         console.error("Showcase fetch error", err);
@@ -41,11 +60,40 @@ const ProductShowcase = () => {
     fetchData();
   }, []);
 
-  /** 🔥 FILTER PRODUCTS BY CATEGORY */
+  /** 🔥 FILTER PRODUCTS BY SUBCATEGORY */
   const filteredProducts = useMemo(() => {
-    if (!activeCategory) return [];
-    return products.filter((p) => p.category?._id === activeCategory);
-  }, [products, activeCategory]);
+    if (!activeSubCategory) return [];
+    return products.filter((p) => p.subCategory?._id === activeSubCategory);
+  }, [products, activeSubCategory]);
+
+  const handleToggleWishlist = async (productId) => {
+    if (wishlistLoadingId) return;
+
+    try {
+      setWishlistLoadingId(productId);
+
+      const res = await toggleWishlistApi(productId);
+
+      const updatedIds = res.data.items.map((i) => i.product.toString());
+      setWishlistProductIds(updatedIds);
+
+      toast.success(
+        updatedIds.includes(productId)
+          ? "Added to wishlist"
+          : "Removed from wishlist"
+      );
+    } catch (err) {
+      if (err.response?.status === 401) {
+        navigate("/login", {
+          state: { from: location.pathname },
+        });
+      } else {
+        toast.error("Wishlist action failed");
+      }
+    } finally {
+      setWishlistLoadingId(null);
+    }
+  };
 
   if (loading) return <Loader />;
 
@@ -61,20 +109,20 @@ const ProductShowcase = () => {
             Discover our latest collections handpicked for you.
           </p>
 
-          {/* 🔥 CATEGORY TABS */}
+          {/* 🔥 SUBCATEGORY TABS */}
           <div className="flex md:justify-center mt-6 gap-4 overflow-x-auto py-2 scrollbar-hide">
-            {categories.map((cat) => (
+            {subCategories.map((subCat) => (
               <button
-                key={cat._id}
-                onClick={() => setActiveCategory(cat._id)}
+                key={subCat._id}
+                onClick={() => setActiveSubCategory(subCat._id)}
                 className={`px-5 md:px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap
                 ${
-                  activeCategory === cat._id
+                  activeSubCategory === subCat._id
                     ? "bg-primary1 text-primary2"
                     : "bg-primary3/60 hover:bg-primary3"
                 }`}
               >
-                {cat.name}
+                {subCat.name}
               </button>
             ))}
           </div>
@@ -97,6 +145,9 @@ const ProductShowcase = () => {
                   : null,
                 tags: product.tags || [],
               }}
+              isWishlisted={wishlistProductIds.includes(product._id)}
+              onToggleWishlist={() => handleToggleWishlist(product._id)}
+              loading={wishlistLoadingId === product._id}
             />
           ))}
         </div>
