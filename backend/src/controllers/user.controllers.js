@@ -6,12 +6,14 @@ import axios from "axios";
 import jwt from "jsonwebtoken";
 import { uploadToS3 } from "../utils/uploadToS3.js";
 const isProd = process.env.NODE_ENV === "production";
-const options = {
+
+const cookieOptions = {
     httpOnly: true,
-    secure: isProd,                 // ❌ false in local
-    sameSite: isProd ? "none" : "lax",
+    secure: isProd,                     // ✅ true only in production
+    sameSite: isProd ? "none" : "lax",   // ✅ Safari-safe
+    ...(isProd && { domain: ".vasanwears.in" }),
     path: "/",
-}
+};
 const generateAccessAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId);
