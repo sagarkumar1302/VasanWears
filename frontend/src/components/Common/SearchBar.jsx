@@ -35,7 +35,7 @@ const SearchBar = ({ searchModel, topBar }) => {
       ref={barRef}
       className={`absolute left-0 ${
         topBar ? "top-[120px] md:top-[143px]" : "top-[83px] md:top-[103px]"
-      } w-full bg-primary2 py-4 md:py-8 flex justify-center items-center px-4 md:px-10 xl:px-50 z-1`}
+      } w-full bg-primary2 py-4 md:py-8 flex justify-center items-center px-4 md:px-10 xl:px-50 ${searchModel? 'z-1': '-z-50 pointer-events-none'}`}
     >
       <input
         type="text"

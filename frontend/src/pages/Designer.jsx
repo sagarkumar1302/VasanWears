@@ -2550,7 +2550,7 @@ const Designer = ({ productKey } = {}) => {
           </div>
         )}
 
-        <div className="">
+        <div className="hidden">
           <div className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-gray-500 mb-2">
             Export
           </div>
