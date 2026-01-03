@@ -5,11 +5,11 @@ import { uploadCloudinary } from "../utils/Cloudinary.js";
 import axios from "axios";
 import jwt from "jsonwebtoken";
 import { uploadToS3 } from "../utils/uploadToS3.js";
+const isProd = process.env.NODE_ENV === "production";
 const options = {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
-
+    secure: isProd,                 // ❌ false in local
+    sameSite: isProd ? "none" : "lax",
     path: "/",
 }
 const generateAccessAndRefreshToken = async (userId) => {
@@ -55,7 +55,7 @@ const registerUser = asyncHandler(async (req, res) => {
         imageUrl = await uploadToS3(req.file, "usersAvatars");
     }
 
-    
+
     const user = await User.create({
         fullName,
         email,
