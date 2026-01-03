@@ -7,6 +7,7 @@ const API = axios.create({
 export const loginUser = async (email, password) => {
   try {
     const res = await API.post("/user/login", { email, password });
+    localStorage.setItem("accessToken", res.data.data.accessToken);
     return res.data;
   } catch (err) {
     console.error("Login Error:", err);
@@ -27,7 +28,7 @@ export const googleLoginApi = async (access_token) => {
     const res = await API.post("/user/google-login", {
       access_token: access_token,
     });
-
+    localStorage.setItem("accessToken", res.data.data.accessToken);
     return res.data;
   } catch (err) {
     console.error("Google Login Error:", err);
@@ -47,7 +48,15 @@ export const currentUserApi = async () => {
 
 
 export const updateProfileApi = (data) => API.put("/user/update-profile", data);
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem("accessToken");
 
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
 
 API.interceptors.response.use(
   res => res,
@@ -58,10 +67,14 @@ API.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        await API.post("/user/refresh-token");
+        const res= await API.post("/user/refresh-token");
+        if (res.data?.accessToken) {
+          localStorage.setItem("accessToken", res.data.data.accessToken);
+        }
         return API(originalRequest);
       } catch {
         useAuthStore.getState().logout();
+        localStorage.removeItem("accessToken");
         // window.location.href = "/login";
       }
     }
