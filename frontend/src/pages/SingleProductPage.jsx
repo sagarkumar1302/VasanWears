@@ -472,11 +472,24 @@ const SingleProductPage = () => {
                 )}
               </button>
               <div className="absolute bottom-5 right-5 bg-white px-2 py-1 rounded-xl">
-                <Link to={`/designs-collections/users/${product?.credits?._id}`} className="flex justify-center items-center gap-2">
-                  <img src={credits1} alt="Credits" className="w-10"/>
-                  <span>Credit by </span>
-                  <span className="font-bold">{product?.credits?.fullName}</span>
-                </Link>
+                {product?.credits?.fullName ? (
+                  <Link
+                    to={`/designs-collections/users/${product?.credits?._id}`}
+                    className="flex justify-center items-center gap-2"
+                  >
+                    <img src={credits1} alt="Credits" className="w-10" />
+
+                    <span>Credit by </span>
+                    <span className="font-bold">
+                      {product?.credits?.fullName}
+                    </span>
+                  </Link>
+                ) : (
+                  <div className="flex gap-2 items-center justify-center">
+                    <img src={credits1} alt="Credits" className="w-10" />
+                    <span className="font-bold">By Vasan Wears</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
