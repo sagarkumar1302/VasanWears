@@ -55,7 +55,7 @@ const LoginPage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-primary3 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-primary3 flex md:items-center justify-center px-4 items-start md:py-0 py-10">
       <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-lg">
         <form className="mt-8 space-y-5" onSubmit={loginHandler}>
           {/* Email */}
