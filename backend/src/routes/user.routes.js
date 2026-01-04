@@ -18,7 +18,7 @@ router.get("/test-email", async (req, res) => {
   try {
     await sendEmail({
       email: "imsgr10@gmail.com",
-      subject: "Test Email - Vasan Wears",
+      subject: "Test Email - VasanWears",
       html: "<h1>Email working 🚀</h1><p>Resend is configured correctly.</p>",
     });
 

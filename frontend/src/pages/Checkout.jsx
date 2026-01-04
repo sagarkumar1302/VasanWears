@@ -142,7 +142,7 @@ const Checkout = () => {
       amount: razorpayOrder.amount,
       currency: "INR",
       order_id: razorpayOrder.id,
-      name: "Vasan Wears",
+      name: "VasanWears",
       description: "Order Payment",
       handler: async (response) => {
         try {

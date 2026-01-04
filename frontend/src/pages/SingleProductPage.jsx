@@ -487,7 +487,7 @@ const SingleProductPage = () => {
                 ) : (
                   <div className="flex gap-2 items-center justify-center">
                     <img src={credits1} alt="Credits" className="w-10" />
-                    <span className="font-bold">By Vasan Wears</span>
+                    <span className="font-bold">By VasanWears</span>
                   </div>
                 )}
               </div>

@@ -27,7 +27,7 @@ const forgotPassword = async (req, res) => {
     const resetUrl = `${process.env.FRONT_END_URL}/reset-password/${resetToken}`;
 
     const message = `
-    You requested a password reset for Vasan Wears.
+    You requested a password reset for VasanWears.
 
     
 
@@ -37,7 +37,7 @@ const forgotPassword = async (req, res) => {
 
     await sendEmail({
         email: user.email,
-        subject: "Vasan Wears - Password Reset",
+        subject: "VasanWears - Password Reset",
         message,
         url: resetUrl,
         title: "Password Reset Request",

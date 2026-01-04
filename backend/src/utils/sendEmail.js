@@ -18,7 +18,7 @@ const emailTemplate = ({ title, message, buttonText, buttonLink }) => `
           <!-- HEADER -->
           <tr>
             <td style="background:#5a4a2e; padding:20px; text-align:center;">
-              <h1 style="margin:0; font-size:24px;color:#fff">Vasan Wears</h1>
+              <h1 style="margin:0; font-size:24px;color:#fff">VasanWears</h1>
             </td>
           </tr>
 
@@ -50,7 +50,7 @@ const emailTemplate = ({ title, message, buttonText, buttonLink }) => `
           <!-- FOOTER -->
           <tr>
             <td style="background:#f0f0f0; padding:15px; text-align:center; font-size:12px; color:#777;">
-              © ${new Date().getFullYear()} Vasan Wears. All rights reserved.<br/>
+              © ${new Date().getFullYear()} VasanWears. All rights reserved.<br/>
               Need help? Contact us at <a href="mailto:info@vasanwears.in" style="color:#5a4a2e;">info@vasanwears.in</a>
             </td>
           </tr>
@@ -64,7 +64,7 @@ const emailTemplate = ({ title, message, buttonText, buttonLink }) => `
 `;
 const sendEmail = async ({ email, subject, message, url, title, buttonText }) => {
   const response = await resend.emails.send({
-    from: `Vasan Wears <${process.env.EMAIL_USER}>`,
+    from: `VasanWears <${process.env.EMAIL_USER}>`,
     to: email,
     subject,
     html: emailTemplate({ title, message, buttonText, buttonLink: url })

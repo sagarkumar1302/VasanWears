@@ -64,7 +64,7 @@ export const verifyPayment = async (req, res) => {
     // ✅ USER EMAIL
     await sendEmail({
       email: order.user.email,
-      subject: "Payment Successful - Vasan Wears",
+      subject: "Payment Successful - VasanWears",
       title: "Payment Received ✅",
       message: `
     Hi ${order.user.fullName},<br/><br/>
@@ -78,7 +78,7 @@ export const verifyPayment = async (req, res) => {
     // ADMIN EMAIL
     await sendEmail({
       email: process.env.EMAIL_USER,
-      subject: "New Paid Order - Vasan Wears",
+      subject: "New Paid Order - VasanWears",
       title: "Payment Confirmed 💰",
       message: `
     <b>Order ID:</b> ${order._id}<br/>

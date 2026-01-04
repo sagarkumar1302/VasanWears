@@ -23,7 +23,7 @@ export const submitContactForm = async (req, res) => {
     // 2️⃣ Send email to Admin
     await sendEmail({
       email: process.env.EMAIL_USER, // admin email
-      subject: "New Contact Message - Vasan Wears",
+      subject: "New Contact Message - VasanWears",
       title: "New Contact Inquiry 📩",
       message: `
         <b>Name:</b> ${name}<br/>

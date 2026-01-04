@@ -91,7 +91,7 @@ const Navbar = ({ searchModel, setSearchModel }) => {
           <Link to="/">
             <img
               src={logo}
-              alt="Logo of Vasan Wears"
+              alt="Logo of VasanWears"
               className="w-20 md:w-28"
             />
           </Link>

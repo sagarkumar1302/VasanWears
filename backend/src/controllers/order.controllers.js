@@ -116,7 +116,7 @@ export const placeOrder = async (req, res) => {
 
       await sendEmail({
         email: user.email,
-        subject: "Order Placed - Vasan Wears",
+        subject: "Order Placed - VasanWears",
         title: "Order Confirmed 🛍️",
         message: `Your order <b>#${order._id}</b> has been placed successfully.`,
         buttonText: "View Order",
@@ -124,7 +124,7 @@ export const placeOrder = async (req, res) => {
       });
       await sendEmail({
         email: process.env.EMAIL_USER,
-        subject: "New COD Order - Vasan Wears",
+        subject: "New COD Order - VasanWears",
         title: "New Order Received 📦",
         message: `
           <b>Order ID:</b> ${order._id}<br/>
