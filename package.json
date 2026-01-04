@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "jspdf": "^4.0.0",
     "nodemon": "^3.1.11"
   }
 }
