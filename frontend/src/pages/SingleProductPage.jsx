@@ -121,6 +121,8 @@ const SingleProductPage = () => {
   const handleToggleWishlist = async () => {
     if (!product || wishlistLoading) return;
 
+    const wasWishlisted = isWishlisted;
+
     try {
       setWishlistLoading(true);
 
@@ -129,12 +131,19 @@ const SingleProductPage = () => {
       const updatedIds = res.data.items.map((item) => item.product.toString());
 
       setWishlistProductIds(updatedIds);
+      
+      if (wasWishlisted) {
+        toast.success("Removed from wishlist");
+      } else {
+        toast.success("Added to wishlist");
+      }
     } catch (err) {
       if (err.response?.status === 401) {
         navigate("/login", {
           state: { from: `/product/${slug}` }, // optional redirect back
         });
       } else {
+        toast.error("Failed to update wishlist");
         console.error("Wishlist error:", err);
       }
     } finally {

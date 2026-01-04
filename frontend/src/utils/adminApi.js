@@ -146,25 +146,35 @@ export const getAllUsersExceptAdminsApi = async () => {
     throw err;
   }
 };
-API.interceptors.response.use(
-  res => res,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        await API.post("/admin/refresh-token");
-        return API(originalRequest);
-      } catch {
-        useAdminAuthStore.getState().logout();
-      }
-    }
-
-    return Promise.reject(error);
+export const getAllOrdersAdminApi = async () => {
+  try {
+    const res = await API.get("/orders/admin");
+    console.log("All Orders ",res.data);
+    
+    return res.data;
+  } catch (err) {
+    console.error("Get Orders Error:", err);
+    throw err;
   }
-);
+};
+export const getOrderByIdAdminApi = async (orderId) => {
+  try {
+    const res = await API.get(`/orders/admin/${orderId}`);
+    return res.data;
+  } catch (err) {
+    console.error("Get Order Error:", err);
+    throw err;
+  }
+};
 
+export const updateOrderByAdminApi = async (orderId, data) => {
+  try {
+    const res = await API.put(`/orders/admin/${orderId}`, data);
+    return res.data;
+  } catch (err) {
+    console.error("Update Order Error:", err);
+    throw err;
+  }
+};
 
 // Google Login API call

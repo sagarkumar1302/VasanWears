@@ -63,19 +63,34 @@ API.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Prevent infinite loop: only retry once per request
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        const res= await API.post("/user/refresh-token");
-        if (res.data?.accessToken) {
-          localStorage.setItem("accessToken", res.data.data.accessToken);
+        const res = await API.post("/user/refresh-token");
+        
+        // Extract new access token from response (handle both structures)
+        const newAccessToken = res.data?.data?.accessToken || res.data?.accessToken;
+        
+        if (newAccessToken) {
+          // Store the new token
+          localStorage.setItem("accessToken", newAccessToken);
+          
+          // Update the Authorization header for the retry
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          
+          // Retry the original request
+          return API(originalRequest);
+        } else {
+          throw new Error("No access token in refresh response");
         }
-        return API(originalRequest);
-      } catch {
-        useAuthStore.getState().logout();
+      } catch (refreshError) {
+        console.error("Token refresh failed:", refreshError);
+        // Clear token and logout
         localStorage.removeItem("accessToken");
-        // window.location.href = "/login";
+        useAuthStore.getState().logout();
+        return Promise.reject(refreshError);
       }
     }
 

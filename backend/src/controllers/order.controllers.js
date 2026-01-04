@@ -175,8 +175,11 @@ export const placeOrder = async (req, res) => {
 export const getAllOrders = async (req, res) => {
   const orders = await Order.find()
     .populate("items.product items.color items.size items.design.designId paymentId user")
-    .sort({ createdAt: -1 })
-    .lean();
+    .sort({ createdAt: -1 });
+  console.log("Orders ", orders);
+  if (!orders || orders.length === 0) {
+    return res.status(404).json(new ApiResponse(404, "No orders found"));
+  }
   res.status(200).json(
     new ApiResponse(200, "Orders fetched successfully", orders)
   );
@@ -209,6 +212,82 @@ export const getOrderById = async (req, res) => {
 
     res.status(200).json(
       new ApiResponse(200, "Order fetched successfully", order)
+    );
+  } catch (error) {
+    res.status(500).json(new ApiResponse(500, error.message));
+  }
+};
+export const updateOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const {
+      orderStatus,
+      paymentStatus,
+      shippingAddress,
+      trackingId,
+      courierName,
+      estimatedDelivery,
+      deliveredAt,
+      cancellationReason,
+      returnedAt,
+      notes,
+      discount,
+      deliveryCharge,
+    } = req.body;
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json(new ApiResponse(404, "Order not found"));
+    }
+
+    // Update allowed fields (excluding items, user, and other critical fields)
+    if (orderStatus !== undefined) order.orderStatus = orderStatus;
+    if (paymentStatus !== undefined) order.paymentStatus = paymentStatus;
+    if (shippingAddress !== undefined) order.shippingAddress = shippingAddress;
+    if (trackingId !== undefined) order.trackingId = trackingId;
+    if (courierName !== undefined) order.courierName = courierName;
+    if (estimatedDelivery !== undefined) order.estimatedDelivery = estimatedDelivery;
+    if (deliveredAt !== undefined) order.deliveredAt = deliveredAt;
+    if (cancellationReason !== undefined) order.cancellationReason = cancellationReason;
+    if (returnedAt !== undefined) order.returnedAt = returnedAt;
+    if (notes !== undefined) order.notes = notes;
+
+    // If discount or deliveryCharge changed, recalculate totalAmount
+    let recalculate = false;
+    if (discount !== undefined && discount !== order.discount) {
+      order.discount = discount;
+      recalculate = true;
+    }
+    if (deliveryCharge !== undefined && deliveryCharge !== order.deliveryCharge) {
+      order.deliveryCharge = deliveryCharge;
+      recalculate = true;
+    }
+
+    if (recalculate) {
+      order.totalAmount = order.subtotal - order.discount + order.deliveryCharge;
+    }
+
+    // Auto-update payment status based on order status
+    if (orderStatus === "DELIVERED" && order.paymentMethod === "COD") {
+      order.paymentStatus = "PAID";
+      order.isPaid = true;
+      order.paidAt = new Date();
+    }
+
+    // Set deliveredAt timestamp if status changed to DELIVERED
+    if (orderStatus === "DELIVERED" && !order.deliveredAt) {
+      order.deliveredAt = new Date();
+    }
+
+    await order.save();
+
+    const updatedOrder = await Order.findById(orderId)
+      .populate("items.product items.color items.size paymentId items.design.designId user")
+      .lean();
+
+    res.status(200).json(
+      new ApiResponse(200, "Order updated successfully", updatedOrder)
     );
   } catch (error) {
     res.status(500).json(new ApiResponse(500, error.message));

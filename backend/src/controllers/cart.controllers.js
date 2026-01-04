@@ -151,8 +151,7 @@ const getCart = async (req, res) => {
       .populate("items.product")
       .populate("items.color")
       .populate("items.size")
-      .populate("items.design.designId")
-      .lean();
+      .populate("items.design.designId");
 
     res.status(200).json(
       new ApiResponse(

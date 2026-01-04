@@ -52,6 +52,8 @@ import CreateDesign from "./pages/CreateDesign";
 import UsersDesigns from "./pages/DesignsCollection";
 import SingleDesign from "./pages/SingleDesign";
 import SingleUserDesign from "./pages/SingleUserDesign";
+import AllOrders from "./components/Admin/pages/AllOrders";
+import EditOrder from "./components/Admin/pages/EditOrder";
 const App = () => {
   const setUser = useAuthStore((s) => s.setUser);
   const setAuthChecked = useAuthStore((s) => s.setAuthChecked);
@@ -147,6 +149,11 @@ const App = () => {
               <Route path="category/" element={<AdminCategory />} />
               <Route path="sizes/" element={<SizePage />} />
               <Route path="color/" element={<ColorPage />} />
+            </Route>
+            <Route path="orders">
+              <Route path="all-orders/" element={<AllOrders />} />
+              <Route path=":orderId/" element={<EditOrder />} />
+              
             </Route>
 
             {/* <Route path="products" element={<Products />} /> */}

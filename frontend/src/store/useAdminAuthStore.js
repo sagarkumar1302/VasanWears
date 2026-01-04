@@ -20,9 +20,18 @@ export const useAdminAuthStore = create((set) => ({
       set({ user: null });
     }
   },
-  adminLogoutAuth: () =>
+  adminLogoutAuth: () => {
+    localStorage.removeItem("adminAccessToken");
     set({
       user: null,
       isAuthChecked: true,
-    }),
+    });
+  },
+  logout: () => {
+    localStorage.removeItem("adminAccessToken");
+    set({
+      user: null,
+      isAuthChecked: true,
+    });
+  },
 }));
