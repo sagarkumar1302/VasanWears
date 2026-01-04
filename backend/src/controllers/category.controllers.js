@@ -214,7 +214,7 @@ const getAllCategoriesWithSubWebsite = asyncHandler(async (req, res) => {
 });
 const findCategoryById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const category = await Category.findById(id);
+  const category = await Category.findById(id).lean();
   res.status(200).json(
     new ApiResponse(200, "Category fetched successfully", category)
   );

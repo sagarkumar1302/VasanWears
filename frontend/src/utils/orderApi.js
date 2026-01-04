@@ -20,3 +20,19 @@ export const verifyPaymentApi = async (paymentData) => {
         throw err;
     }
 };
+export const getMyOrdersApi = async () => {
+    try {
+        const res = await API.get("/orders/my-orders");
+        return res.data;
+    } catch (err) {
+        throw err;
+    }
+};
+export const getOrderByIdApi = async (orderId) => {
+    try {
+        const res = await API.get(`/orders/${orderId}`);
+        return res.data;
+    } catch (err) {
+        throw err;
+    }
+};

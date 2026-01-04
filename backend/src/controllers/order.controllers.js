@@ -172,14 +172,23 @@ export const placeOrder = async (req, res) => {
   }
 };
 
-
+export const getAllOrders = async (req, res) => {
+  const orders = await Order.find()
+    .populate("items.product items.color items.size items.design.designId paymentId user")
+    .sort({ createdAt: -1 })
+    .lean();
+  res.status(200).json(
+    new ApiResponse(200, "Orders fetched successfully", orders)
+  );
+};
 
 export const getMyOrders = async (req, res) => {
   const orders = await Order.find({ user: req.user._id })
     .populate(
       "items.product items.color items.size items.design.designId paymentId"
     )
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
 
   res.status(200).json(
     new ApiResponse(200, "Orders fetched successfully", orders)
@@ -189,7 +198,8 @@ export const getMyOrders = async (req, res) => {
 export const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
-      .populate("items.product items.color items.size paymentId items.design.designId");
+      .populate("items.product items.color items.size paymentId items.design.designId")
+      .lean();
 
     if (!order) {
       return res

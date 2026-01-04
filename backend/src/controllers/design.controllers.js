@@ -95,7 +95,7 @@ export const getAllDesigns = asyncHandler(async (req, res) => {
  */
 export const getMyDesigns = asyncHandler(async (req, res) => {
   const designs = await Design.find({ createdBy: req.user._id })
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 }).lean();
 
   res.json(
     new ApiResponse(200, "Your designs fetched successfully", designs)
@@ -103,7 +103,7 @@ export const getMyDesigns = asyncHandler(async (req, res) => {
 });
 export const getDesignById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const design = await Design.findById(id).populate("createdBy", "fullName email");
+  const design = await Design.findById(id).populate("createdBy", "fullName email").lean();
   if (!design) {
     return res
       .status(404)
@@ -116,7 +116,7 @@ export const getDesignById = asyncHandler(async (req, res) => {
 export const getDesignByUserId = asyncHandler(async (req, res) => {
   const { userId } = req.params;
   const designs = await Design.find({ createdBy: userId })
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 }).lean();
   res.json(
     new ApiResponse(200, "User's designs fetched successfully", designs)
   );

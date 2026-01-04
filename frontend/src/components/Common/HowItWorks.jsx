@@ -26,7 +26,7 @@ const HowItWorks = () => {
           <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center md:mb-20 mb-6">
             <img
               src="./AddCustomDesign.jpeg"
-              className="rounded-xl shadow-md"
+              className="rounded-xl "
               alt="step"
             />
 
@@ -49,7 +49,7 @@ const HowItWorks = () => {
           <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center md:mb-20 mb-6 md:flex-row-reverse">
             <div className="md:order-2">
               <img
-                src="./images/hiw1.jpeg"
+                src="./images/hiw1.jpg"
                 className="rounded-xl shadow-md"
                 alt="step"
               />
@@ -78,7 +78,7 @@ const HowItWorks = () => {
               alt="step"
             /> */}
             <div className="overflow-hidden">
-              <video src={enjoyVideo} loop muted autoPlay className="border-none -mb-5" />
+              <video src={enjoyVideo} loop muted autoPlay className="border-none" />
             </div>
 
             <div>

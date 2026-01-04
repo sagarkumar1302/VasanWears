@@ -34,7 +34,7 @@ const HeroShowcase = () => {
             className="absolute top-0 md:top-4 left-0 rounded-xl shadow-md w-30 md:w-40 xl:w-60"
           />
           <img
-            src="/images/hiw1.jpeg"
+            src="/images/hiw1.jpg"
             className="absolute bottom-3 md:bottom-10 left-0 md:left-3 rounded-xl shadow-md w-40 md:w-80"
           />
           <img
@@ -50,7 +50,7 @@ const HeroShowcase = () => {
           {/* Central Product Card */}
           <div className="relative bg-white p-6 rounded-2xl shadow-xl w-[320px] md:w-[250px] xl:w-[350px] z-10 md:block flex gap-4">
             <img
-              src="/images/hero4.png"
+              src="/images/hero4.jpg"
               className="rounded-lg mb-4 w-30 h-35 md:w-full md:h-full object-cover"
             />
 

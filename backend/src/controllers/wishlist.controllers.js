@@ -53,7 +53,8 @@ const toggleWishlist = async (req, res) => {
 const getWishlist = async (req, res) => {
     try {
         const wishlist = await WishList.findOne({ user: req.user._id })
-            .populate("items.product");
+            .populate("items.product")
+            .lean();
 
         const productIds = wishlist
             ? wishlist.items.map((item) => item.product._id.toString())

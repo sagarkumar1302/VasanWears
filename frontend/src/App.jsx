@@ -122,7 +122,7 @@ const App = () => {
               />
               <Route path="addresses/" element={<ManageAddress />} />
               <Route path="orders/" element={<Orders />} />
-              <Route path="orders/:id/" element={<SingleOrder />} />
+              <Route path="orders/:orderId/" element={<SingleOrder />} />
               <Route path="coupons/" element={<Coupons />} />
               <Route index element={<MyAccountRightSide />} />
             </Route>
