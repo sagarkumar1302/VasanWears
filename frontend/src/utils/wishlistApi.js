@@ -19,8 +19,3 @@ export const getWishlistApi = async () => {
     const res = await API.get("/wishlist");
     return res.data;
 };
-
-
-
-
-// Google Login API call

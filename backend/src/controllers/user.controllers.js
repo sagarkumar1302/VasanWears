@@ -243,7 +243,8 @@ const userProfile = asyncHandler(async (req, res) => {
 const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken =
         req.cookies?.refreshToken || req.body.refreshToken;
-
+    console.log("Refresh Token Worked.");
+    
     if (!incomingRefreshToken) {
         return res
             .status(401)
@@ -269,7 +270,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             .status(401)
             .json(new ApiResponse(401, "Invalid refresh token", null));
     }
-
+    
     // ✅ SIMPLE STRING MATCH (NO BCRYPT)
     if (incomingRefreshToken !== user.refreshToken) {
         return res

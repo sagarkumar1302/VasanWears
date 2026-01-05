@@ -17,19 +17,19 @@ export const useAuthStore = create((set) => ({
 
       set({ user: res.data });
     } catch {
-      const token = localStorage.getItem("accessToken");
+      // const token = localStorage.getItem("accessToken");
 
       if (!token) {
         set({ user: null, isAuthChecked: true });
       } else {
         // token exists but API failed → logout
-        localStorage.removeItem("accessToken");
+        // localStorage.removeItem("accessToken");
         set({ user: null, isAuthChecked: true });
       }
     }
   },
   logout: () => {
-    localStorage.removeItem("accessToken");
+    // localStorage.removeItem("accessToken");
     set({
       user: null,
       isAuthChecked: true,

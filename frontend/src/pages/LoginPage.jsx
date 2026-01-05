@@ -23,9 +23,10 @@ const LoginPage = () => {
       toast.success("Login Successful! 🎉");
 
       // Wait 1.5 seconds before navigating
-      setTimeout(() => {
-        navigate("/my-account");
-      }, 400);
+      // setTimeout(() => {
+        
+      // }, 400);
+      navigate("/my-account");
     } catch (error) {
       console.error("Login failed:", error.response?.data || error);
       toast.error("Invalid credentials! ❌");
@@ -41,9 +42,9 @@ const LoginPage = () => {
 
         toast.success("Google Login Successful! 🎉");
 
-        setTimeout(() => {
-          navigate("/my-account");
-        }, 400);
+        // setTimeout(() => {
+        // }, 400);
+        navigate("/my-account");
       } catch (err) {
         console.error("Google login failed:", err.response?.data || err);
         toast.error("Google Login Failed! ❌");

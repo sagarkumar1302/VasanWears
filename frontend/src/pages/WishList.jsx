@@ -23,7 +23,6 @@ const Wishlist = () => {
 
         setWishlistItems(res.data.items || []);
         setWishlistProductIds(res.data.productIds || []);
-        console.log("WishList ",res);
         
       } catch (err) {
         if (err.response?.status === 401) {
