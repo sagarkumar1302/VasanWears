@@ -33,6 +33,7 @@ import paymentRoutes from "./routes/payment.routes.js"
 import subscriberRoutes from "./routes/subscriber.routes.js"
 import contactRoutes from "./routes/contact.routes.js"
 import designRoutes from "./routes/design.routes.js"
+import ratingRoutes from "./routes/rating.routes.js"
 app.use("/api/colors", colorRoutes);
 app.use("/api/sizes", sizeRoutes);
 app.use("/api/user", userRouter)
@@ -47,4 +48,5 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/subscribers", subscriberRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/designs", designRoutes);
+app.use("/api/ratings", ratingRoutes);
 export {app}

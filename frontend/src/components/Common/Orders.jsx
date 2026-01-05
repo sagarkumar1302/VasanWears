@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { RiStarLine, RiDownloadLine, RiStarFill } from "@remixicon/react";
 import { Link, useNavigate } from "react-router-dom";
 import { getMyOrdersApi } from "../../utils/orderApi";
+import Loader from "./Loader";
 
 const Orders = () => {
   const [ordersData, setOrdersData] = useState([]);
@@ -29,12 +30,7 @@ const Orders = () => {
   }, []);
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary2 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading orders...</p>
-        </div>
-      </div>
+      <Loader/>
     );
   }
 

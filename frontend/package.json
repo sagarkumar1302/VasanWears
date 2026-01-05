@@ -17,6 +17,7 @@
     "@tailwindcss/vite": "^4.1.17",
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
+    "date-fns": "^4.1.0",
     "fabric": "^6.9.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.0.0",

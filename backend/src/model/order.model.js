@@ -228,7 +228,7 @@ const orderSchema = new mongoose.Schema(
       type: shippingAddressSchema,
       required: true,
     },
-
+    
     trackingId: {
       type: String,
       default: null,

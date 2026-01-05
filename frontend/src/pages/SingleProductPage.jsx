@@ -20,6 +20,9 @@ import { toggleWishlistApi, getWishlistApi } from "../utils/wishlistApi";
 import { useNavigate } from "react-router-dom";
 import { addToCartApi } from "../utils/cartApi";
 import toast from "react-hot-toast";
+import RatingForm from "../components/Product/RatingForm";
+import RatingsList from "../components/Product/RatingsList";
+import RatingSummary from "../components/Product/RatingSummary";
 const serviceablePincodes = {
   110001: "2–4 Days",
   400001: "3–5 Days",
@@ -307,77 +310,7 @@ const SingleProductPage = () => {
     }
   };
 
-  const [reviews, setReviews] = useState([]);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewData, setReviewData] = useState({
-    name: "",
-    rating: 0,
-    comment: "",
-  });
 
-  const reviewOverlayRef = useRef(null);
-  const reviewBoxRef = useRef(null);
-  const openReviewModal = () => {
-    setShowReviewModal(true);
-
-    requestAnimationFrame(() => {
-      gsap.fromTo(
-        reviewOverlayRef.current,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.3 }
-      );
-
-      gsap.fromTo(
-        reviewBoxRef.current,
-        { scale: 0.8, y: 50, opacity: 0 },
-        {
-          scale: 1,
-          y: 0,
-          opacity: 1,
-          duration: 0.4,
-          ease: "power3.out",
-        }
-      );
-    });
-
-    document.body.style.overflow = "hidden";
-  };
-
-  const closeReviewModal = () => {
-    gsap.to(reviewBoxRef.current, {
-      scale: 0.8,
-      y: 50,
-      opacity: 0,
-      duration: 0.3,
-    });
-
-    gsap.to(reviewOverlayRef.current, {
-      opacity: 0,
-      duration: 0.3,
-      onComplete: () => {
-        setShowReviewModal(false);
-        document.body.style.overflow = "auto";
-      },
-    });
-  };
-  const submitReview = () => {
-    if (!reviewData.name || !reviewData.comment || reviewData.rating === 0) {
-      alert("Please fill all fields");
-      return;
-    }
-
-    setReviews((prev) => [
-      ...prev,
-      {
-        ...reviewData,
-        id: Date.now(),
-        date: new Date().toLocaleDateString(),
-      },
-    ]);
-
-    setReviewData({ name: "", rating: 0, comment: "" });
-    closeReviewModal();
-  };
   if (loading) return <Loader />;
   if (!product) return null;
 
@@ -508,6 +441,7 @@ const SingleProductPage = () => {
             <h2 className="text-xl md:text-4xl font-semibold mb-2">
               {product.title}
             </h2>
+            <RatingSummary product={product} />
             <p className="text-base text-primary5 mb-4">
               {product.description}
             </p>
@@ -670,7 +604,7 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
         <div className="mt-4 md:mt-16">
           {/* Tab Buttons */}
           <div className="hidden md:flex gap-6 border-b pb-2 text-gray-600 text-lg font-medium">
-            {["description", "additional", "reviews", "more"].map((tab) => (
+            {["description", "additional", "reviews"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -682,6 +616,7 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
               >
                 {tab === "description" && "Description"}
                 {tab === "additional" && "Additional Information"}
+                {tab === "reviews" && "Reviews"}
               </button>
             ))}
           </div>
@@ -721,14 +656,17 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
               </div>
             )}
 
-            {/* {activeTab === "reviews" && (
-              <div>
-                <p>No reviews yet.</p>
-                <button className="mt-4 px-5 py-2 bg-black text-white rounded">
-                  Write a Review
-                </button>
+            {activeTab === "reviews" && (
+              <div className="space-y-6">
+                <RatingForm 
+                  productId={product._id} 
+                  onSuccess={() => window.location.reload()} 
+                />
+                <div className="border-t pt-6">
+                  <RatingsList productId={product._id} />
+                </div>
               </div>
-            )} */}
+            )}
           </div>
           <div className="md:hidden mt-6 text-primary5 leading-relaxed">
             {/* Description */}
@@ -767,48 +705,18 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
             </Accordion>
 
             {/* Reviews */}
-            {/* <Accordion title="Reviews">
-              <div>
-                <p>No reviews yet.</p>
-                <button className="mt-4 px-5 py-2 bg-black text-white rounded">
-                  Write a Review
-                </button>
-              </div>
-            </Accordion> */}
-          </div>
-        </div>
-        <div id="review" className="mt-10">
-          <h3 className="text-xl font-semibold mb-4">Customer Reviews</h3>
-
-          {reviews.length === 0 ? (
-            <p>No reviews yet.</p>
-          ) : (
-            <div className="space-y-4">
-              {reviews.map((r) => (
-                <div key={r.id} className="border rounded-lg p-4 bg-primary3">
-                  <div className="flex justify-between items-center">
-                    <p className="font-semibold">{r.name}</p>
-                    <p className="text-sm text-primary5">{r.date}</p>
-                  </div>
-
-                  <div className="flex gap-1 text-yellow-500 mt-1">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i}>{i < r.rating ? "★" : "☆"}</span>
-                    ))}
-                  </div>
-
-                  <p className="mt-2 text-primary5">{r.comment}</p>
+            <Accordion title="Reviews">
+              <div className="space-y-4">
+                <RatingForm 
+                  productId={product._id} 
+                  onSuccess={() => window.location.reload()} 
+                />
+                <div className="border-t pt-4">
+                  <RatingsList productId={product._id} />
                 </div>
-              ))}
-            </div>
-          )}
-
-          <button
-            onClick={openReviewModal}
-            className="mt-6 px-5 py-2 bg-black text-white rounded cursor-pointer"
-          >
-            Write a Review
-          </button>
+              </div>
+            </Accordion>
+          </div>
         </div>
       </div>
       {showVideo && (
@@ -837,72 +745,6 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
               autoPlay
               className="w-full h-full object-cover"
             />
-          </div>
-        </div>
-      )}
-      {showReviewModal && (
-        <div
-          ref={reviewOverlayRef}
-          className="fixed inset-0 z-[999] bg-black/70 flex items-center justify-center px-4"
-        >
-          <div
-            ref={reviewBoxRef}
-            className="bg-white w-full max-w-md rounded-xl p-6 relative"
-          >
-            <button
-              onClick={closeReviewModal}
-              className="absolute top-3 right-3 text-xl font-bold"
-            >
-              ✕
-            </button>
-
-            <h3 className="text-xl font-semibold mb-4">Write a Review</h3>
-
-            {/* Name */}
-            <input
-              type="text"
-              placeholder="Your Name"
-              value={reviewData.name}
-              onChange={(e) =>
-                setReviewData({ ...reviewData, name: e.target.value })
-              }
-              className="w-full border px-3 py-2 rounded mb-3"
-            />
-
-            {/* Rating */}
-            <div className="flex gap-1 mb-3 text-2xl cursor-pointer">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span
-                  key={star}
-                  onClick={() => setReviewData({ ...reviewData, rating: star })}
-                  className={
-                    star <= reviewData.rating
-                      ? "text-yellow-500"
-                      : "text-gray-300"
-                  }
-                >
-                  ★
-                </span>
-              ))}
-            </div>
-
-            {/* Comment */}
-            <textarea
-              placeholder="Write your review..."
-              value={reviewData.comment}
-              onChange={(e) =>
-                setReviewData({ ...reviewData, comment: e.target.value })
-              }
-              className="w-full border px-3 py-2 rounded mb-4 resize-none"
-              rows="4"
-            />
-
-            <button
-              onClick={submitReview}
-              className="w-full bg-black text-white py-2 rounded"
-            >
-              Submit Review
-            </button>
           </div>
         </div>
       )}

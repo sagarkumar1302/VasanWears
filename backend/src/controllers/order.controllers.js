@@ -4,7 +4,7 @@ import { Cart } from "../model/cart.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import sendEmail from "../utils/sendEmail.js";
 import { User } from "../model/user.model.js";
-
+import { getOrderStatusEmailContent } from "../template/getOrderStatusEmailContent .js";
 import razorpay from "../utils/razorpay.js";
 import crypto from "crypto";
 
@@ -235,12 +235,12 @@ export const updateOrder = async (req, res) => {
       deliveryCharge,
     } = req.body;
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(orderId).populate("user");
 
     if (!order) {
       return res.status(404).json(new ApiResponse(404, "Order not found"));
     }
-
+    const previousStatus = order.orderStatus; 
     // Update allowed fields (excluding items, user, and other critical fields)
     if (orderStatus !== undefined) order.orderStatus = orderStatus;
     if (paymentStatus !== undefined) order.paymentStatus = paymentStatus;
@@ -281,6 +281,41 @@ export const updateOrder = async (req, res) => {
     }
 
     await order.save();
+    if (
+      orderStatus &&
+      orderStatus !== previousStatus &&
+      ["SHIPPED", "DELIVERED", "CANCELLED", "RETURNED"].includes(orderStatus)
+    ) {
+      const emailContent = getOrderStatusEmailContent({
+        order,
+        user: order.user,
+        status: orderStatus,
+      });
+
+      if (emailContent) {
+        // 📩 USER EMAIL
+        await sendEmail({
+          email: order.user.email,
+          subject: emailContent.user.subject,
+          title: emailContent.user.title,
+          message: emailContent.user.message,
+          buttonText: "Track Order",
+          url: `${process.env.FRONT_END_URL}/my-account/orders/${order._id}`,
+        });
+
+        // 📩 ADMIN EMAIL
+        await sendEmail({
+          email: process.env.EMAIL_USER,
+          subject: emailContent.admin.subject,
+          title: emailContent.admin.title,
+          message: emailContent.admin.message,
+          buttonText: "View Order",
+          url: `${process.env.ADMIN_PANEL_URL}/orders/${order._id}`,
+        });
+        console.log("Status update emails sent");
+        
+      }
+    }
 
     const updatedOrder = await Order.findById(orderId)
       .populate("items.product items.color items.size paymentId items.design.designId user")

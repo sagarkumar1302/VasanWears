@@ -34,7 +34,7 @@ const Invoice = ({ order, ref }) => {
       {/* HEADER */}
       <div
         style={{
-          borderBottom: "4px solid #dc2626",
+          borderBottom: "4px solid #5a4a2e",
           paddingBottom: "24px",
           marginBottom: "24px",
         }}
@@ -45,7 +45,7 @@ const Invoice = ({ order, ref }) => {
               src="/images/logo.png"
               alt="Vasan Vastra Logo"
               style={{
-                height: "60px",
+                height: "150px",
                 width: "auto",
                 marginBottom: "12px",
                 objectFit: "contain",
@@ -58,7 +58,7 @@ const Invoice = ({ order, ref }) => {
               Website: www.vasanvastra.com
             </p>
             <p style={{ color: "#4b5563", fontSize: "14px" }}>
-              Email: support@vasanvastra.com
+              Email: info@vasanwears.com
             </p>
             <p style={{ color: "#4b5563", fontSize: "14px" }}>
               Phone: +91 XXXXXXXXXX
@@ -200,7 +200,7 @@ const Invoice = ({ order, ref }) => {
       <div style={{ marginBottom: "32px" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
-            <tr style={{ backgroundColor: "#dc2626", color: "#ffffff" }}>
+            <tr style={{ backgroundColor: "#5a4a2e", color: "#ffffff" }}>
               <th
                 style={{
                   textAlign: "left",
@@ -425,7 +425,7 @@ const Invoice = ({ order, ref }) => {
               <span style={{ fontSize: "18px", fontWeight: "700", color: "#1f2937" }}>
                 Total Amount:
               </span>
-              <span style={{ fontSize: "18px", fontWeight: "700", color: "#dc2626" }}>
+              <span style={{ fontSize: "18px", fontWeight: "700", color: "#5a4a2e" }}>
                 ₹{order.totalAmount?.toFixed(2)}
               </span>
             </div>
@@ -506,7 +506,7 @@ const Invoice = ({ order, ref }) => {
           <p style={{ fontWeight: "600", color: "#1f2937", marginBottom: "8px" }}>
             Thank you for shopping with Vasan Vastra!
           </p>
-          <p>For any queries, please contact us at support@vasanvastra.com</p>
+          <p>For any queries, please contact us at info@vasanwears.com.com</p>
           <p style={{ marginTop: "8px", fontSize: "12px", color: "#6b7280" }}>
             This is a computer-generated invoice and does not require a signature.
           </p>

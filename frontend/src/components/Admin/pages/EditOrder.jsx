@@ -155,7 +155,7 @@ const EditOrder = () => {
         shippingAddress: formData.shippingAddress,
       };
 
-      const res = await updateOrderByAdminApi(id, updateData);
+      const res = await updateOrderByAdminApi(orderId, updateData);
       
       toast.success('Order updated successfully');
       

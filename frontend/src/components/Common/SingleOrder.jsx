@@ -9,6 +9,7 @@ import { Link, useParams } from "react-router-dom";
 import { getOrderByIdApi } from "../../utils/orderApi";
 import Invoice from "./Invoice";
 import { downloadInvoiceAsPDF } from "../../utils/invoiceUtils";
+import Loader from "./Loader";
 
 const SingleOrder = () => {
   const [showUpdates, setShowUpdates] = useState(false);
@@ -50,7 +51,9 @@ const SingleOrder = () => {
 
     setIsDownloading(true);
     try {
-      const fileName = `Invoice_${order._id?.slice(-8).toUpperCase()}_VasanVastra.pdf`;
+      const fileName = `Invoice_${order._id
+        ?.slice(-8)
+        .toUpperCase()}_VasanVastra.pdf`;
       await downloadInvoiceAsPDF(invoiceRef.current, fileName);
     } catch (error) {
       console.error("Failed to download invoice:", error);
@@ -61,14 +64,7 @@ const SingleOrder = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary2 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading order details...</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error || !order) {
@@ -91,7 +87,14 @@ const SingleOrder = () => {
             <div className="bg-white p-4 rounded">
               <p className="text-sm">
                 Order can be tracked by{" "}
-                <a target="_blank" className="font-medium" href={`https://courierupdates.com/?awb=${order.trackingId}`}>{order.trackingId}</a>.
+                <a
+                  target="_blank"
+                  className="font-medium"
+                  href={`https://courierupdates.com/?awb=${order.trackingId}`}
+                >
+                  {order.trackingId}
+                </a>
+                .
               </p>
               {order.courierName && (
                 <p className="text-xs text-primary5 mt-1">
@@ -276,8 +279,10 @@ const SingleOrder = () => {
                 👤{" "}
                 {order.shippingAddress?.fullName || order.shippingAddress?.name}
               </p>
-              <p className="text-gray-600">{order.shippingAddress?.phone}
-                {order.shippingAddress?.alternatePhone && `, ${order.shippingAddress?.alternatePhone}`}
+              <p className="text-gray-600">
+                {order.shippingAddress?.phone}
+                {order.shippingAddress?.alternatePhone &&
+                  `, ${order.shippingAddress?.alternatePhone}`}
               </p>
             </div>
           </div>

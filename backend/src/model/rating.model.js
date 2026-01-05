@@ -34,7 +34,7 @@ const ratingSchema = new mongoose.Schema(
       maxlength: 1000,
     },
 
-    images: [
+    media: [
       {
         type: String, // S3 image URL
       },
