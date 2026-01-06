@@ -38,7 +38,7 @@ export const toggleLikeDesign = async (designId) => {
 }
 export const getDesignByIdApi = async (designId) => {
     try {
-        const res = await API.post(`/designs/${designId}`);
+        const res = await API.get(`/designs/${designId}`);
         return res.data;
     } catch (err) {
         throw err;
@@ -46,7 +46,7 @@ export const getDesignByIdApi = async (designId) => {
 };
 export const getDesignsByUserIdApi = async (userId) => {
     try {
-        const res = await API.post(`/designs/user/${userId}`);
+        const res = await API.get(`/designs/user/${userId}`);
         return res.data;
     }
     catch (err) {

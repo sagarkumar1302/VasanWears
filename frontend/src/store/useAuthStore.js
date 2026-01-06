@@ -16,6 +16,7 @@ export const useAuthStore = create((set) => ({
       console.log("res", res.data);
 
       set({ user: res.data });
+      return res.data; // Return user data
     } catch {
       // const token = localStorage.getItem("accessToken");
 
@@ -26,6 +27,7 @@ export const useAuthStore = create((set) => ({
         // localStorage.removeItem("accessToken");
         set({ user: null, isAuthChecked: true });
       }
+      return null;
     }
   },
   logout: () => {

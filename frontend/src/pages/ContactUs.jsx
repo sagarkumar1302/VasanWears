@@ -61,7 +61,7 @@ const ContactUs = () => {
       <div className="container mx-auto px-5 py-5 md:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* LEFT INFO */}
-          <div>
+          <div className="flex flex-col justify-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Get in Touch
             </h2>

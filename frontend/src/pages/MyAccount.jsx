@@ -18,15 +18,13 @@ const MyAccount = () => {
   const { pathname } = useLocation();
   const [activeTab, setActiveTab] = useState("profile");
   console.log("Pathname: ", pathname);
-  
+
   const logoutHandler = async () => {
     try {
       await logoutUser();
       logout();
-      toast.success("Login Successful! 🎉");
+      toast.success("Logout Successful! See You Soon");
       navigate("/", { replace: true });
-
-
     } catch (error) {
       console.error("Logout failed:", error.response?.data || error);
     }
@@ -37,16 +35,16 @@ const MyAccount = () => {
       label: "ACCOUNT SETTINGS",
       children: [
         { label: "Profile Information", tab: "profile-information" },
-        { label: "Manage Addresses", tab: "addresses" },
-        { label: "PAN Card Information", tab: "pan" },
+        // { label: "Manage Addresses", tab: "addresses" },
+        // { label: "PAN Card Information", tab: "pan" },
       ],
     },
     {
       label: "ORDERS DETAILS",
       children: [
         { label: "Orders", tab: "orders" },
-        { label: "Saved UPI", tab: "upi" },
-        { label: "Saved Cards", tab: "cards" },
+        // { label: "Saved UPI", tab: "upi" },
+        // { label: "Saved Cards", tab: "cards" },
       ],
     },
     {
@@ -54,7 +52,7 @@ const MyAccount = () => {
       children: [
         { label: "My Coupons", tab: "coupons" },
         { label: "My Reviews & Ratings", tab: "reviews" },
-        { label: "All Notifications", tab: "notifications" },
+        // { label: "All Notifications", tab: "notifications" },
         { label: "My Wishlist", tab: "wishlist" },
       ],
     },
@@ -66,7 +64,11 @@ const MyAccount = () => {
         {/* ------------------------------------
              SIDEBAR WITH ACCORDION + AVATAR
         ------------------------------------- */}
-        <div className={`bg-white w-full md:w-72 p-4 shadow rounded-lg h-fit ${!pathname.endsWith("account")? 'md:block hidden': ''}`}>
+        <div
+          className={`bg-white sticky top-40 w-full md:w-72 p-4 shadow rounded-lg h-fit ${
+            !pathname.endsWith("account") ? "md:block hidden" : ""
+          }`}
+        >
           <div className="flex flex-col items-center mb-6">
             {user?.avatar ? (
               <img
@@ -128,15 +130,18 @@ const MyAccount = () => {
         {/* ------------------------------------
              MAIN CONTENT AREA
         ------------------------------------- */}
-        <div className={`w-full bg-white p-6 shadow rounded-lg h-fit ${pathname.endsWith("account")? 'md:block hidden': ''}`}>
-          <button
-          onClick={() => navigate(-1)}
-          className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
-             transition-all duration-300 btn-slide md:text-base text-sm mb-8 md:hidden flex gap-4"
+        <div
+          className={`w-full bg-white p-6 shadow rounded-lg h-fit ${
+            pathname.endsWith("account") ? "md:block hidden" : ""
+          }`}
         >
-          <RiArrowLeftLine/>
-          
-        </button>
+          <button
+            onClick={() => navigate(-1)}
+            className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
+             transition-all duration-300 btn-slide md:text-base text-sm mb-8 md:hidden flex gap-4"
+          >
+            <RiArrowLeftLine />
+          </button>
           <Outlet />
         </div>
       </div>

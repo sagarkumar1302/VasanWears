@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createDesign, getAllDesigns, getDesignById, getDesignByUserId, getMyDesigns, toggleLikeDesign, updateDesignVisibility } from "../controllers/design.controllers.js";
+import { createDesign, getAllDesigns, getDesignById, getDesignByUserId, getMyDesigns, toggleLikeDesign, updateDesign } from "../controllers/design.controllers.js";
 import verifyJwt from "../middleware/auth.middleware.js";
 
 const router = Router();
@@ -15,8 +15,8 @@ router.get("/", getAllDesigns);
 router.post("/", verifyJwt, createDesign);
 router.get("/me", verifyJwt, getMyDesigns);
 router.post("/:id/like", verifyJwt, toggleLikeDesign);
-router.post("/:id", verifyJwt, getDesignById);
-router.post("/user/:userId", verifyJwt, getDesignByUserId);
-router.put("/:id/visibility", verifyJwt, updateDesignVisibility);
+router.get("/:id", verifyJwt, getDesignById);
+router.get("/user/:userId", verifyJwt, getDesignByUserId);
+router.put("/:id", verifyJwt, updateDesign);
 
 export default router;

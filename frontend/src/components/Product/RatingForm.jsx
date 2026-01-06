@@ -10,6 +10,8 @@ const RatingForm = ({ productId, onSuccess, existingRating = null }) => {
   const { user } = useAuthStore();
   const [eligibility, setEligibility] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
   const [formData, setFormData] = useState({
     rating: existingRating?.rating || 0,
     title: existingRating?.title || "",
@@ -22,6 +24,13 @@ const RatingForm = ({ productId, onSuccess, existingRating = null }) => {
     }
   }, [user, productId]);
 
+  // Cleanup preview URLs on unmount
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach((preview) => URL.revokeObjectURL(preview.url));
+    };
+  }, []);
+
   const checkEligibility = async () => {
     try {
       const res = await checkRatingEligibilityApi(productId);
@@ -29,6 +38,59 @@ const RatingForm = ({ productId, onSuccess, existingRating = null }) => {
     } catch (err) {
       console.error("Eligibility check failed:", err);
     }
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    
+    // Validate file count (max 5)
+    if (files.length > 5) {
+      alert("You can upload a maximum of 5 files");
+      return;
+    }
+
+    // Validate file types and sizes
+    const validFiles = files.filter((file) => {
+      const isImage = file.type.startsWith("image/");
+      const isVideo = file.type.startsWith("video/");
+      const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024; // 50MB for videos, 5MB for images
+
+      if (!isImage && !isVideo) {
+        alert(`${file.name} is not a valid image or video file`);
+        return false;
+      }
+
+      if (file.size > maxSize) {
+        alert(
+          `${file.name} is too large. Max size: ${
+            isVideo ? "50MB" : "5MB"
+          }`
+        );
+        return false;
+      }
+
+      return true;
+    });
+
+    setSelectedFiles(validFiles);
+
+    // Create preview URLs
+    const previews = validFiles.map((file) => ({
+      url: URL.createObjectURL(file),
+      type: file.type.startsWith("video/") ? "video" : "image",
+    }));
+    setPreviewUrls(previews);
+  };
+
+  const removeFile = (index) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    const newPreviews = previewUrls.filter((_, i) => i !== index);
+    
+    // Revoke the URL to free memory
+    URL.revokeObjectURL(previewUrls[index].url);
+    
+    setSelectedFiles(newFiles);
+    setPreviewUrls(newPreviews);
   };
 
   const handleSubmit = async (e) => {
@@ -41,19 +103,28 @@ const RatingForm = ({ productId, onSuccess, existingRating = null }) => {
 
     setLoading(true);
     try {
-      const data = {
-        product: productId,
-        ...formData,
-      };
+      const submitData = new FormData();
+      submitData.append("product", productId);
+      submitData.append("rating", formData.rating);
+      submitData.append("title", formData.title);
+      submitData.append("comment", formData.comment);
+
+      // Append media files
+      selectedFiles.forEach((file) => {
+        submitData.append("media", file);
+      });
 
       if (existingRating) {
-        await updateRatingApi(existingRating._id, formData);
+        await updateRatingApi(existingRating._id, submitData);
         alert("Rating updated successfully!");
       } else {
-        await createRatingApi(data);
+        await createRatingApi(submitData);
         alert("Rating submitted successfully!");
       }
 
+      // Clean up preview URLs
+      previewUrls.forEach((preview) => URL.revokeObjectURL(preview.url));
+      
       if (onSuccess) onSuccess();
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Failed to submit rating";
@@ -143,6 +214,84 @@ const RatingForm = ({ productId, onSuccess, existingRating = null }) => {
         <p className="text-xs text-gray-500 mt-1">
           {formData.comment.length}/1000 characters
         </p>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-2">
+          Add Photos or Videos (Optional)
+        </label>
+        <input
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          onChange={handleFileChange}
+          className="hidden"
+          id="media-upload"
+        />
+        <label
+          htmlFor="media-upload"
+          className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+        >
+          <svg
+            className="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          Upload Media
+        </label>
+        <p className="text-xs text-gray-500 mt-1">
+          Max 5 files. Images: 5MB each. Videos: 50MB each.
+        </p>
+
+        {/* Preview uploaded files */}
+        {previewUrls.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 mt-3">
+            {previewUrls.map((preview, index) => (
+              <div key={index} className="relative group">
+                {preview.type === "video" ? (
+                  <video
+                    src={preview.url}
+                    className="w-full h-24 object-cover rounded-lg"
+                    controls
+                  />
+                ) : (
+                  <img
+                    src={preview.url}
+                    alt={`Preview ${index + 1}`}
+                    className="w-full h-24 object-cover rounded-lg"
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeFile(index)}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <button

@@ -134,7 +134,7 @@ const SingleProductPage = () => {
       const updatedIds = res.data.items.map((item) => item.product.toString());
 
       setWishlistProductIds(updatedIds);
-      
+
       if (wasWishlisted) {
         toast.success("Removed from wishlist");
       } else {
@@ -310,7 +310,6 @@ const SingleProductPage = () => {
     }
   };
 
-
   if (loading) return <Loader />;
   if (!product) return null;
 
@@ -441,7 +440,22 @@ const SingleProductPage = () => {
             <h2 className="text-xl md:text-4xl font-semibold mb-2">
               {product.title}
             </h2>
-            <RatingSummary product={product} />
+            <a 
+              href="#review" 
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab("reviews");
+                setTimeout(() => {
+                  document.getElementById("review")?.scrollIntoView({ 
+                    behavior: "smooth",
+                    block: "start"
+                  });
+                }, 100);
+              }}
+              className="cursor-pointer"
+            >
+              <RatingSummary product={product} />
+            </a>
             <p className="text-base text-primary5 mb-4">
               {product.description}
             </p>
@@ -550,7 +564,7 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
 
             {/* Share */}
             {/* Pincode Checker */}
-            <div className="mt-6 hidden">
+            {/* <div className="mt-6 hidden">
               <p className="font-medium mb-2">Check Delivery:</p>
 
               <div className="flex gap-3">
@@ -589,7 +603,7 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
                   )}
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* <p className="font-medium mb-1">Share:</p>
             <div className="flex gap-3 text-xl">
@@ -601,7 +615,7 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
         </div>
 
         {/* ---------------- TABS SECTION ---------------- */}
-        <div className="mt-4 md:mt-16">
+        <div className="mt-4 md:mt-16" id="review">
           {/* Tab Buttons */}
           <div className="hidden md:flex gap-6 border-b pb-2 text-gray-600 text-lg font-medium">
             {["description", "additional", "reviews"].map((tab) => (
@@ -658,9 +672,9 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
 
             {activeTab === "reviews" && (
               <div className="space-y-6">
-                <RatingForm 
-                  productId={product._id} 
-                  onSuccess={() => window.location.reload()} 
+                <RatingForm
+                  productId={product._id}
+                  onSuccess={() => window.location.reload()}
                 />
                 <div className="border-t pt-6">
                   <RatingsList productId={product._id} />
@@ -707,9 +721,9 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
             {/* Reviews */}
             <Accordion title="Reviews">
               <div className="space-y-4">
-                <RatingForm 
-                  productId={product._id} 
-                  onSuccess={() => window.location.reload()} 
+                <RatingForm
+                  productId={product._id}
+                  onSuccess={() => window.location.reload()}
                 />
                 <div className="border-t pt-4">
                   <RatingsList productId={product._id} />

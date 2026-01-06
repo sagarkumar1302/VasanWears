@@ -13,7 +13,11 @@ const PublicRoute = () => {
     ); // or spinner
   }
 
-  return user ? <Navigate to="/my-account" replace /> : <Outlet />;
+  // Check if user profile is complete
+  const isProfileComplete = user?.phoneNumber && user?.phoneNumber.trim() !== "";
+
+  // Allow access if no user OR user exists but profile incomplete
+  return user && isProfileComplete ? <Navigate to="/" replace /> : <Outlet />;
 };
 
 export default PublicRoute;

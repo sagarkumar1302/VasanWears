@@ -7,7 +7,7 @@ import { uploadBase64ToS3 } from "../utils/uploadToS3.js";
  * CREATE DESIGN
  */
 export const createDesign = asyncHandler(async (req, res) => {
-  const { title, images, sellPrice, isPublic } = req.body;
+  const { title, images, sellPrice, isPublic, haveGivenPermissionToSell } = req.body;
 
   if (!title || !images || !sellPrice) {
     return res
@@ -36,6 +36,7 @@ export const createDesign = asyncHandler(async (req, res) => {
     sellPrice,
     isPublic,
     createdBy: req.user._id,
+    haveGivenPermissionToSell,
   });
 
   res.status(201).json(
@@ -124,25 +125,40 @@ export const getDesignByUserId = asyncHandler(async (req, res) => {
 /**
  * UPDATE DESIGN (publish / unpublish)
  */
-export const updateDesignVisibility = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const { isPublic } = req.body;
 
+
+export const updateDesign = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { title, images, sellPrice, isPublic, haveGivenPermissionToSell, product } = req.body;
   const design = await Design.findById(id);
   if (!design) {
     return res
       .status(404)
       .json(new ApiResponse(404, "Design not found"));
   }
-
   // only owner or admin
   if (design.createdBy.toString() !== req.user._id.toString()) {
     return res
       .status(403)
       .json(new ApiResponse(403, "Not authorized"));
   }
-
-  design.isPublic = isPublic;
+  if (title) design.title = title;
+  if (sellPrice) design.sellPrice = sellPrice;
+  if (isPublic !== undefined) design.isPublic = isPublic;
+  if (haveGivenPermissionToSell !== undefined) design.haveGivenPermissionToSell = haveGivenPermissionToSell;
+  if (product !== undefined) {
+    design.product = product || null;
+  }
+  // Upload new images (base64) to S3
+  if (images) {
+    const uploadedImages = {};
+    for (const key of Object.keys(images)) {
+      if (images[key]) {
+        uploadedImages[key] = await uploadBase64ToS3(images[key], "designs");
+        design.images[key] = uploadedImages[key];
+      }
+    }
+  }
   await design.save();
 
   res.json(

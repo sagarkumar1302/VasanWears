@@ -42,6 +42,16 @@ export const currentUserApi = async () => {
 };
 
 
-export const updateProfileApi = (data) => API.put("/user/update-profile", data);
-
+export const updateUserProfileApi = async (formData) => {
+  try {
+    const res = await API.put("/user/update-profile", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+};
 

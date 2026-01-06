@@ -19,7 +19,11 @@ API.interceptors.request.use((config) => {
  */
 export const createRatingApi = async (data) => {
   try {
-    const res = await API.post("/", data);
+    const res = await API.post("/", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return res.data;
   } catch (err) {
     console.error("Create Rating Error:", err);
@@ -75,7 +79,11 @@ export const getRatingByIdApi = async (id) => {
  */
 export const updateRatingApi = async (id, data) => {
   try {
-    const res = await API.put(`/${id}`, data);
+    const res = await API.put(`/${id}`, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return res.data;
   } catch (err) {
     console.error("Update Rating Error:", err);

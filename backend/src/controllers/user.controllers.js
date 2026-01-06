@@ -290,7 +290,111 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             })
         );
 });
+const updateUserProfile = asyncHandler(async (req, res) => {
+    const userId = req?.user._id;
+    const { fullName, phoneNumber, password, gender } = req.body;
+    
+    if (!userId) {
+        return res
+            .status(400)
+            .json(new ApiResponse(401, "User is not found.", null));
+    }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+        return res
+            .status(404)
+            .json(new ApiResponse(404, "User not found.", null));
+    }
+
+    // Update fullName
+    if (fullName) {
+        user.fullName = fullName.trim();
+    }
+
+    // Update phoneNumber
+    if (phoneNumber !== undefined) {
+        const phoneRegex = /^[0-9]{10}$/;
+        if (phoneNumber && !phoneRegex.test(phoneNumber)) {
+            return res
+                .status(400)
+                .json(new ApiResponse(400, "Phone number must be 10 digits.", null));
+        }
+        user.phoneNumber = phoneNumber;
+    }
+
+    // Update gender
+    if (gender) {
+        if (!["male", "female", "other"].includes(gender)) {
+            return res
+                .status(400)
+                .json(new ApiResponse(400, "Invalid gender value.", null));
+        }
+        user.gender = gender;
+    }
+
+    // Update password
+    if (password) {
+        if (password.length < 6) {
+            return res
+                .status(400)
+                .json(new ApiResponse(400, "Password must be at least 6 characters.", null));
+        }
+        user.password = password; // Will be hashed by pre-save hook
+    }
+
+    // Update avatar
+    if (req.file) {
+        const imageUrl = await uploadToS3(req.file, "usersAvatars");
+        user.avatar = imageUrl;
+    }
+
+    await user.save();
+
+    const updatedUser = await User.findById(userId).select(
+        "-password -refreshToken"
+    );
+    
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "User Profile Updated Successfully", updatedUser));
+});
+
+const updateUserPoints = asyncHandler(async (req, res) => {
+    const userId = req?.user._id;
+    const { points } = req.body;
+
+    if (!userId) {
+        return res
+            .status(400)
+            .json(new ApiResponse(401, "User is not found.", null));
+    }
+
+    if (points === undefined || typeof points !== "number") {
+        return res
+            .status(400)
+            .json(new ApiResponse(400, "Valid points value is required.", null));
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+        return res
+            .status(404)
+            .json(new ApiResponse(404, "User not found.", null));
+    }
+
+    user.points = points;
+    await user.save();
+
+    const updatedUser = await User.findById(userId).select(
+        "-password -refreshToken"
+    );
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "User Points Updated Successfully", updatedUser));
+});
 
 
 
-export { registerUser, loginUser, currentUser, userProfile, googleLogin, logoutHandler, generateAccessAndRefreshToken, refreshAccessToken };
+export { registerUser, loginUser, currentUser, userProfile, googleLogin, logoutHandler, generateAccessAndRefreshToken, refreshAccessToken, updateUserProfile, updateUserPoints };

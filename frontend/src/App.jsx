@@ -17,6 +17,8 @@ import { useEffect } from "react";
 import { currentUserApi } from "./utils/userApi";
 import PublicRoute from "./components/components/PublicRoute";
 import MyAccountRightSide from "./components/Common/MyAccountRightSide";
+import MyReviews from "./components/Common/MyReviews";
+import MyWishlist from "./components/Common/MyWishlist";
 import Designer from "./pages/Designer";
 import Orders from "./components/Common/Orders";
 import SingleOrder from "./components/Common/SingleOrder";
@@ -126,6 +128,8 @@ const App = () => {
               <Route path="orders/" element={<Orders />} />
               <Route path="orders/:orderId/" element={<SingleOrder />} />
               <Route path="coupons/" element={<Coupons />} />
+              <Route path="reviews/" element={<MyReviews />} />
+              <Route path="wishlist/" element={<MyWishlist />} />
               <Route index element={<MyAccountRightSide />} />
             </Route>
           </Route>

@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { Rating } from "../model/rating.model.js";
 import { Order } from "../model/order.model.js";
 import { Product } from "../model/product.model.js";
+import { uploadToS3 } from "../utils/uploadToS3.js";
 import mongoose from "mongoose";
 
 /**
@@ -53,13 +54,9 @@ const updateProductRating = async (productId) => {
   }
 };
 
-/**
- * @route   POST /api/ratings
- * @desc    Create a new rating/review
- * @access  Private (User must be authenticated)
- */
+
 export const createRating = asyncHandler(async (req, res) => {
-  const { product, rating, title, comment, media } = req.body;
+  const { product, rating, title, comment } = req.body;
   const userId = req.user._id;
 
   // Validate required fields
@@ -97,6 +94,16 @@ export const createRating = asyncHandler(async (req, res) => {
     throw new ApiError(400, "You have already rated this product");
   }
 
+  // Handle media uploads (images/videos)
+  let mediaUrls = [];
+  if (req.files && req.files.length > 0) {
+    // Upload all files to S3
+    const uploadPromises = req.files.map((file) =>
+      uploadToS3(file, "ratings")
+    );
+    mediaUrls = await Promise.all(uploadPromises);
+  }
+
   // Create new rating
   const newRating = await Rating.create({
     product,
@@ -104,7 +111,7 @@ export const createRating = asyncHandler(async (req, res) => {
     rating,
     title: title || "",
     comment: comment || "",
-    media: media || [],
+    media: mediaUrls,
     isApproved: true, // Auto-approve or set to false for admin approval
   });
 
@@ -141,7 +148,7 @@ export const getProductRatings = asyncHandler(async (req, res) => {
     product: productId,
     isApproved: true,
   })
-    .populate("ratedBy", "name email")
+    .populate("ratedBy", "fullName email")
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
@@ -245,7 +252,7 @@ export const getRatingById = asyncHandler(async (req, res) => {
  */
 export const updateRating = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { rating, title, comment, media } = req.body;
+  const { rating, title, comment } = req.body;
   const userId = req.user._id;
 
   // Find rating
@@ -264,15 +271,27 @@ export const updateRating = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Rating must be between 1 and 5");
   }
 
+  // Handle media uploads (images/videos)
+  let mediaUrls = existingRating.media || [];
+  if (req.files && req.files.length > 0) {
+    // Upload new files to S3
+    const uploadPromises = req.files.map((file) =>
+      uploadToS3(file, "ratings")
+    );
+    const newMediaUrls = await Promise.all(uploadPromises);
+    // Replace existing media with new media
+    mediaUrls = newMediaUrls;
+  }
+
   // Update fields
   if (rating !== undefined) existingRating.rating = rating;
   if (title !== undefined) existingRating.title = title;
   if (comment !== undefined) existingRating.comment = comment;
-  if (media !== undefined) existingRating.media = media;
+  existingRating.media = mediaUrls;
 
   // Save and populate
   await existingRating.save();
-  await existingRating.populate("ratedBy", "name email");
+  await existingRating.populate("ratedBy", "fullName email");
 
   // Update product rating stats
   await updateProductRating(existingRating.product);

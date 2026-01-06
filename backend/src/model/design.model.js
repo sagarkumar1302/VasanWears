@@ -39,6 +39,14 @@ const designSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    haveGivenPermissionToSell: {
+      type: Boolean,
+      default: false,
+    },
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+    },
   },
   { timestamps: true }
 );
