@@ -78,7 +78,7 @@ const HowItWorks = () => {
               alt="step"
             /> */}
             <div className="overflow-hidden">
-              <video src={enjoyVideo} loop muted autoPlay className="border-none" />
+              <video src={enjoyVideo} loop muted autoPlay className="border-none block w-full h-full transform translate-z-0 outline-0 object-cover overflow-hidden" />
             </div>
 
             <div>
