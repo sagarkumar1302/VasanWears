@@ -94,12 +94,12 @@ const MyWishlist = () => {
               <button
                 onClick={() => handleRemoveFromWishlist(item.product._id)}
                 disabled={wishlistLoadingId === item.product._id}
-                className="absolute top-2 right-2 p-2 bg-white rounded-full shadow hover:bg-red-50 transition z-10"
+                className="absolute top-2 right-2 p-2 bg-white rounded-full shadow hover:bg-primary3 transition z-10 cursor-pointer"
               >
                 {wishlistLoadingId === item.product._id ? (
-                  <span className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin inline-block"></span>
+                  <span className="w-5 h-5 border-2 border-primary5 border-t-transparent rounded-full animate-spin inline-block"></span>
                 ) : (
-                  <RiHeartFill className="w-5 h-5 text-red-500" />
+                  <RiHeartFill className="w-5 h-5 text-primary5" />
                 )}
               </button>
 
@@ -112,7 +112,7 @@ const MyWishlist = () => {
                   alt={item.product.title}
                   className="w-full  object-cover rounded-lg mb-3"
                 />
-                <h3 className="font-semibold text-primary5 hover:text-primary4 line-clamp-2">
+                <h3 className="font-semibold text-primary5 line-clamp-2">
                   {item.product.title}
                 </h3>
                 <p className="text-gray-600 text-sm mt-1 line-clamp-2">

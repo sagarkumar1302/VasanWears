@@ -34,6 +34,8 @@ import subscriberRoutes from "./routes/subscriber.routes.js"
 import contactRoutes from "./routes/contact.routes.js"
 import designRoutes from "./routes/design.routes.js"
 import ratingRoutes from "./routes/rating.routes.js"
+import couponRoutes from "./routes/coupon.routes.js"
+import promotionRoutes from "./routes/promotion.routes.js"
 app.use("/api/colors", colorRoutes);
 app.use("/api/sizes", sizeRoutes);
 app.use("/api/user", userRouter)
@@ -49,4 +51,6 @@ app.use("/api/subscribers", subscriberRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/designs", designRoutes);
 app.use("/api/ratings", ratingRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/promotions", promotionRoutes);
 export {app}

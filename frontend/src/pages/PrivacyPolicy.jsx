@@ -82,7 +82,7 @@ const PrivacyPolicy = () => {
                   Service or from the Service infrastructure itself (for example, the duration of a page visit).
                 </li>
                 <li className="pl-4 border-l-2 border-primary5">
-                  <strong>Website</strong> refers to VasanWears, accessible from <a href="https://www.vasanwears.in/" className="text-primary5 hover:underline">https://www.vasanwears.in/</a>
+                  <strong>Website</strong> refers to VasanWears, accessible from <a href="/" className="text-primary5 hover:underline">https://www.vasanwears.in/</a>
                 </li>
                 <li className="pl-4 border-l-2 border-primary5">
                   <strong>You</strong> means the individual accessing or using the Service, or the company, or other legal 
@@ -326,9 +326,9 @@ const PrivacyPolicy = () => {
                 services, including:
               </p>
               <ul className="list-disc pl-8 mb-4 space-y-1">
-                <li>Facebook: <a href="https://www.facebook.com/privacy/policy" className="text-primary5 hover:underline text-sm">https://www.facebook.com/privacy/policy</a></li>
-                <li>Instagram: <a href="https://privacycenter.instagram.com/policy" className="text-primary5 hover:underline text-sm">https://privacycenter.instagram.com/policy</a></li>
-                <li>X (formerly Twitter): <a href="https://twitter.com/en/privacy" className="text-primary5 hover:underline text-sm">https://twitter.com/en/privacy</a></li>
+                <li>Facebook: <a target="_blank" href="https://www.facebook.com/privacy/policy" className="text-primary5 hover:underline text-sm">https://www.facebook.com/privacy/policy</a></li>
+                <li>Instagram: <a target="_blank" href="https://privacycenter.instagram.com/policy" className="text-primary5 hover:underline text-sm">https://privacycenter.instagram.com/policy</a></li>
+                <li>X (formerly Twitter): <a target="_blank"href="https://twitter.com/en/privacy" className="text-primary5 hover:underline text-sm">https://twitter.com/en/privacy</a></li>
               </ul>
               <p className="mb-4">
                 These third-party platforms may collect information about you when you interact with our 
@@ -489,7 +489,7 @@ const PrivacyPolicy = () => {
                 <a href="mailto:info@vasanwears.in" className="px-6 py-3 bg-primary5 text-white rounded-lg font-medium hover:bg-primary5/90 transition-colors">
                   By email: info@vasanwears.in
                 </a>
-                <a href="https://www.vasanwears.in/contact-us" target="_blank" rel="noreferrer" className="px-6 py-3 border border-primary5 text-primary5 rounded-lg font-medium hover:bg-primary5/5 transition-colors">
+                <a href="/contact-us"   className="px-6 py-3 border border-primary5 text-primary5 rounded-lg font-medium hover:bg-primary5/5 transition-colors">
                   Visit our Contact Page
                 </a>
               </div>

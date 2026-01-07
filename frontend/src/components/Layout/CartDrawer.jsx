@@ -99,50 +99,105 @@ const CartDrawer = ({ setCartDrawer, cartDrawer }) => {
                   key={item._id}
                   className="border-b border-slate-300/70 py-4 flex gap-4 relative cartCont"
                 >
-                  <div className="cartImage">
-                    <img
-                      src={item.product?.featuredImage}
-                      alt={item.product?.title}
-                      className="w-20"
-                    />
-                  </div>
-                  <div className="content flex flex-col">
-                    <h5 className="text-sm font-bold md:font-medium md:text-lg">
-                      {item.product?.title}
-                    </h5>
-                    <span className="text-sm">Color: {item.color?.name}</span>
+                  {item.itemType === "catalog" ? (
+                    /* ================= CATALOG PRODUCT ================= */
+                    <>
+                      <div className="cartImage">
+                        <img
+                          src={item.product?.featuredImage}
+                          alt={item.product?.title}
+                          className="w-20"
+                        />
+                      </div>
+                      <div className="content flex flex-col">
+                        <h5 className="text-sm font-bold md:font-medium md:text-lg">
+                          {item.product?.title}
+                        </h5>
+                        <span className="text-sm">Color: {item.color?.name}</span>
 
-                    <span className="text-sm">Size: {item.size?.name}</span>
+                        <span className="text-sm">Size: {item.size?.name}</span>
 
-                    <span className="text-sm font-bold text-primary5">
-                      Price: {item.price}
-                    </span>
-                    <div className="flex gap-2 items-center mt-2 ">
-                      <button
-                        className="w-8 py-0.5 bg-primary1 cursor-pointer"
-                        onClick={() => updateQty(item._id, item.quantity + 1)}
-                      >
-                        +
-                      </button>
-                      <span className="text-sm font-bold">
-                        {" "}
-                        {item.quantity}
-                      </span>
-                      <button
-                        className="w-8 py-0.5 bg-primary1 cursor-pointer"
-                        onClick={() => updateQty(item._id, item.quantity - 1)}
-                        disabled={item.quantity <= 1}
-                      >
-                        -
-                      </button>
-                      <button
-                        className=" cursor-pointer bg-primary3 rounded-full w-6 h-6 flex items-center justify-center absolute -top-2 md:top-0 right-0"
-                        onClick={() => removeItem(item._id)}
-                      >
-                        <RiCloseLine className="w-4" />
-                      </button>
-                    </div>
-                  </div>
+                        <span className="text-sm font-bold text-primary5">
+                          Price: ₹{item.price}
+                        </span>
+                        <div className="flex gap-2 items-center mt-2 ">
+                          <button
+                            className="w-8 py-0.5 bg-primary1 cursor-pointer"
+                            onClick={() => updateQty(item._id, item.quantity + 1)}
+                          >
+                            +
+                          </button>
+                          <span className="text-sm font-bold">
+                            {" "}
+                            {item.quantity}
+                          </span>
+                          <button
+                            className="w-8 py-0.5 bg-primary1 cursor-pointer"
+                            onClick={() => updateQty(item._id, item.quantity - 1)}
+                            disabled={item.quantity <= 1}
+                          >
+                            -
+                          </button>
+                          <button
+                            className=" cursor-pointer bg-primary3 rounded-full w-6 h-6 flex items-center justify-center absolute -top-2 md:top-0 right-0"
+                            onClick={() => removeItem(item._id)}
+                          >
+                            <RiCloseLine className="w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    /* ================= CUSTOM DESIGN ================= */
+                    <>
+                      <div className="cartImage">
+                        <img
+                          src={item.design?.images?.front}
+                          alt="Custom design"
+                          className="w-20 rounded"
+                        />
+                      </div>
+                      <div className="content flex flex-col">
+                        <h5 className="text-sm font-bold md:font-medium md:text-lg">
+                          {item.design?.title || "Custom Designed Product"}
+                        </h5>
+                        <span className="text-sm">Color: {item.design?.color?.name}</span>
+
+                        <span className="text-sm">Size: {item.design?.size?.name}</span>
+
+                        <span className="text-xs text-primary5/70">Custom Print</span>
+
+                        <span className="text-sm font-bold text-primary5">
+                          Price: ₹{item.price}
+                        </span>
+                        <div className="flex gap-2 items-center mt-2 ">
+                          <button
+                            className="w-8 py-0.5 bg-primary1 cursor-pointer"
+                            onClick={() => updateQty(item._id, item.quantity + 1)}
+                          >
+                            +
+                          </button>
+                          <span className="text-sm font-bold">
+                            {" "}
+                            {item.quantity}
+                          </span>
+                          <button
+                            className="w-8 py-0.5 bg-primary1 cursor-pointer"
+                            onClick={() => updateQty(item._id, item.quantity - 1)}
+                            disabled={item.quantity <= 1}
+                          >
+                            -
+                          </button>
+                          <button
+                            className=" cursor-pointer bg-primary3 rounded-full w-6 h-6 flex items-center justify-center absolute -top-2 md:top-0 right-0"
+                            onClick={() => removeItem(item._id)}
+                          >
+                            <RiCloseLine className="w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>

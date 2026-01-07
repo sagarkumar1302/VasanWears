@@ -143,7 +143,7 @@ const CancellationPolicy = () => {
                   <span className="text-xs opacity-80 uppercase mb-1">Send Email</span>
                   info@vasanwears.in
                 </a>
-                <a href="https://www.vasanwears.in/contact-us" target="_blank" rel="noreferrer" className="px-6 py-4 border border-primary5 text-primary5 rounded-lg font-medium hover:bg-primary5/5 transition-all flex flex-col items-center">
+                <a href="/contact-us"   className="px-6 py-4 border border-primary5 text-primary5 rounded-lg font-medium hover:bg-primary5/5 transition-all flex flex-col items-center">
                    <span className="text-xs opacity-80 uppercase mb-1">Web Support</span>
                    Visit Contact Page
                 </a>

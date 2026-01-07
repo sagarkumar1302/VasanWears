@@ -1,6 +1,7 @@
 import { Order } from "../model/order.model.js";
 import { Payment } from "../model/payment.model.js";
 import { Cart } from "../model/cart.model.js";
+import { Coupon } from "../model/coupon.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import sendEmail from "../utils/sendEmail.js";
 import { User } from "../model/user.model.js";
@@ -18,6 +19,7 @@ export const placeOrder = async (req, res) => {
       paymentMethod,
       discount = 0,
       deliveryCharge = 0,
+      couponCode = null,
     } = req.body;
 
     if (!shippingAddress || !paymentMethod) {
@@ -94,6 +96,7 @@ export const placeOrder = async (req, res) => {
       paymentMethod,
       paymentStatus: "PENDING",
       orderStatus: "PLACED",
+      couponCode: couponCode || null,
       shippingAddress,
     });
 
@@ -109,6 +112,21 @@ export const placeOrder = async (req, res) => {
 
       order.paymentId = payment._id;
       await order.save();
+      // Mark coupon as used
+      if (couponCode) {
+        try {
+          const coupon = await Coupon.findOne({ code: couponCode.toUpperCase() });
+          if (coupon) {
+            coupon.usedCount += 1;
+            coupon.usedBy.push({ user: userId, usedAt: new Date() });
+            await coupon.save();
+          }
+        } catch (couponError) {
+          console.error("Error updating coupon usage:", couponError);
+          // Don't fail the order if coupon update fails
+        }
+      }
+
 
       cart.items = [];
       cart.subtotal = 0;
@@ -240,7 +258,7 @@ export const updateOrder = async (req, res) => {
     if (!order) {
       return res.status(404).json(new ApiResponse(404, "Order not found"));
     }
-    const previousStatus = order.orderStatus; 
+    const previousStatus = order.orderStatus;
     // Update allowed fields (excluding items, user, and other critical fields)
     if (orderStatus !== undefined) order.orderStatus = orderStatus;
     if (paymentStatus !== undefined) order.paymentStatus = paymentStatus;
@@ -313,7 +331,7 @@ export const updateOrder = async (req, res) => {
           url: `${process.env.ADMIN_PANEL_URL}/orders/${order._id}`,
         });
         console.log("Status update emails sent");
-        
+
       }
     }
 

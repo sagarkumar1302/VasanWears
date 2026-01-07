@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Banner from "../components/Common/Banner";
-import {
-  RiBankCardLine,
-  RiEdit2Line,
-  RiEditLine,
-  RiPencilLine,
-  RiPenNibLine,
-} from "@remixicon/react";
+import { RiBankCardLine, RiPencilLine, RiPenNibLine } from "@remixicon/react";
 
 import { useCartStore } from "../store/cartStore";
 import Loader from "../components/Common/Loader";
 import { Link, useNavigate } from "react-router-dom";
 import { placeOrderApi, verifyPaymentApi } from "../utils/orderApi";
+import { validateCouponApi } from "../utils/couponApi";
+import { clearCartApi } from "../utils/cartApi";
 const Checkout = () => {
   const { items, subtotal, fetchCart, loading } = useCartStore();
 
@@ -28,6 +24,8 @@ const Checkout = () => {
   const [discount, setDiscount] = useState(0);
   const [couponError, setCouponError] = useState("");
   const [showCoupon, setShowCoupon] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
   const [shipping, setShipping] = useState({
     fullName: "",
     phone: "",
@@ -54,20 +52,52 @@ const Checkout = () => {
     return null;
   };
 
-  const applyCoupon = () => {
-    if (coupon === "SAVE10") {
-      setDiscount(10);
+  const applyCoupon = async () => {
+    if (!coupon.trim()) {
+      setCouponError("Please enter a coupon code");
+      return;
+    }
+
+    setValidatingCoupon(true);
+    setCouponError("");
+
+    try {
+      const products = items.map((item) => ({
+        productId: item.product?._id || item.design?._id,
+        categoryId: item.product?.category || item.design?.category,
+      }));
+
+      const response = await validateCouponApi({
+        code: coupon,
+        orderValue: subtotal,
+        userId: null, // Will be set from token in backend
+        products,
+      });
+
+      setDiscount(response.data.discountAmount);
+      setAppliedCoupon(response.data.coupon);
       setCouponError("");
-    } else if (coupon === "SAVE20") {
-      setDiscount(20);
-      setCouponError("");
-    } else {
+    } catch (err) {
       setDiscount(0);
-      setCouponError("Invalid coupon code");
+      setAppliedCoupon(null);
+      setCouponError(
+        err.response?.data?.message || "Invalid or expired coupon code"
+      );
+    } finally {
+      setValidatingCoupon(false);
     }
   };
 
-  const total = Math.max(subtotal - discount, 0);
+  const removeCoupon = () => {
+    setCoupon("");
+    setDiscount(0);
+    setAppliedCoupon(null);
+    setCouponError("");
+  };
+
+  // COD Charge
+  const codCharge = paymentMethod === "COD" ? 60 : 0;
+  const total = Math.max(subtotal - discount + codCharge, 0);
   const handlePlaceOrder = async () => {
     const error = validateCheckout();
     if (error) {
@@ -89,14 +119,16 @@ const Checkout = () => {
         pincode: shipping.pincode,
       },
       paymentMethod,
+      deliveryCharge: codCharge,
       discount,
+      couponCode: appliedCoupon?.code || null,
     };
 
     try {
       // ================= COD =================
       if (paymentMethod === "COD") {
         const res = await placeOrderApi(payload);
-
+        clearCartApi();
         navigate("/thank-you", {
           state: { orderId: res.data.order._id },
         });
@@ -152,7 +184,7 @@ const Checkout = () => {
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
           });
-
+          clearCartApi();
           navigate("/thank-you", {
             state: { orderId: order._id },
           });
@@ -209,27 +241,48 @@ const Checkout = () => {
                   type="text"
                   placeholder="Coupon code"
                   value={coupon}
+                  className="border rounded-xl px-4 py-2 outline-none md:w-[85%] w-full"
                   onChange={(e) => setCoupon(e.target.value.toUpperCase())}
-                  className="border rounded-md px-4 py-2 outline-none md:w-[85%] w-full"
+                  disabled={appliedCoupon !== null}
                 />
 
-                <button
-                  onClick={applyCoupon}
-                  className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
-                  transition-all duration-300 btn-slide cursor-pointer md:w-[15%] w-full"
-                >
-                  Apply Coupon
-                </button>
+                {appliedCoupon ? (
+                  <button
+                    onClick={removeCoupon}
+                    className="py-2.5 px-8 rounded-xl font-semibold bg-red-500 text-white
+                    transition-all duration-300 cursor-pointer md:w-[15%] w-full"
+                  >
+                    Remove
+                  </button>
+                ) : (
+                  <button
+                    onClick={applyCoupon}
+                    disabled={validatingCoupon}
+                    className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
+                    transition-all duration-300 btn-slide cursor-pointer md:w-[15%] w-full
+                    disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {validatingCoupon ? "Checking..." : "Apply Coupon"}
+                  </button>
+                )}
               </div>
 
               {couponError && (
                 <p className="text-red-500 text-xs mt-2">{couponError}</p>
               )}
 
-              {discount > 0 && (
-                <p className="text-primary5 text-xs mt-2 font-semibold">
-                  Coupon applied! You saved ₹{discount}
-                </p>
+              {discount > 0 && appliedCoupon && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
+                  <p className="text-green-700 text-sm font-semibold">
+                    ✓ Coupon "{appliedCoupon.code}" applied!
+                  </p>
+                  <p className="text-green-600 text-xs mt-1">
+                    You saved ₹{discount}
+                    {appliedCoupon.discountType === "PERCENTAGE" && (
+                      <p>Coupon applied! You saved ₹{discount}</p>
+                    )}
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -246,7 +299,7 @@ const Checkout = () => {
                 <div className="grid md:grid-cols-2 gap-4">
                   <input
                     placeholder="Full Name"
-                    className="border px-4 py-2"
+                    className="border px-4 py-2 rounded-xl"
                     value={shipping.fullName}
                     onChange={(e) =>
                       setShipping({ ...shipping, fullName: e.target.value })
@@ -254,7 +307,7 @@ const Checkout = () => {
                   />
                   <input
                     placeholder="Phone Number"
-                    className="border px-4 py-2"
+                    className="border px-4 py-2 rounded-xl"
                     value={shipping.phone}
                     onChange={(e) =>
                       setShipping({ ...shipping, phone: e.target.value })
@@ -262,7 +315,7 @@ const Checkout = () => {
                   />
                   <input
                     placeholder="Alternate Phone (Optional)"
-                    className="border px-4 py-2 rounded-md"
+                    className="border px-4 py-2 rounded-xl md:col-span-2"
                     value={shipping.altPhone}
                     onChange={(e) =>
                       setShipping({ ...shipping, altPhone: e.target.value })
@@ -270,7 +323,7 @@ const Checkout = () => {
                   />
                   <input
                     placeholder="Address Line 1"
-                    className="border px-4 py-2 md:col-span-2"
+                    className="border px-4 py-2 md:col-span-2 rounded-xl"
                     value={shipping.address}
                     onChange={(e) =>
                       setShipping({ ...shipping, address: e.target.value })
@@ -278,7 +331,7 @@ const Checkout = () => {
                   />
                   <input
                     placeholder="Landmark (Optional)"
-                    className="border px-4 py-2 rounded-md md:col-span-2"
+                    className="border px-4 py-2 rounded-xl md:col-span-2"
                     value={shipping.landmark}
                     onChange={(e) =>
                       setShipping({ ...shipping, landmark: e.target.value })
@@ -286,7 +339,7 @@ const Checkout = () => {
                   />
                   <input
                     placeholder="City"
-                    className="border px-4 py-2"
+                    className="border px-4 py-2 rounded-xl"
                     value={shipping.city}
                     onChange={(e) =>
                       setShipping({ ...shipping, city: e.target.value })
@@ -294,7 +347,7 @@ const Checkout = () => {
                   />
                   <input
                     placeholder="State"
-                    className="border px-4 py-2"
+                    className="border px-4 py-2 rounded-xl"
                     value={shipping.state}
                     onChange={(e) =>
                       setShipping({ ...shipping, state: e.target.value })
@@ -302,7 +355,7 @@ const Checkout = () => {
                   />
                   <input
                     placeholder="Pincode"
-                    className="border px-4 py-2"
+                    className="border px-4 py-2 rounded-xl"
                     value={shipping.pincode}
                     onChange={(e) =>
                       setShipping({ ...shipping, pincode: e.target.value })
@@ -362,7 +415,7 @@ const Checkout = () => {
                           : item.design?.images?.front
                       }
                       alt="Order item"
-                      className="w-16 h-20 object-cover rounded border"
+                      className="w-16 h-20 object-cover rounded"
                     />
 
                     {/* DETAILS */}
@@ -405,10 +458,18 @@ const Checkout = () => {
                   <span>₹{subtotal}</span>
                 </div>
 
-                <div className="flex justify-between">
-                  <span>Delivery</span>
-                  <span className="font-semibold">Free</span>
-                </div>
+                {paymentMethod !== "COD" && (
+                  <div className="flex justify-between">
+                    <span>Delivery</span>
+                    <span className="font-semibold">Free</span>
+                  </div>
+                )}
+                {paymentMethod === "COD" && (
+                  <div className="flex justify-between text-orange-600">
+                    <span>COD Charges</span>
+                    <span>₹{codCharge}</span>
+                  </div>
+                )}
 
                 {discount > 0 && (
                   <div className="flex justify-between text-primary5 font-semibold">

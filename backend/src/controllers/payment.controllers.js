@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { Payment } from "../model/payment.model.js";
 import { Order } from "../model/order.model.js";
+import { Coupon } from "../model/coupon.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import sendEmail from "../utils/sendEmail.js";
 import { Cart } from "../model/cart.model.js";
@@ -55,6 +56,21 @@ export const verifyPayment = async (req, res) => {
     order.paidAt = new Date();
     order.orderStatus = "CONFIRMED";
     await order.save();
+
+    // Mark coupon as used for online payment
+    if (order.couponCode) {
+      try {
+        const coupon = await Coupon.findOne({ code: order.couponCode.toUpperCase() });
+        if (coupon) {
+          coupon.usedCount += 1;
+          coupon.usedBy.push({ user: order.user._id, usedAt: new Date() });
+          await coupon.save();
+        }
+      } catch (couponError) {
+        console.error("Error updating coupon usage:", couponError);
+        // Don't fail the payment if coupon update fails
+      }
+    }
 
     await Cart.findOneAndUpdate(
       { user: order.user._id },

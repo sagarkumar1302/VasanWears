@@ -16,7 +16,7 @@ export const uploadToS3 = async (file, folder = "categories") => {
 
   await s3.send(command);
 
-  return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+  return `${process.env.CLOUDFRONT_DOMAIN}/${fileName}`;
 };
 
 // Upload a base64/data URL (data:<mime>;base64,<data>) directly to S3.
@@ -46,5 +46,5 @@ export const uploadBase64ToS3 = async (dataUrl, folder = "designs") => {
 
   await s3.send(command);
 
-  return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+  return `${process.env.CLOUDFRONT_DOMAIN}/${fileName}`;
 };

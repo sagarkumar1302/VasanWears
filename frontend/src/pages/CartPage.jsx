@@ -40,8 +40,8 @@ const CartPage = () => {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* ---------------- CART ITEMS ---------------- */}
             <div className="lg:col-span-2 bg-white rounded-lg shadow h-fit">
-              {/* Header */}
-              <div className="grid grid-cols-12 px-6 py-4 border-b text-sm font-medium border-primary5/20">
+              {/* Header - Hidden on mobile */}
+              <div className="hidden md:grid grid-cols-12 px-6 py-4 border-b text-sm font-medium border-primary5/20">
                 <div className="col-span-6">Product</div>
                 <div className="col-span-2 text-center">Price</div>
                 <div className="col-span-2 text-center">Quantity</div>
@@ -51,102 +51,208 @@ const CartPage = () => {
               {items.map((item) => (
                 <div
                   key={item._id}
-                  className="grid grid-cols-12 px-6 py-6 items-center border-b last:border-none border-primary5/20"
+                  className="px-4 md:px-6 py-4 md:py-6 border-b last:border-none border-primary5/20"
                 >
-                  {/* PRODUCT */}
-                  <div className="col-span-6 flex gap-4">
-                    <button
-                      onClick={() => removeItem(item._id)}
-                      className="text-xl cursor-pointer hover:text-red-500 transition"
-                    >
-                      ×
-                    </button>
-                    {item.itemType === "catalog" ? (
-                      <Link
-                        to={`/shop/${item.product?._id}/${item.product?.slug}?variant=${item.variant}&size=${item.size?._id}`}
-                        className="flex gap-4"
+                  {/* Desktop Layout */}
+                  <div className="hidden md:grid grid-cols-12 items-center">
+                    {/* PRODUCT */}
+                    <div className="col-span-6 flex gap-4">
+                      <button
+                        onClick={() => removeItem(item._id)}
+                        className="text-xl cursor-pointer hover:text-red-500 transition"
                       >
-                        <img
-                          src={item.product?.featuredImage}
-                          alt={item.product?.title}
-                          className="w-20 h-24 object-cover rounded-md"
+                        ×
+                      </button>
+                      {item.itemType === "catalog" ? (
+                        <Link
+                          to={`/shop/${item.product?._id}/${item.product?.slug}?variant=${item.variant}&size=${item.size?._id}`}
+                          className="flex gap-4"
+                        >
+                          <img
+                            src={item.product?.featuredImage}
+                            alt={item.product?.title}
+                            className="w-20 h-24 object-cover rounded-md"
+                          />
+
+                          <div className="space-y-1 text-primary5">
+                            <h3 className="font-semibold">
+                              {item.product?.title}
+                            </h3>
+
+                            <p className="text-sm">Color: {item.color?.name}</p>
+                            <p className="text-sm">
+                              Size: {item.size?.name || "Free Size"}
+                            </p>
+                            <p className="text-sm">
+                              Delivery: 5–7 business days
+                            </p>
+                          </div>
+                        </Link>
+                      ) : (
+                        /* ================= CUSTOM DESIGN ================= */
+                        <div className="flex gap-4">
+                          <img
+                            src={item.design?.images?.front}
+                            alt="Custom design"
+                            className="w-20 h-24 object-cover rounded-md "
+                          />
+
+                          <div className="space-y-1 text-primary5">
+                            <h3 className="font-semibold">
+                              {item.design?.title || "Custom Designed Product"}
+                            </h3>
+
+                            <p className="text-sm">
+                              Color: {item.design?.color?.name}
+                            </p>
+
+                            <p className="text-sm">
+                              Size: {item.design?.size?.name}
+                            </p>
+
+                            <p className="text-sm">Custom Print</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* PRICE */}
+                    <div className="col-span-2 text-center font-semibold">
+                      ₹{item.price}
+                    </div>
+
+                    {/* QUANTITY */}
+                    <div className="col-span-2 flex justify-center">
+                      <div className="flex items-center bg-primary3 rounded-full overflow-hidden p-1">
+                        <button
+                          onClick={() => updateQty(item._id, item.quantity - 1)}
+                          disabled={item.quantity <= 1}
+                          className="px-3 py-1 text-lg cursor-pointer disabled:opacity-40"
+                        >
+                          −
+                        </button>
+
+                        <input
+                          type="text"
+                          value={item.quantity}
+                          readOnly
+                          className="w-12 text-center outline-none bg-transparent"
                         />
 
-                        <div className="space-y-1 text-primary5">
-                          <h3 className="font-semibold">
-                            {item.product?.title}
-                          </h3>
-
-                          <p className="text-sm">Color: {item.color?.name}</p>
-                          <p className="text-sm">
-                            Size: {item.size?.name || "Free Size"}
-                          </p>
-                          <p className="text-sm">Delivery: 5–7 business days</p>
-                        </div>
-                      </Link>
-                    ) : (
-                      /* ================= CUSTOM DESIGN ================= */
-                      <div className="flex gap-4">
-                        <img
-                          src={item.design?.images?.front}
-                          alt="Custom design"
-                          className="w-20 h-24 object-cover rounded-md border"
-                        />
-
-                        <div className="space-y-1 text-primary5">
-                          <h3 className="font-semibold">
-                            {item.design?.title || "Custom Designed Product"}
-                          </h3>
-
-                          <p className="text-sm">
-                            Color: {item.design?.color?.name}
-                          </p>
-
-                          <p className="text-sm">
-                            Size: {item.design?.size?.name}
-                          </p>
-
-                          <p className="text-sm">Custom Print</p>
-                        </div>
+                        <button
+                          onClick={() => updateQty(item._id, item.quantity + 1)}
+                          className="px-3 py-1 text-lg cursor-pointer"
+                        >
+                          +
+                        </button>
                       </div>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* PRICE */}
-                  <div className="col-span-2 text-center font-semibold">
-                    ₹{item.price}
-                  </div>
-
-                  {/* QUANTITY */}
-                  <div className="col-span-2 flex justify-center">
-                    <div className="flex items-center bg-primary3 rounded-full overflow-hidden p-1">
-                      <button
-                        onClick={() => updateQty(item._id, item.quantity - 1)}
-                        disabled={item.quantity <= 1}
-                        className="px-3 py-1 text-lg cursor-pointer disabled:opacity-40"
-                      >
-                        −
-                      </button>
-
-                      <input
-                        type="text"
-                        value={item.quantity}
-                        readOnly
-                        className="w-12 text-center outline-none bg-transparent"
-                      />
-
-                      <button
-                        onClick={() => updateQty(item._id, item.quantity + 1)}
-                        className="px-3 py-1 text-lg cursor-pointer"
-                      >
-                        +
-                      </button>
+                    {/* TOTAL */}
+                    <div className="col-span-2 text-right font-semibold">
+                      ₹{item.price * item.quantity}
                     </div>
                   </div>
 
-                  {/* TOTAL */}
-                  <div className="col-span-2 text-right font-semibold">
-                    ₹{item.price * item.quantity}
+                  {/* Mobile Layout */}
+                  <div className="md:hidden">
+                    <div className="flex gap-3 mb-3">
+                      {item.itemType === "catalog" ? (
+                        <Link
+                          to={`/shop/${item.product?._id}/${item.product?.slug}?variant=${item.variant}&size=${item.size?._id}`}
+                          className="flex gap-3 flex-1"
+                        >
+                          <img
+                            src={item.product?.featuredImage}
+                            alt={item.product?.title}
+                            className="w-20 h-24 object-cover rounded-md flex-shrink-0"
+                          />
+
+                          <div className="space-y-1 text-primary5 flex-1">
+                            <h3 className="font-semibold text-sm">
+                              {item.product?.title}
+                            </h3>
+
+                            <p className="text-xs">Color: {item.color?.name}</p>
+                            <p className="text-xs">
+                              Size: {item.size?.name || "Free Size"}
+                            </p>
+                            <p className="text-xs">
+                              Delivery: 5–7 business days
+                            </p>
+                          </div>
+                        </Link>
+                      ) : (
+                        <div className="flex gap-3 flex-1">
+                          <img
+                            src={item.design?.images?.front}
+                            alt="Custom design"
+                            className="w-20 h-24 object-cover rounded-md  shrink-0"
+                          />
+
+                          <div className="space-y-1 text-primary5 flex-1">
+                            <h3 className="font-semibold text-sm">
+                              {item.design?.title || "Custom Designed Product"}
+                            </h3>
+
+                            <p className="text-xs">
+                              Color: {item.design?.color?.name}
+                            </p>
+
+                            <p className="text-xs">
+                              Size: {item.design?.size?.name}
+                            </p>
+
+                            <p className="text-xs">Custom Print</p>
+                          </div>
+                        </div>
+                      )}
+
+                      <button
+                        onClick={() => removeItem(item._id)}
+                        className="text-2xl cursor-pointer hover:text-red-500 transition h-fit"
+                      >
+                        ×
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-primary5/10">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-primary5/70">Price:</span>
+                        <span className="font-semibold">₹{item.price}</span>
+                      </div>
+
+                      <div className="flex items-center bg-primary3 rounded-full overflow-hidden p-0.5">
+                        <button
+                          onClick={() => updateQty(item._id, item.quantity - 1)}
+                          disabled={item.quantity <= 1}
+                          className="px-2.5 py-0.5 text-lg cursor-pointer disabled:opacity-40"
+                        >
+                          −
+                        </button>
+
+                        <input
+                          type="text"
+                          value={item.quantity}
+                          readOnly
+                          className="w-10 text-center outline-none bg-transparent text-sm"
+                        />
+
+                        <button
+                          onClick={() => updateQty(item._id, item.quantity + 1)}
+                          className="px-2.5 py-0.5 text-lg cursor-pointer"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-primary5/70">Total:</span>
+                        <span className="font-semibold">
+                          ₹{item.price * item.quantity}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}

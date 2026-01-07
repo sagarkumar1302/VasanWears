@@ -56,6 +56,8 @@ import SingleDesign from "./pages/SingleDesign";
 import SingleUserDesign from "./pages/SingleUserDesign";
 import AllOrders from "./components/Admin/pages/AllOrders";
 import EditOrder from "./components/Admin/pages/EditOrder";
+import AddEditCoupon from "./components/Admin/pages/AddEditCoupon";
+import AdminCouponList from "./components/Admin/pages/AdminCouponList";
 const App = () => {
   const setUser = useAuthStore((s) => s.setUser);
   const setAuthChecked = useAuthStore((s) => s.setAuthChecked);
@@ -157,6 +159,13 @@ const App = () => {
             <Route path="orders">
               <Route path="all-orders/" element={<AllOrders />} />
               <Route path=":orderId/" element={<EditOrder />} />
+              
+            </Route>
+            <Route path="coupons">
+              <Route path="all-coupons/" element={<AdminCouponList />} />
+              <Route path="add/" element={<AddEditCoupon />} />
+              <Route path="edit/:id" element={<AddEditCoupon />} />
+              {/* <Route path="active/" element={< />} /> */}
               
             </Route>
 

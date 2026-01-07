@@ -89,11 +89,7 @@ const Navbar = ({ searchModel, setSearchModel }) => {
         </div>
         <div className="logo flex md:ml-0 ml-8">
           <Link to="/">
-            <img
-              src={logo}
-              alt="Logo of VasanWears"
-              className="w-20 md:w-28"
-            />
+            <img src={logo} alt="Logo of VasanWears" className="w-20 md:w-28" />
           </Link>
         </div>
         <div className="hidden md:flex space-x-6 text-primary2  uppercase font-medium text-sm items-center menu">
@@ -106,10 +102,16 @@ const Navbar = ({ searchModel, setSearchModel }) => {
           <Link to="/shop" className="hover:text-primary1 menu-item">
             Shop
           </Link>
-          <Link to="/shop?category=men" className="hover:text-primary1 menu-item">
+          <Link
+            to="/shop?category=men"
+            className="hover:text-primary1 menu-item"
+          >
             Men
           </Link>
-          <Link to="/shop?category=women" className="hover:text-primary1 menu-item">
+          <Link
+            to="/shop?category=women"
+            className="hover:text-primary1 menu-item"
+          >
             Women
           </Link>
 
@@ -194,14 +196,6 @@ const Navbar = ({ searchModel, setSearchModel }) => {
         >
           Shop
         </Link>
-
-        <Link
-          to="/shop?category=women"
-          className="hover:text-primary2 "
-          onClick={mobileSidebarClose}
-        >
-          Women
-        </Link>
         <Link
           to="/shop?category=men"
           className="hover:text-primary2 "
@@ -209,6 +203,14 @@ const Navbar = ({ searchModel, setSearchModel }) => {
         >
           Men
         </Link>
+        <Link
+          to="/shop?category=women"
+          className="hover:text-primary2 "
+          onClick={mobileSidebarClose}
+        >
+          Women
+        </Link>
+
         <Link
           to="/contact-us"
           className="hover:text-primary2 "

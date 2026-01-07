@@ -20,7 +20,7 @@ const TermsAndCondition = () => {
             <section className="border-b border-gray-100 pb-6">
               <p className="mb-4 text-lg">
                 Welcome to <strong>VasanWears</strong>. These Terms & Conditions (“Terms”) govern your access to and use 
-                of our website <a href="https://www.vasanwears.in" className="text-primary5 hover:underline font-medium">https://www.vasanwears.in</a> and our services.
+                of our website <a href="/" className="text-primary5 hover:underline font-medium">https://www.vasanwears.in</a> and our services.
               </p>
               <p className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400 text-blue-900">
                 By accessing or using our website, placing an order, or uploading any design, you agree to be 
@@ -207,7 +207,7 @@ const TermsAndCondition = () => {
                 <a href="mailto:info@vasanwears.in" className="px-6 py-3 bg-primary5 text-white rounded-lg font-medium hover:bg-primary5/90 transition-colors">
                   Email: info@vasanwears.in
                 </a>
-                <a href="https://www.vasanwears.in/contact-us" target="_blank" rel="noreferrer" className="px-6 py-3 border border-primary5 text-primary5 rounded-lg font-medium hover:bg-primary5/5 transition-colors">
+                <a href="/contact-us"  className="px-6 py-3 border border-primary5 text-primary5 rounded-lg font-medium hover:bg-primary5/5 transition-colors">
                   Contact Us Page
                 </a>
               </div>

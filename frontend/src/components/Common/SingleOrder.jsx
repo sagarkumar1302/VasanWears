@@ -216,10 +216,10 @@ const SingleOrder = () => {
                   )}
                 </div>
 
-                <div className="border-t mt-4 pt-3 flex items-center gap-2 text-sm cursor-pointer border-t-primary2/20">
+                <Link to="/contact-us" className="border-t mt-4 pt-3 flex items-center gap-2 text-sm cursor-pointer border-t-primary2/20">
                   <RiChat1Line />
                   Contact with us
-                </div>
+                </Link>
               </div>
             );
           })}

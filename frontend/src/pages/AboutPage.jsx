@@ -8,15 +8,14 @@ import ZigZag2 from "../components/Common/ZigZag2";
 import ZigZag from "../components/Common/ZigZag";
 import ZigZag3 from "../components/Common/ZigZag3";
 
-
 const AboutPage = () => {
   return (
     <div className="pt-10 md:py-10">
       <Banner pageTitle="About Us" />
 
       <ZigZag />
-      <ZigZag2/>
-      <ZigZag3/>
+      <ZigZag2 />
+      <ZigZag3 />
       <Features />
       <CTASection />
       <Counters />

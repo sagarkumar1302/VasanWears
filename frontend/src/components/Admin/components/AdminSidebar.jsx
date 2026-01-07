@@ -77,7 +77,7 @@ const AdminSidebar = ({ isOpen, isMobileOpen, closeMobile }) => {
       setProfileOpen(false);
     }
 
-    if (location.pathname.startsWith("/admin/coupon")) {
+    if (location.pathname.startsWith("/admin/coupons")) {
       setCouponOpen(true);
     } else {
       setCouponOpen(false);
@@ -776,7 +776,7 @@ const AdminSidebar = ({ isOpen, isMobileOpen, closeMobile }) => {
       {/* COUPON PARENT */}
       <div
         className={`flex items-center w-full p-3 rounded-lg cursor-pointer transition ${
-          location.pathname.startsWith("/admin/coupon")
+          location.pathname.startsWith("/admin/coupons")
             ? "bg-indigo-100 text-indigo-700"
             : "text-gray-700 hover:bg-indigo-100"
         }`}
@@ -784,7 +784,7 @@ const AdminSidebar = ({ isOpen, isMobileOpen, closeMobile }) => {
         <div
           className="flex items-center flex-1"
           onClick={() => {
-            navigate("/admin/coupon/all-coupons");
+            navigate("/admin/coupons/all-coupons");
             closeMobile?.();
           }}
         >
@@ -813,7 +813,7 @@ const AdminSidebar = ({ isOpen, isMobileOpen, closeMobile }) => {
         }`}
       >
         <NavLink
-          to="/admin/coupon/all-coupons"
+          to="/admin/coupons/all-coupons"
           end
           onClick={closeMobile}
           className={({ isActive }) =>
