@@ -5317,38 +5317,80 @@ const Designer = ({ productKey } = {}) => {
 
         <button
           type="button"
-          onClick={handleMobileAddFlow}
-          disabled={mockMode || addingToCart || !selectedSize || designChanged}
+          onClick={async () => {
+            if (!savedDesign || !savedDesign._id) {
+              // If not saved, call the same save handler used in desktop
+              await handleSaveDesign();
+              return;
+            }
+            // If already saved, proceed with the mobile add flow (preview -> add -> checkout)
+            await handleMobileAddFlow();
+          }}
+          disabled={
+            (!savedDesign || !savedDesign._id)
+              ? mockMode || savingDesign
+              : mockMode || addingToCart || !selectedSize || designChanged
+          }
           className={`h-10 px-4 rounded-lg font-extrabold inline-flex items-center justify-center transition-all ${
-            mockMode || addingToCart || !selectedSize || designChanged
-              ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
-              : "bg-green-600 text-white hover:bg-green-700 hover:border-green-700 hover:shadow-lg"
+            (!savedDesign || !savedDesign._id)
+              ? (mockMode || savingDesign
+                  ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
+                  : "bg-gray-900 text-white")
+              : (mockMode || addingToCart || !selectedSize || designChanged
+                  ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
+                  : "bg-green-600 text-white hover:bg-green-700 hover:border-green-700 hover:shadow-lg")
           }`}
         >
-          {addingToCart ? (
-            <span className="flex items-center gap-2">
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              Adding to Cart...
-            </span>
+          {(!savedDesign || !savedDesign._id) ? (
+            <>{savingDesign ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Saving Design...
+              </span>
+            ) : (
+              "Save Design"
+            )}</>
           ) : (
-            `Add to Cart ${
-              !selectedSize ? "(Select Size)" : designChanged ? "(Save First)" : ""
-            }`
+            (addingToCart ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Adding to Cart...
+              </span>
+            ) : (
+              `Add to Cart ${
+                !selectedSize ? "(Select Size)" : designChanged ? "(Save First)" : ""
+              }`
+            ))
           )}
         </button>
       </div>
