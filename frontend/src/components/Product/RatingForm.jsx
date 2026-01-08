@@ -144,7 +144,7 @@ const RatingForm = ({ productId, onSuccess, existingRating = null }) => {
 
   if (!existingRating && eligibility && !eligibility.canRate) {
     return (
-      <div className="p-4 bg-yellow-50 rounded-lg">
+      <div className="p-4 bg-primary3 rounded-lg">
         {!eligibility.hasPurchased && (
           <p className="text-yellow-800">
             You must purchase this product before you can review it.

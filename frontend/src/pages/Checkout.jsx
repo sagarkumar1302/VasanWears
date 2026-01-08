@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, memo } from "react";
 import Banner from "../components/Common/Banner";
 import { RiBankCardLine, RiPencilLine, RiPenNibLine } from "@remixicon/react";
 
@@ -8,7 +8,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { placeOrderApi, verifyPaymentApi } from "../utils/orderApi";
 import { validateCouponApi } from "../utils/couponApi";
 import { clearCartApi } from "../utils/cartApi";
-const Checkout = () => {
+import { updateDesignApi } from "../utils/designApi";
+const Checkout = memo(() => {
   const { items, subtotal, fetchCart, loading } = useCartStore();
 
   useEffect(() => {
@@ -18,6 +19,11 @@ const Checkout = () => {
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [placingOrder, setPlacingOrder] = useState(false);
+
+  /* ---------------- DESIGN PERMISSION MODAL ---------------- */
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState(null);
+  const [customDesigns, setCustomDesigns] = useState([]);
 
   /* ---------------- COUPON ---------------- */
   const [coupon, setCoupon] = useState("");
@@ -36,7 +42,7 @@ const Checkout = () => {
     state: "",
     pincode: "",
   });
-  const validateCheckout = () => {
+  const validateCheckout = useCallback(() => {
     if (!shipping.fullName || !shipping.phone || !shipping.address) {
       return "Name, phone and address are required";
     }
@@ -50,9 +56,9 @@ const Checkout = () => {
     }
 
     return null;
-  };
+  }, [shipping, items]);
 
-  const applyCoupon = async () => {
+  const applyCoupon = useCallback(async () => {
     if (!coupon.trim()) {
       setCouponError("Please enter a coupon code");
       return;
@@ -86,15 +92,49 @@ const Checkout = () => {
     } finally {
       setValidatingCoupon(false);
     }
-  };
+  }, [coupon, items, subtotal]);
 
-  const removeCoupon = () => {
+  const removeCoupon = useCallback(() => {
     setCoupon("");
     setDiscount(0);
     setAppliedCoupon(null);
     setCouponError("");
-  };
+  }, []);
 
+  /* ---------------- DESIGN PERMISSION HANDLERS ---------------- */
+  const handleGrantPermission = useCallback(async () => {
+    try {
+      // Update all custom designs with permission
+
+      for (const item of customDesigns) {
+        if (item.design?.designId?._id) {
+          await updateDesignApi(item.design?.designId?._id, {
+            haveGivenPermissionToSell: true,
+          });
+        }
+      }
+
+      // Close modal and navigate
+      setShowPermissionModal(false);
+      navigate("/thank-you", {
+        state: { orderId: pendingOrderId },
+      });
+    } catch (err) {
+      console.error("Failed to update design permission:", err);
+      // Still navigate even if update fails
+      setShowPermissionModal(false);
+      navigate("/thank-you", {
+        state: { orderId: pendingOrderId },
+      });
+    }
+  }, [customDesigns, pendingOrderId, navigate]);
+
+  const handleSkipPermission = useCallback(() => {
+    setShowPermissionModal(false);
+    navigate("/thank-you", {
+      state: { orderId: pendingOrderId },
+    });
+  }, [pendingOrderId, navigate]);
   // COD Charge
   const codCharge = paymentMethod === "COD" ? 60 : 0;
   const total = Math.max(subtotal - discount + codCharge, 0);
@@ -128,10 +168,23 @@ const Checkout = () => {
       // ================= COD =================
       if (paymentMethod === "COD") {
         const res = await placeOrderApi(payload);
-        clearCartApi();
-        navigate("/thank-you", {
-          state: { orderId: res.data.order._id },
-        });
+
+        // Check if there are custom designs
+        const customItems = items.filter((item) => item.itemType === "custom");
+
+        if (customItems.length > 0) {
+          // Store custom designs and order ID, show modal
+          setCustomDesigns(customItems);
+          setPendingOrderId(res.data.order._id);
+          setShowPermissionModal(true);
+          clearCartApi();
+        } else {
+          // No custom items, navigate directly
+          clearCartApi();
+          navigate("/thank-you", {
+            state: { orderId: res.data.order._id },
+          });
+        }
       }
 
       // ================= ONLINE =================
@@ -144,14 +197,17 @@ const Checkout = () => {
       setPlacingOrder(false);
     }
   };
-  const loadRazorpay = () =>
-    new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
+  const loadRazorpay = useCallback(
+    () =>
+      new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+      }),
+    []
+  );
 
   const startRazorpayPayment = async (payload) => {
     const loaded = await loadRazorpay();
@@ -184,10 +240,25 @@ const Checkout = () => {
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
           });
-          clearCartApi();
-          navigate("/thank-you", {
-            state: { orderId: order._id },
-          });
+
+          // Check if there are custom designs
+          const customItems = items.filter(
+            (item) => item.itemType === "custom"
+          );
+
+          if (customItems.length > 0) {
+            // Store custom designs and order ID, show modal
+            setCustomDesigns(customItems);
+            setPendingOrderId(order._id);
+            setShowPermissionModal(true);
+            clearCartApi();
+          } else {
+            // No custom items, navigate directly
+            clearCartApi();
+            navigate("/thank-you", {
+              state: { orderId: order._id },
+            });
+          }
         } catch (err) {
           alert("Payment verification failed");
           setPlacingOrder(false);
@@ -414,7 +485,12 @@ const Checkout = () => {
                           ? item.product?.featuredImage
                           : item.design?.images?.front
                       }
-                      alt="Order item"
+                      alt={
+                        item.itemType === "catalog"
+                          ? item.product?.title
+                          : item.design?.title || "Custom design"
+                      }
+                      loading="lazy"
                       className="w-16 h-20 object-cover rounded"
                     />
 
@@ -499,8 +575,44 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+
+      {/* ---------------- DESIGN PERMISSION MODAL ---------------- */}
+      {showPermissionModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+            <div className="text-center">
+              <div className="mb-4">
+                <RiPenNibLine className="mx-auto text-primary5" size={48} />
+              </div>
+              <h3 className="text-xl font-bold text-primary5 mb-3">
+                Share Your Design?
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Would you like to give permission to publish your custom
+                design(s) as a product on our website? Other customers will be
+                able to purchase your design!
+              </p>
+
+              <div className="flex gap-3 flex-col sm:flex-row">
+                <button
+                  onClick={handleSkipPermission}
+                  className="cursor-pointer flex-1 py-3 px-6 rounded-xl font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-300"
+                >
+                  No, Thanks
+                </button>
+                <button
+                  onClick={handleGrantPermission}
+                  className="cursor-pointer flex-1 py-3 px-6 rounded-xl font-semibold btn-slide text-primary2"
+                >
+                  Yes, Publish It!
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
+});
 
 export default Checkout;

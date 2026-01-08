@@ -145,7 +145,10 @@ export const updateDesign = asyncHandler(async (req, res) => {
   if (title) design.title = title;
   if (sellPrice) design.sellPrice = sellPrice;
   if (isPublic !== undefined) design.isPublic = isPublic;
-  if (haveGivenPermissionToSell !== undefined) design.haveGivenPermissionToSell = haveGivenPermissionToSell;
+  if (haveGivenPermissionToSell !== undefined) {
+    design.haveGivenPermissionToSell = haveGivenPermissionToSell;
+    console.log("has given permission to sell:", haveGivenPermissionToSell);
+  }
   if (product !== undefined) {
     design.product = product || null;
   }

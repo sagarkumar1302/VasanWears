@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, } from "react";
+import React, { useState, useEffect, useRef, memo, useCallback } from "react";
 import { getAllDesignsApi, toggleLikeDesign, getDesignsByUserIdApi } from "../utils/designApi";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -11,7 +11,7 @@ import { Link, useParams } from "react-router-dom";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const SingleUserDesign = () => {
+const SingleUserDesign = memo(() => {
   const [designs, setDesigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [flippedCards, setFlippedCards] = useState({});
@@ -32,7 +32,7 @@ const SingleUserDesign = () => {
     }
   }, [loading, designs]);
 
-  const fetchDesigns = async () => {
+  const fetchDesigns = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getDesignsByUserIdApi(userDesignId);
@@ -50,9 +50,9 @@ const SingleUserDesign = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userDesignId, user]);
 
-  const animateCards = () => {
+  const animateCards = useCallback(() => {
     // Hero title animation
     gsap.from(".hero-title", {
       duration: 1,
@@ -62,20 +62,22 @@ const SingleUserDesign = () => {
     });
 
     // Cards stagger animation
-    gsap.from(cardsRef.current, {
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: "top 80%",
-      },
-      duration: 0.8,
-      y: 60,
-      opacity: 0,
-      stagger: 0.15,
-      ease: "power3.out",
-    });
-  };
+    if (cardsRef.current && containerRef.current) {
+      gsap.from(cardsRef.current, {
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 80%",
+        },
+        duration: 0.8,
+        y: 60,
+        opacity: 0,
+        stagger: 0.15,
+        ease: "power3.out",
+      });
+    }
+  }, []);
 
-  const handleLike = async (designId, index) => {
+  const handleLike = useCallback(async (designId, index) => {
     try {
       const response = await toggleLikeDesign(designId);
 
@@ -118,14 +120,14 @@ const SingleUserDesign = () => {
       }
       console.error(error);
     }
-  };
+  }, []);
 
-  const toggleFlip = (designId) => {
+  const toggleFlip = useCallback((designId) => {
     setFlippedCards((prev) => ({
       ...prev,
       [designId]: !prev[designId],
     }));
-  };
+  }, []);
 
   if (loading) {
     return <Loader />;
@@ -172,8 +174,9 @@ const SingleUserDesign = () => {
                         {design.images?.front ? (
                           <img
                             src={design.images.front}
-                            alt={`${design.title} - Front`}
+                            alt={`${design.title} - Front view of custom design`}
                             className="w-full h-full object-contain p-4"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -196,8 +199,9 @@ const SingleUserDesign = () => {
                         >
                           <img
                             src={design.images.back}
-                            alt={`${design.title} - Back`}
+                            alt={`${design.title} - Back view of custom design`}
                             className="w-full h-full object-contain p-4"
+                            loading="lazy"
                           />
                           <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-700">
                             Back
@@ -280,6 +284,6 @@ const SingleUserDesign = () => {
       </div>
     </div>
   );
-};
+});
 
 export default SingleUserDesign;

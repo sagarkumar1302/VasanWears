@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
 import compression from "compression";
+
 const app = express();
 app.use(compression());
 app.use(cors({
@@ -53,4 +54,9 @@ app.use("/api/designs", designRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/promotions", promotionRoutes);
+app.get("/redis-test", async (req, res) => {
+  await redisClient.set("hello", "vasanwears");
+  const value = await redisClient.get("hello");
+  res.json({ redis: value });
+});
 export {app}

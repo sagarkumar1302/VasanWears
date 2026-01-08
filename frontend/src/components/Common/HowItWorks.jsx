@@ -1,7 +1,7 @@
-import React from "react";
+import React, { memo } from "react";
 import enjoyVideo from "../../assets/videos/EnjoyYourProduct.mp4";
 
-const HowItWorks = () => {
+const HowItWorks = memo(() => {
   return (
     <section className="px-4 py-6 md:py-20 bg-white">
       <div className="container mx-auto">
@@ -27,7 +27,8 @@ const HowItWorks = () => {
             <img
               src="./AddCustomDesign.jpeg"
               className="rounded-xl "
-              alt="step"
+              alt="Add custom design step"
+              loading="lazy"
             />
 
             <div>
@@ -51,7 +52,8 @@ const HowItWorks = () => {
               <img
                 src="./images/hiw1.jpg"
                 className="rounded-xl shadow-md"
-                alt="step"
+                alt="Custom artwork review step"
+                loading="lazy"
               />
             </div>
 
@@ -77,8 +79,17 @@ const HowItWorks = () => {
               className="rounded-xl shadow-md"
               alt="step"
             /> */}
-            <div className="overflow-hidden">
-              <video src={enjoyVideo} loop muted autoPlay className="border-none block w-full h-full transform translate-z-0 outline-0 object-cover overflow-hidden" />
+            <div className="">
+              <video 
+                src={enjoyVideo} 
+                loop 
+                muted 
+                autoPlay 
+                playsInline
+                preload="metadata"
+                className="border-primary3 border-2 rounded-xl block w-full h-full transform translate-z-0 outline-0 object-cover overflow-hidden"
+                aria-label="Enjoy your custom product video"
+              />
             </div>
 
             <div>
@@ -99,6 +110,6 @@ const HowItWorks = () => {
       </div>
     </section>
   );
-};
+});
 
 export default HowItWorks;

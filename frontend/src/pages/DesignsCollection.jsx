@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, memo } from "react";
 import { getAllDesignsApi, toggleLikeDesign } from "../utils/designApi";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const DesignsCollection = () => {
+const DesignsCollection = memo(() => {
   const [designs, setDesigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [flippedCards, setFlippedCards] = useState({});
@@ -29,7 +29,7 @@ const DesignsCollection = () => {
     }
   }, [loading, designs]);
 
-  const fetchDesigns = async () => {
+  const fetchDesigns = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getAllDesignsApi();
@@ -47,9 +47,11 @@ const DesignsCollection = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const animateCards = () => {
+  const animateCards = useCallback(() => {
+    if (!containerRef.current || cardsRef.current.length === 0) return;
+
     // Hero title animation
     gsap.from(".hero-title", {
       duration: 1,
@@ -70,9 +72,9 @@ const DesignsCollection = () => {
       stagger: 0.15,
       ease: "power3.out",
     });
-  };
+  }, []);
 
-  const handleLike = async (designId, index) => {
+  const handleLike = useCallback(async (designId, index) => {
     try {
       const response = await toggleLikeDesign(designId);
 
@@ -115,14 +117,14 @@ const DesignsCollection = () => {
       }
       console.error(error);
     }
-  };
+  }, []);
 
-  const toggleFlip = (designId) => {
+  const toggleFlip = useCallback((designId) => {
     setFlippedCards((prev) => ({
       ...prev,
       [designId]: !prev[designId],
     }));
-  };
+  }, []);
 
   if (loading) {
     return <Loader />;
@@ -169,7 +171,8 @@ const DesignsCollection = () => {
                         {design.images?.front ? (
                           <img
                             src={design.images.front}
-                            alt={`${design.title} - Front`}
+                            alt={`${design.title} - Front view`}
+                            loading="lazy"
                             className="w-full h-full object-contain p-4"
                           />
                         ) : (
@@ -193,7 +196,8 @@ const DesignsCollection = () => {
                         >
                           <img
                             src={design.images.back}
-                            alt={`${design.title} - Back`}
+                            alt={`${design.title} - Back view`}
+                            loading="lazy"
                             className="w-full h-full object-contain p-4"
                           />
                           <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-700">
@@ -277,6 +281,6 @@ const DesignsCollection = () => {
       </div>
     </div>
   );
-};
+});
 
 export default DesignsCollection;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, memo } from "react";
 import { RiAddLine, RiSubtractLine } from "@remixicon/react";
 
 const faqs = [
@@ -32,12 +32,12 @@ const faqs = [
   },
 ];
 
-const FAQSection = () => {
+const FAQSection = memo(() => {
   const [openIndex, setOpenIndex] = useState(null);
 
-  const toggleFAQ = (i) => {
-    setOpenIndex(openIndex === i ? null : i);
-  };
+  const toggleFAQ = useCallback((i) => {
+    setOpenIndex((prev) => (prev === i ? null : i));
+  }, []);
 
   return (
     <section className="w-full py-8 px-4 md:py-20 bg-[linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)),url('/images/slider2.jpg')] bg-cover bg-center bg-fixed">
@@ -84,6 +84,6 @@ const FAQSection = () => {
       </div>
     </section>
   );
-};
+});
 
 export default FAQSection;

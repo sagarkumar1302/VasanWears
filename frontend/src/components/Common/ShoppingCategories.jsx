@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, memo } from "react";
 import { Link } from "react-router-dom";
 import { getAllSubCategoriesApi } from "../../utils/subCategoryApi.js";
 import Loader from "./Loader";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 
-const ShoppingCategories = () => {
+const ShoppingCategories = memo(() => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const categoryContainer = useRef(null);
@@ -13,10 +13,12 @@ const ShoppingCategories = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        setLoading(true);
         const res = await getAllSubCategoriesApi();
         setCategories(res.data || []);
       } catch (err) {
         console.error("Fetch categories error", err);
+        setCategories([]);
       } finally {
         setLoading(false);
       }
@@ -25,37 +27,41 @@ const ShoppingCategories = () => {
     fetchCategories();
   }, []);
 
-  // ✅ GSAP ANIMATION
+  // ✅ GSAP ANIMATION - OPTIMIZED
   useGSAP(
     () => {
-      if (!categoryContainer.current) return;
+      if (!categoryContainer.current || categories.length === 0) return;
 
       const ctx = gsap.context(() => {
         // Heading animation
         gsap.from(".cat-heading", {
           y: 40,
           autoAlpha: 0,
-          duration: 0.8,
+          duration: 0.7,
           ease: "power3.out",
         });
 
         // Category cards animation
         gsap.from(".cat-item", {
-          y: 60,
+          y: 50,
           autoAlpha: 0,
-          duration: 0.9,
-          stagger: 0.12,
+          duration: 0.8,
+          stagger: 0.1,
           ease: "power3.out",
         });
       }, categoryContainer);
 
       return () => ctx.revert();
     },
-    { dependencies: [loading] } // run after loading finishes
+    { dependencies: [loading], scope: categoryContainer } // optimized with scope
   );
 
   if (loading) {
     return <Loader />;
+  }
+
+  if (categories.length === 0) {
+    return null;
   }
 
   return (
@@ -76,6 +82,7 @@ const ShoppingCategories = () => {
                 <img
                   src={cat.image}
                   alt={cat.name}
+                  loading="lazy"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -93,6 +100,6 @@ const ShoppingCategories = () => {
       </div>
     </section>
   );
-};
+});
 
 export default ShoppingCategories;

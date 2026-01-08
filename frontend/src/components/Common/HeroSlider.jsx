@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { Link } from "react-router-dom";
@@ -14,7 +14,7 @@ const slides = [
     type: "image",
     url: "./images/slider.jpg",
     title: "Make Your Design Now",
-    button: "Design Now",
+    button: "Shop Now",
   },
   {
     type: "video",
@@ -30,18 +30,30 @@ const slides = [
   },
 ];
 
-const HeroSlider = () => {
+const HeroSlider = memo(() => {
   const [current, setCurrent] = useState(0);
   const slideRef = useRef(null);
   const contentRef = useRef(null);
+
+  const nextSlide = useCallback(() => {
+    setCurrent((prev) => (prev + 1) % slides.length);
+  }, []);
+
+  const prevSlide = useCallback(() => {
+    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
       nextSlide();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [current]);
-  const animateSlide = () => {
+  }, [nextSlide]);
+
+  const animateSlide = useCallback(() => {
+    if (!slideRef.current || !contentRef.current) return;
+
     gsap.fromTo(
       slideRef.current,
       { opacity: 0, scale: 1.06 },
@@ -53,7 +65,7 @@ const HeroSlider = () => {
       { opacity: 0, y: 30 },
       { opacity: 1, y: 0, duration: 0.8, stagger: 0.2, delay: 0.2 }
     );
-  };
+  }, []);
 
   useGSAP(
     () => {
@@ -62,14 +74,6 @@ const HeroSlider = () => {
     { dependencies: [current], revertOnUpdate: true }
   );
 
-  const nextSlide = () => {
-    setCurrent((prev) => (prev + 1) % slides.length);
-  };
-
-  const prevSlide = () => {
-    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
-  };
-
   return (
     <div className="relative w-full h-[40vh] md:h-[40vh] xl:h-[80vh] overflow-hidden mt-30 md:mt-35">
       {/* Slide Media */}
@@ -77,7 +81,8 @@ const HeroSlider = () => {
         {slides[current].type === "image" ? (
           <img
             src={slides[current].url}
-            alt=""
+            alt={slides[current].title || "Hero slider image"}
+            loading="lazy"
             className="w-full h-full object-cover"
           />
         ) : (
@@ -86,7 +91,10 @@ const HeroSlider = () => {
             autoPlay
             loop
             muted
+            playsInline
+            preload="metadata"
             className="w-full h-full object-cover"
+            aria-label={slides[current].title || "Hero slider video"}
           />
         )}
         <div className="absolute inset-0 bg-black/40 z-8"></div>
@@ -141,6 +149,6 @@ const HeroSlider = () => {
       </div>
     </div>
   );
-};
+});
 
 export default HeroSlider;

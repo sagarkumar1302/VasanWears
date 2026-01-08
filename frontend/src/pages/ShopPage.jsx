@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useEffect } from "react";
+import React, { useState, useRef, useMemo, useEffect, useCallback, memo } from "react";
 import { PRODUCTS } from "../utils/Products";
 import gsap from "gsap";
 import {
@@ -196,56 +196,32 @@ const ShopPage = () => {
   // Convert ₹ price to number
   const numericPrice = (str) => parseFloat(str.replace("₹", ""));
 
-  // Filtering + Sorting (Uses the MAIN state variables)
+  // Filtering + Sorting (Uses the MAIN state variables) - OPTIMIZED
   const finalProducts = useMemo(() => {
-    let data = [...products];
+    if (products.length === 0) return [];
 
-    // 🔍 SEARCH
-    if (search.trim()) {
-      data = data.filter((p) =>
-        p.title.toLowerCase().includes(search.toLowerCase())
-      );
-    }
+    const searchLower = search.trim().toLowerCase();
+    const [minPrice, maxPrice] = priceRange;
 
-    // 📦 CATEGORY
-    if (selectedCategory) {
-      data = data.filter((p) => p.category?._id === selectedCategory);
-    }
-
-    // 📂 SUBCATEGORY
-    if (selectedSubCategory) {
-      data = data.filter((p) => p.subCategory?._id === selectedSubCategory);
-    }
-
-    // 🎨 COLOR (ID → ID)
-    if (selectedColor) {
-      data = data.filter((p) => p.colors.includes(selectedColor));
-    }
-
-    // 📏 SIZE (ID → ID)
-    if (selectedSize) {
-      data = data.filter((p) => p.sizes.includes(selectedSize));
-    }
-
-    // 💰 PRICE
-    data = data.filter((p) => {
+    let data = products.filter((p) => {
+      // Combined filter for better performance
+      if (searchLower && !p.title.toLowerCase().includes(searchLower)) return false;
+      if (selectedCategory && p.category?._id !== selectedCategory) return false;
+      if (selectedSubCategory && p.subCategory?._id !== selectedSubCategory) return false;
+      if (selectedColor && !p.colors.includes(selectedColor)) return false;
+      if (selectedSize && !p.sizes.includes(selectedSize)) return false;
+      
       const price = p.variants?.[0]?.salePrice ?? 0;
-      return price >= priceRange[0] && price <= priceRange[1];
+      if (price < minPrice || price > maxPrice) return false;
+
+      return true;
     });
 
     // 🔃 SORT
     if (sortType === "low-to-high") {
-      data.sort(
-        (a, b) =>
-          (a.variants?.[0]?.salePrice ?? 0) - (b.variants?.[0]?.salePrice ?? 0)
-      );
-    }
-
-    if (sortType === "high-to-low") {
-      data.sort(
-        (a, b) =>
-          (b.variants?.[0]?.salePrice ?? 0) - (a.variants?.[0]?.salePrice ?? 0)
-      );
+      data.sort((a, b) => (a.variants?.[0]?.salePrice ?? 0) - (b.variants?.[0]?.salePrice ?? 0));
+    } else if (sortType === "high-to-low") {
+      data.sort((a, b) => (b.variants?.[0]?.salePrice ?? 0) - (a.variants?.[0]?.salePrice ?? 0));
     }
 
     return data;
@@ -263,23 +239,29 @@ const ShopPage = () => {
     if (!productsGridRef.current) return;
 
     const items = productsGridRef.current.querySelectorAll(".product-card");
+    if (items.length === 0) return;
 
-    gsap.killTweensOf(items);
+    // Debounce animation to prevent excessive re-renders
+    const timer = setTimeout(() => {
+      gsap.killTweensOf(items);
 
-    gsap.fromTo(
-      items,
-      {
-        opacity: 0,
-        y: 40,
-      },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-        ease: "power3.out",
-        stagger: 0.08,
-      }
-    );
+      gsap.fromTo(
+        items,
+        {
+          opacity: 0,
+          y: 40,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: "power3.out",
+          stagger: 0.06,
+        }
+      );
+    }, 50);
+
+    return () => clearTimeout(timer);
   }, [finalProducts]);
 
   const sortingFilterMobile = () => {
@@ -314,7 +296,7 @@ const ShopPage = () => {
 
     return () => clearTimeout(delay);
   }, [searchInput]);
-  const handleToggleWishlist = async (productId) => {
+  const handleToggleWishlist = useCallback(async (productId) => {
     if (wishlistLoadingId) return;
 
     try {
@@ -341,7 +323,7 @@ const ShopPage = () => {
     } finally {
       setWishlistLoadingId(null);
     }
-  };
+  }, [wishlistLoadingId, navigate]);
 
   if (loading) {
     return <Loader />;
@@ -728,7 +710,7 @@ const Accordion = ({ title, children }) => {
   );
 };
 
-const ProductCard = ({ data, isWishlisted, onToggleWishlist, loading }) => {
+const ProductCard = memo(({ data, isWishlisted, onToggleWishlist, loading }) => {
   const imgRef = useRef(null);
   const hoverImgRef = useRef(null);
   const sideIconRef = useRef(null);
@@ -793,11 +775,19 @@ const ProductCard = ({ data, isWishlisted, onToggleWishlist, loading }) => {
 
         {/* Image Wrapper */}
         <div className="relative rounded-xl overflow-hidden">
-          <img ref={imgRef} src={data.image} className="w-full  object-cover" />
+          <img 
+            ref={imgRef} 
+            src={data.image} 
+            alt={data.title}
+            loading="lazy"
+            className="w-full object-cover" 
+          />
 
           <img
             ref={hoverImgRef}
             src={data.hoverImage}
+            alt={data.title}
+            loading="lazy"
             className="w-full object-cover absolute inset-0 opacity-0"
           />
 
@@ -842,7 +832,8 @@ const ProductCard = ({ data, isWishlisted, onToggleWishlist, loading }) => {
       </Link>
     </div>
   );
-};
+});
+
 const CustomPriceSlider = ({ priceRange, setPriceRange }) => {
   const sliderRef = useRef(null);
   const MAX_PRICE = 10000; // use your real max price

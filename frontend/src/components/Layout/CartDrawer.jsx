@@ -1,17 +1,19 @@
 import { RiCloseLine } from "@remixicon/react";
-import React, { useRef } from "react";
+import React, { useRef, memo, useCallback } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import noCart from "../../assets/images/no-cart.gif";
 import { Link } from "react-router-dom";
 import { useCartStore } from "../../store/cartStore";
-const CartDrawer = ({ setCartDrawer, cartDrawer }) => {
+const CartDrawer = memo(({ setCartDrawer, cartDrawer }) => {
   const drawerRef = useRef(null);
   const timeline = useRef(null);
   const { items, subtotal, loading, updateQty, removeItem } = useCartStore();
   console.log("Cart ",items);
   
   useGSAP(() => {
+    if (!drawerRef.current) return;
+    
     timeline.current = gsap.timeline({ paused: true });
 
     timeline.current.fromTo(
@@ -54,6 +56,8 @@ const CartDrawer = ({ setCartDrawer, cartDrawer }) => {
   }, []);
 
   useGSAP(() => {
+    if (!timeline.current) return;
+    
     if (cartDrawer) {
       timeline.current.play();
     } else {
@@ -61,13 +65,17 @@ const CartDrawer = ({ setCartDrawer, cartDrawer }) => {
     }
   }, [cartDrawer]);
 
+  const handleCloseDrawer = useCallback(() => {
+    setCartDrawer(false);
+  }, [setCartDrawer]);
+
   return (
     <>
       {/* OVERLAY */}
       {cartDrawer && (
         <div
           className="fixed h-[calc(100vh)] inset-0 bg-black/40 z-30"
-          onClick={() => setCartDrawer(false)}
+          onClick={handleCloseDrawer}
         ></div>
       )}
 
@@ -82,9 +90,7 @@ const CartDrawer = ({ setCartDrawer, cartDrawer }) => {
           </div>
           <button
             className="cursor-pointer z-30"
-            onClick={() => {
-              setCartDrawer(false);
-            }}
+            onClick={handleCloseDrawer}
           >
             <RiCloseLine className="h-8 w-8 text-primary2" />
           </button>
@@ -105,8 +111,9 @@ const CartDrawer = ({ setCartDrawer, cartDrawer }) => {
                       <div className="cartImage">
                         <img
                           src={item.product?.featuredImage}
-                          alt={item.product?.title}
+                          alt={`${item.product?.title} - Cart item`}
                           className="w-20"
+                          loading="lazy"
                         />
                       </div>
                       <div className="content flex flex-col">
@@ -153,8 +160,9 @@ const CartDrawer = ({ setCartDrawer, cartDrawer }) => {
                       <div className="cartImage">
                         <img
                           src={item.design?.images?.front}
-                          alt="Custom design"
+                          alt={`${item.design?.title || 'Custom design'} - Cart item`}
                           className="w-20 rounded"
+                          loading="lazy"
                         />
                       </div>
                       <div className="content flex flex-col">
@@ -203,13 +211,18 @@ const CartDrawer = ({ setCartDrawer, cartDrawer }) => {
             </div>
           ) : (
             <div className="flex justify-center items-center flex-col gap-4 no-cart">
-              <img src={noCart} alt="No Cart" className="w-45 md:w-60" />
+              <img 
+                src={noCart} 
+                alt="Empty shopping cart illustration" 
+                className="w-45 md:w-60"
+                loading="lazy"
+              />
               <h4 className="text-lg font-semibold">Your cart is empty.🛒</h4>
               <Link
                 to="/shop"
                 className="py-2.5 px-8 rounded-xl font-semibold text-primary2 
              transition-all duration-300 btn-slide md:text-base text-sm"
-                onClick={() => setCartDrawer(false)}
+                onClick={handleCloseDrawer}
               >
                 Return to Shop
               </Link>
@@ -228,7 +241,7 @@ const CartDrawer = ({ setCartDrawer, cartDrawer }) => {
               to="/cart"
               className="w-full py-2.5 px-8 rounded-xl font-semibold text-primary3 
              transition-all duration-300 btn-slide2 md:text-base text-sm cursor-pointer text-center"
-              onClick={() => setCartDrawer(false)}
+              onClick={handleCloseDrawer}
             >
               View Cart
             </Link>
@@ -236,7 +249,7 @@ const CartDrawer = ({ setCartDrawer, cartDrawer }) => {
               to="/checkout"
               className="w-full py-2.5 px-8 rounded-xl font-semibold text-primary2 
              transition-all duration-300 btn-slide md:text-base text-sm cursor-pointer text-center"
-              onClick={() => setCartDrawer(false)}
+              onClick={handleCloseDrawer}
             >
               Checkout
             </Link>
@@ -245,6 +258,6 @@ const CartDrawer = ({ setCartDrawer, cartDrawer }) => {
       </div>
     </>
   );
-};
+});
 
 export default CartDrawer;

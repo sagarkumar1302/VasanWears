@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, memo } from "react";
 import { Link } from "react-router-dom";
 import Banner from "../components/Common/Banner";
 import { useCartStore } from "../store/cartStore";
 import Loader from "../components/Common/Loader";
 
-const CartPage = () => {
+const CartPage = memo(() => {
   const { items, subtotal, loading, fetchCart, updateQty, removeItem } =
     useCartStore();
 
@@ -70,7 +70,8 @@ const CartPage = () => {
                         >
                           <img
                             src={item.product?.featuredImage}
-                            alt={item.product?.title}
+                            alt={item.product?.title || "Product"}
+                            loading="lazy"
                             className="w-20 h-24 object-cover rounded-md"
                           />
 
@@ -93,7 +94,8 @@ const CartPage = () => {
                         <div className="flex gap-4">
                           <img
                             src={item.design?.images?.front}
-                            alt="Custom design"
+                            alt={item.design?.title || "Custom design"}
+                            loading="lazy"
                             className="w-20 h-24 object-cover rounded-md "
                           />
 
@@ -164,7 +166,8 @@ const CartPage = () => {
                         >
                           <img
                             src={item.product?.featuredImage}
-                            alt={item.product?.title}
+                            alt={item.product?.title || "Product"}
+                            loading="lazy"
                             className="w-20 h-24 object-cover rounded-md flex-shrink-0"
                           />
 
@@ -186,7 +189,8 @@ const CartPage = () => {
                         <div className="flex gap-3 flex-1">
                           <img
                             src={item.design?.images?.front}
-                            alt="Custom design"
+                            alt={item.design?.title || "Custom design"}
+                            loading="lazy"
                             className="w-20 h-24 object-cover rounded-md  shrink-0"
                           />
 
@@ -294,6 +298,6 @@ const CartPage = () => {
       </div>
     </div>
   );
-};
+});
 
 export default CartPage;

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, memo, useCallback } from "react";
 import { RiHeartFill, RiHeartLine } from "@remixicon/react";
 import Banner from "../components/Common/Banner";
 import gsap from "gsap";
@@ -7,7 +7,7 @@ import { getWishlistApi, toggleWishlistApi } from "../utils/wishlistApi";
 import toast from "react-hot-toast";
 import Loader from "../components/Common/Loader";
 
-const Wishlist = () => {
+const Wishlist = memo(() => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [wishlistProductIds, setWishlistProductIds] = useState([]);
   const [wishlistLoadingId, setWishlistLoadingId] = useState(null);
@@ -23,7 +23,6 @@ const Wishlist = () => {
 
         setWishlistItems(res.data.items || []);
         setWishlistProductIds(res.data.productIds || []);
-        
       } catch (err) {
         if (err.response?.status === 401) {
           navigate("/login");
@@ -36,7 +35,7 @@ const Wishlist = () => {
     fetchWishlist();
   }, [navigate]);
 
-  const handleToggleWishlist = async (productId) => {
+  const handleToggleWishlist = useCallback(async (productId) => {
     if (wishlistLoadingId) return;
 
     try {
@@ -64,7 +63,7 @@ const Wishlist = () => {
     } finally {
       setWishlistLoadingId(null);
     }
-  };
+  }, [wishlistLoadingId]);
 
   if (loading) return <Loader />;
 
@@ -95,51 +94,55 @@ const Wishlist = () => {
       </div>
     </div>
   );
-};
+});
 
 export default Wishlist;
-const ProductCard = ({ data, isWishlisted, onToggleWishlist, loading }) => {
+const ProductCard = memo(({ data, isWishlisted, onToggleWishlist, loading }) => {
   const imgRef = useRef(null);
   const hoverImgRef = useRef(null);
   const sideIconRef = useRef(null);
 
   // Individual refs for each card (very important!)
-  const handleHoverIn = () => {
-    gsap.to(sideIconRef.current, {
-      opacity: 1,
-      duration: 0.2,
-      ease: "power2.out",
-    });
-    gsap.to(hoverImgRef.current, {
-      opacity: 1,
-      duration: 0.4,
-      ease: "power2.out",
-    });
-    gsap.to(sideIconRef.current.querySelectorAll("div"), {
-      opacity: 1,
-      x: -10,
-      duration: 0.4,
-      stagger: 0.1,
-      ease: "power2.out",
-    });
-  };
+  const handleHoverIn = useCallback(() => {
+    if (sideIconRef.current && hoverImgRef.current) {
+      gsap.to(sideIconRef.current, {
+        opacity: 1,
+        duration: 0.2,
+        ease: "power2.out",
+      });
+      gsap.to(hoverImgRef.current, {
+        opacity: 1,
+        duration: 0.4,
+        ease: "power2.out",
+      });
+      gsap.to(sideIconRef.current.querySelectorAll("div"), {
+        opacity: 1,
+        x: -10,
+        duration: 0.4,
+        stagger: 0.1,
+        ease: "power2.out",
+      });
+    }
+  }, []);
 
-  const handleHoverOut = () => {
-    gsap.to(hoverImgRef.current, {
-      opacity: 0,
-      duration: 0.4,
-    });
-    gsap.to(sideIconRef.current.querySelectorAll("div"), {
-      opacity: 0,
-      x: 0,
-      duration: 0.4,
-      stagger: 0.1,
-    });
-    gsap.to(sideIconRef.current, {
-      opacity: 0,
-      duration: 0.2,
-    });
-  };
+  const handleHoverOut = useCallback(() => {
+    if (hoverImgRef.current && sideIconRef.current) {
+      gsap.to(hoverImgRef.current, {
+        opacity: 0,
+        duration: 0.4,
+      });
+      gsap.to(sideIconRef.current.querySelectorAll("div"), {
+        opacity: 0,
+        x: 0,
+        duration: 0.4,
+        stagger: 0.1,
+      });
+      gsap.to(sideIconRef.current, {
+        opacity: 0,
+        duration: 0.2,
+      });
+    }
+  }, []);
 
   return (
     <div
@@ -163,12 +166,20 @@ const ProductCard = ({ data, isWishlisted, onToggleWishlist, loading }) => {
 
         {/* Image Wrapper */}
         <div className="relative rounded-xl overflow-hidden">
-          <img ref={imgRef} src={data?.featuredImage} className="w-full  object-cover" />
+          <img
+            ref={imgRef}
+            src={data?.featuredImage}
+            alt={`${data?.title} - Featured view`}
+            className="w-full  object-cover"
+            loading="lazy"
+          />
 
           <img
             ref={hoverImgRef}
             src={data?.hoverImage}
+            alt={`${data?.title} - Alternate view`}
             className="w-full object-cover absolute inset-0 opacity-0"
+            loading="lazy"
           />
 
           {/* Icons */}
@@ -206,10 +217,12 @@ const ProductCard = ({ data, isWishlisted, onToggleWishlist, loading }) => {
             {data?.variants[0]?.salePrice}
           </span>{" "}
           {data?.variants[0]?.salePrice && (
-            <del className="ml-2 text-gray-400">{data?.variants[0]?.regularPrice}</del>
+            <del className="ml-2 text-gray-400">
+              {data?.variants[0]?.regularPrice}
+            </del>
           )}
         </p>
       </Link>
     </div>
   );
-};
+});

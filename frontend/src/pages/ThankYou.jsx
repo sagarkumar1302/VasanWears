@@ -34,8 +34,8 @@ const ThankYou = () => {
         </h1>
 
         <p className="text-sm text-gray-600 mt-2">
-          Your order has been placed successfully.
-          We’ll notify you once it’s shipped.
+          Your order has been placed successfully. We’ll notify you once it’s
+          shipped.
         </p>
 
         {/* ORDER INFO */}
@@ -49,17 +49,17 @@ const ThankYou = () => {
         {/* ACTION BUTTONS */}
         <div className="mt-6 space-y-3">
           <button
-            onClick={() => navigate("/orders")}
-            className="w-full py-3 bg-primary5 text-white rounded-lg 
-                       font-semibold hover:opacity-90 transition"
+            onClick={() => navigate("/my-account/orders")}
+            className="w-full py-2.5 px-8 rounded-xl font-semibold text-primary2 
+             transition-all duration-300 btn-slide md:text-base text-sm cursor-pointer text-center"
           >
             View My Orders
           </button>
 
           <button
             onClick={() => navigate("/shop")}
-            className="w-full py-3 border border-primary5 text-primary5 
-                       rounded-lg font-semibold hover:bg-primary1 transition"
+            className="w-full py-2.5 px-8 rounded-xl font-semibold text-primary3 
+             transition-all duration-300 btn-slide2 md:text-base text-sm cursor-pointer text-center"
           >
             Continue Shopping
           </button>

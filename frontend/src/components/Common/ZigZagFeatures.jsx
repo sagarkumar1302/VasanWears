@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import {
   RiBrushLine,
   RiImageLine,
@@ -30,7 +30,7 @@ const features = [
   },
 ];
 
-const ZigZagFeatures = () => {
+const ZigZagFeatures = memo(() => {
   return (
     <section className="py-5 md:py-20 bg-white px-4">
       <div className="container mx-auto  space-y-8 md:space-y-24">
@@ -47,6 +47,7 @@ const ZigZagFeatures = () => {
                 <img
                   src={f.img}
                   alt={f.title}
+                  loading="lazy"
                   className="rounded-2xl w-full object-cover"
                 />
               </div>
@@ -92,6 +93,6 @@ const ZigZagFeatures = () => {
       </div>
     </section>
   );
-};
+});
 
 export default ZigZagFeatures;

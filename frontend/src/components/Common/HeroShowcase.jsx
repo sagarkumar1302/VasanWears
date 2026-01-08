@@ -1,7 +1,7 @@
-import React from "react";
+import React, { memo } from "react";
 import { Link } from "react-router-dom";
 
-const HeroShowcase = () => {
+const HeroShowcase = memo(() => {
   return (
     <section className="px-5 bg-primary3/60 py-6 md:py-20">
       <div className="container mx-auto grid md:grid-cols-2 gap-10 items-center">
@@ -31,26 +31,35 @@ const HeroShowcase = () => {
           {/* Background illustrations */}
           <img
             src="/images/hero2.jpg"
+            alt="Custom design showcase"
+            loading="lazy"
             className="absolute top-0 md:top-4 left-0 rounded-xl shadow-md w-30 md:w-40 xl:w-60"
           />
           <img
             src="/images/hiw1.jpg"
+            alt="T-shirt design example"
+            loading="lazy"
             className="absolute bottom-3 md:bottom-10 left-0 md:left-3 rounded-xl shadow-md w-40 md:w-80"
           />
           <img
             src="/images/hero3.jpg"
+            alt="Custom apparel design"
+            loading="lazy"
             className="absolute top-4 md:top-20 right-3 xl:right-5 rounded-xl shadow-md md:w-60 w-40"
           />
           <img
             src="/images/hero1.jpg"
+            alt="Product showcase"
+            loading="lazy"
             className="absolute right-0 bottom-0 rounded-xl shadow-md w-30 xl:w-60"
-            alt="htw2"
           />
 
           {/* Central Product Card */}
           <div className="relative bg-white p-6 rounded-2xl shadow-xl w-[320px] md:w-[250px] xl:w-[350px] z-10 md:block flex gap-4">
             <img
               src="/images/hero4.jpg"
+              alt="Featured custom product"
+              loading="lazy"
               className="rounded-lg mb-4 w-30 h-35 md:w-full md:h-full object-cover"
             />
 
@@ -96,7 +105,7 @@ const HeroShowcase = () => {
       </div>
     </section>
   );
-};
+});
 
 export default HeroShowcase;
 

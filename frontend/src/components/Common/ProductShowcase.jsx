@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo, useCallback, memo } from "react";
 import { RiHeartLine, RiHeartFill } from "@remixicon/react";
 import gsap from "gsap";
 import { Link, useNavigate } from "react-router-dom";
@@ -11,7 +11,7 @@ import { toggleWishlistApi, getWishlistApi } from "../../utils/wishlistApi";
 import toast from "react-hot-toast";
 import Loader from "../Common/Loader";
 
-const ProductShowcase = () => {
+const ProductShowcase = memo(() => {
   const navigate = useNavigate();
   const [activeSubCategory, setActiveSubCategory] = useState(null);
   const [products, setProducts] = useState([]);
@@ -52,6 +52,8 @@ const ProductShowcase = () => {
         }
       } catch (err) {
         console.error("Showcase fetch error", err);
+        setProducts([]);
+        setSubCategories([]);
       } finally {
         setLoading(false);
       }
@@ -60,13 +62,13 @@ const ProductShowcase = () => {
     fetchData();
   }, []);
 
-  /** 🔥 FILTER PRODUCTS BY SUBCATEGORY */
+  /** 🔥 FILTER PRODUCTS BY SUBCATEGORY - OPTIMIZED */
   const filteredProducts = useMemo(() => {
-    if (!activeSubCategory) return [];
+    if (!activeSubCategory || products.length === 0) return [];
     return products.filter((p) => p.subCategory?._id === activeSubCategory);
   }, [products, activeSubCategory]);
 
-  const handleToggleWishlist = async (productId) => {
+  const handleToggleWishlist = useCallback(async (productId) => {
     if (wishlistLoadingId) return;
 
     try {
@@ -93,9 +95,13 @@ const ProductShowcase = () => {
     } finally {
       setWishlistLoadingId(null);
     }
-  };
+  }, [wishlistLoadingId, navigate]);
 
   if (loading) return <Loader />;
+
+  if (filteredProducts.length === 0 && subCategories.length === 0) {
+    return null;
+  }
 
   return (
     <div className="px-5 w-full pb-5 pt-8 md:py-20 bg-white">
@@ -154,17 +160,19 @@ const ProductShowcase = () => {
       </div>
     </div>
   );
-};
+});
 
 // ---------------- PRODUCT CARD -----------------
 
-const ProductCard = ({ data, isWishlisted, onToggleWishlist, loading }) => {
+const ProductCard = memo(({ data, isWishlisted, onToggleWishlist, loading }) => {
   const imgRef = useRef(null);
   const hoverImgRef = useRef(null);
   const sideIconRef = useRef(null);
 
   // Individual refs for each card (very important!)
-  const handleHoverIn = () => {
+  const handleHoverIn = useCallback(() => {
+    if (!sideIconRef.current || !hoverImgRef.current) return;
+
     gsap.to(sideIconRef.current, {
       opacity: 1,
       duration: 0.2,
@@ -182,9 +190,11 @@ const ProductCard = ({ data, isWishlisted, onToggleWishlist, loading }) => {
       stagger: 0.1,
       ease: "power2.out",
     });
-  };
+  }, []);
 
-  const handleHoverOut = () => {
+  const handleHoverOut = useCallback(() => {
+    if (!sideIconRef.current || !hoverImgRef.current) return;
+
     gsap.to(hoverImgRef.current, {
       opacity: 0,
       duration: 0.4,
@@ -199,7 +209,7 @@ const ProductCard = ({ data, isWishlisted, onToggleWishlist, loading }) => {
       opacity: 0,
       duration: 0.2,
     });
-  };
+  }, []);
 
   return (
     <div
@@ -223,11 +233,19 @@ const ProductCard = ({ data, isWishlisted, onToggleWishlist, loading }) => {
 
         {/* Image Wrapper */}
         <div className="relative rounded-xl overflow-hidden">
-          <img ref={imgRef} src={data.image} className="w-full  object-cover" />
+          <img 
+            ref={imgRef} 
+            src={data.image} 
+            alt={data.title}
+            loading="lazy"
+            className="w-full object-cover" 
+          />
 
           <img
             ref={hoverImgRef}
             src={data.hoverImage}
+            alt={data.title}
+            loading="lazy"
             className="w-full object-cover absolute inset-0 opacity-0"
           />
 
@@ -272,6 +290,6 @@ const ProductCard = ({ data, isWishlisted, onToggleWishlist, loading }) => {
       </Link>
     </div>
   );
-};
+});
 
 export default ProductShowcase;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, memo } from "react";
 import Banner from "../components/Common/Banner";
 import {
   RiMapPinLine,
@@ -19,11 +19,11 @@ const ContactUs = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = useCallback((e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
 
     if (!form.name || !form.email || !form.message) {
@@ -52,7 +52,7 @@ const ContactUs = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return (
     <div className="md:mt-35 mt-30">
@@ -183,7 +183,7 @@ const ContactUs = () => {
   );
 };
 
-const ContactItem = ({ icon, title, text }) => (
+const ContactItem = memo(({ icon, title, text }) => (
   <div className="flex items-start gap-4">
     <div className="w-10 h-10 flex items-center justify-center rounded-full bg-primary5 text-white">
       {icon}
@@ -193,6 +193,6 @@ const ContactItem = ({ icon, title, text }) => (
       <p className="text-primary5">{text}</p>
     </div>
   </div>
-);
+));
 
 export default ContactUs;

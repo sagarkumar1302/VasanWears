@@ -8,7 +8,7 @@ import {
 } from "@remixicon/react";
 import credits1 from "../assets/gif/Credits1.gif";
 import credits2 from "../assets/gif/Credits2.gif";
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback, memo } from "react";
 import { Link } from "react-router-dom";
 import { useCartStore } from "../store/cartStore";
 import gsap from "gsap";
@@ -23,6 +23,7 @@ import toast from "react-hot-toast";
 import RatingForm from "../components/Product/RatingForm";
 import RatingsList from "../components/Product/RatingsList";
 import RatingSummary from "../components/Product/RatingSummary";
+import { useAuthStore } from "../store/useAuthStore";
 const serviceablePincodes = {
   110001: "2–4 Days",
   400001: "3–5 Days",
@@ -57,6 +58,7 @@ const SingleProductPage = () => {
   const [deliveryStatus, setDeliveryStatus] = useState(null);
   const [activeTab, setActiveTab] = useState("description");
   const fetchCart = useCartStore((s) => s.fetchCart);
+  const { user } = useAuthStore();
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
@@ -89,8 +91,22 @@ const SingleProductPage = () => {
   useEffect(() => {
     if (!product) return;
 
-    /* ========= VARIANT (COLOR) ========= */
+    /* ========= VARIANT (COLOR) - Select first color from left ========= */
     let finalVariant = product.variants[0];
+    
+    // Get the first color from the displayed colors array
+    const firstDisplayedColor = product.colors?.[0];
+    
+    if (firstDisplayedColor) {
+      // Find the variant that matches the first displayed color
+      const variantForFirstColor = product.variants.find(
+        (v) => v.color?._id?.toString() === firstDisplayedColor._id.toString() || 
+               v.color?.toString() === firstDisplayedColor._id.toString()
+      );
+      if (variantForFirstColor) {
+        finalVariant = variantForFirstColor;
+      }
+    }
 
     if (variantFromUrl) {
       const foundVariant = product.variants.find(
@@ -104,8 +120,26 @@ const SingleProductPage = () => {
     setSelectedVariant(finalVariant);
     setSelectedColor(finalVariant.color);
 
-    /* ========= SIZE (INDEPENDENT) ========= */
-    let finalSize = product.sizes?.[0]?._id || null;
+    /* ========= SIZE - Select smallest size by default ========= */
+    // Sort sizes to get the smallest one
+    const sorted = product.sizes ? [...product.sizes].sort((a, b) => {
+      const aOrder = SIZE_ORDER[a.name];
+      const bOrder = SIZE_ORDER[b.name];
+      
+      if (aOrder && bOrder) {
+        return aOrder - bOrder;
+      }
+
+      const aNum = Number(a.name);
+      const bNum = Number(b.name);
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return aNum - bNum;
+      }
+
+      return a.name.localeCompare(b.name);
+    }) : [];
+
+    let finalSize = sorted[0]?._id || null;
 
     if (sizeFromUrl) {
       const foundSize = product.sizes.find((s) => s._id === sizeFromUrl);
@@ -121,7 +155,7 @@ const SingleProductPage = () => {
 
   const isWishlisted = wishlistProductIds.includes(product?._id);
 
-  const handleToggleWishlist = async () => {
+  const handleToggleWishlist = useCallback(async () => {
     if (!product || wishlistLoading) return;
 
     const wasWishlisted = isWishlisted;
@@ -152,26 +186,31 @@ const SingleProductPage = () => {
     } finally {
       setWishlistLoading(false);
     }
-  };
+  }, [product, wishlistLoading, isWishlisted, navigate, slug]);
 
   const sortedSizes = useMemo(() => {
-    if (!product?.sizes) return [];
+    if (!product?.sizes || product.sizes.length === 0) return [];
 
     return [...product.sizes].sort((a, b) => {
+      const aOrder = SIZE_ORDER[a.name];
+      const bOrder = SIZE_ORDER[b.name];
+      
       // Handle named sizes (S, M, L...)
-      if (SIZE_ORDER[a.name] && SIZE_ORDER[b.name]) {
-        return SIZE_ORDER[a.name] - SIZE_ORDER[b.name];
+      if (aOrder && bOrder) {
+        return aOrder - bOrder;
       }
 
       // Handle numeric sizes (28, 30, 32...)
-      if (!isNaN(a.name) && !isNaN(b.name)) {
-        return Number(a.name) - Number(b.name);
+      const aNum = Number(a.name);
+      const bNum = Number(b.name);
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return aNum - bNum;
       }
 
       // Fallback
       return a.name.localeCompare(b.name);
     });
-  }, [product]);
+  }, [product?.sizes]);
 
   const media = useMemo(() => {
     if (!selectedVariant) return [];
@@ -185,19 +224,21 @@ const SingleProductPage = () => {
       });
     }
 
-    selectedVariant.gallery?.forEach((g) => {
-      images.push({
-        type: g.type,
-        src: g.url,
+    if (selectedVariant.gallery?.length > 0) {
+      selectedVariant.gallery.forEach((g) => {
+        images.push({
+          type: g.type,
+          src: g.url,
+        });
       });
-    });
+    }
 
     return images;
-  }, [selectedVariant]);
+  }, [selectedVariant?.featuredImage, selectedVariant?.gallery]);
 
   const selectedMedia = media[selectedIndex];
 
-  const checkPincode = () => {
+  const checkPincode = useCallback(() => {
     if (serviceablePincodes[pincode]) {
       setDeliveryStatus({
         available: true,
@@ -208,8 +249,11 @@ const SingleProductPage = () => {
         available: false,
       });
     }
-  };
-  const handleColorChange = (colorId) => {
+  }, [pincode]);
+  
+  const handleColorChange = useCallback((colorId) => {
+    if (!product) return;
+    
     const variant = product.variants.find(
       (v) =>
         v.color?._id?.toString() === colorId || v.color?.toString() === colorId
@@ -225,9 +269,11 @@ const SingleProductPage = () => {
       `/shop/${product._id}/${product.slug}?variant=${variant._id}&size=${selectedSize}`,
       { replace: true }
     );
-  };
+  }, [product, selectedSize, navigate]);
 
-  const handleSizeChange = (sizeId) => {
+  const handleSizeChange = useCallback((sizeId) => {
+    if (!selectedVariant || !product) return;
+    
     setSelectedSize(sizeId);
 
     // 🔗 Update URL (KEEP VARIANT)
@@ -235,15 +281,18 @@ const SingleProductPage = () => {
       `/shop/${product._id}/${product.slug}?variant=${selectedVariant._id}&size=${sizeId}`,
       { replace: true }
     );
-  };
+  }, [selectedVariant, product, navigate]);
 
   const [showVideo, setShowVideo] = useState(false);
   const videoOverlayRef = useRef(null);
   const videoBoxRef = useRef(null);
-  const openVideo = () => {
+  
+  const openVideo = useCallback(() => {
     setShowVideo(true);
 
     requestAnimationFrame(() => {
+      if (!videoOverlayRef.current || !videoBoxRef.current) return;
+      
       gsap.fromTo(
         videoOverlayRef.current,
         { opacity: 0 },
@@ -264,9 +313,11 @@ const SingleProductPage = () => {
     });
 
     document.body.style.overflow = "hidden";
-  };
+  }, []);
 
-  const closeVideo = () => {
+  const closeVideo = useCallback(() => {
+    if (!videoBoxRef.current || !videoOverlayRef.current) return;
+    
     gsap.to(videoBoxRef.current, {
       scale: 0.8,
       y: 50,
@@ -283,12 +334,24 @@ const SingleProductPage = () => {
         document.body.style.overflow = "auto";
       },
     });
-  };
-  const handleAddToCart = async () => {
+  }, []);
+  
+  const handleAddToCart = useCallback(async () => {
+    // Check if user is logged in
+    if (!user) {
+      navigate("/login", {
+        state: { from: `/shop/${product?._id}/${product?.slug}` },
+      });
+      toast.error("Please login to add items to cart");
+      return;
+    }
+
     if (!selectedVariant || !selectedSize) {
       toast.error("Select color and size");
       return;
     }
+
+    if (!product) return;
 
     try {
       toast.loading("Adding to cart...");
@@ -308,7 +371,7 @@ const SingleProductPage = () => {
       toast.dismiss();
       toast.error(err.response?.data?.message || "Failed");
     }
-  };
+  }, [user, navigate, product, selectedVariant, selectedSize, selectedColor, cartCount, fetchCart]);
 
   if (loading) return <Loader />;
   if (!product) return null;
@@ -349,6 +412,7 @@ const SingleProductPage = () => {
                     <img
                       src={m.src}
                       alt="thumb"
+                      loading="lazy"
                       className="w-20 h-20 object-cover"
                     />
                   ) : (
@@ -356,6 +420,7 @@ const SingleProductPage = () => {
                       src={m.src}
                       className="w-20 h-20 object-cover"
                       muted
+                      preload="metadata"
                     />
                   )}
                 </div>
@@ -367,12 +432,17 @@ const SingleProductPage = () => {
               {selectedMedia?.type === "image" ? (
                 <img
                   src={selectedMedia?.src}
+                  alt={product.title}
+                  loading="lazy"
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <video
                   src={selectedMedia?.src}
                   autoPlay
+                  muted
+                  loop
+                  playsInline
                   className="w-full h-full object-cover"
                 />
               )}
@@ -418,7 +488,7 @@ const SingleProductPage = () => {
                     to={`/designs-collections/users/${product?.credits?._id}`}
                     className="flex justify-center items-center gap-2"
                   >
-                    <img src={credits1} alt="Credits" className="w-10" />
+                    <img src={credits1} alt="Credits" loading="lazy" className="w-10" />
 
                     <span>Credit by </span>
                     <span className="font-bold">
@@ -427,7 +497,7 @@ const SingleProductPage = () => {
                   </Link>
                 ) : (
                   <div className="flex gap-2 items-center justify-center">
-                    <img src={credits1} alt="Credits" className="w-10" />
+                    <img src={credits1} alt="Credits" loading="lazy" className="w-10" />
                     <span className="font-bold">By VasanWears</span>
                   </div>
                 )}
@@ -440,15 +510,15 @@ const SingleProductPage = () => {
             <h2 className="text-xl md:text-4xl font-semibold mb-2">
               {product.title}
             </h2>
-            <a 
-              href="#review" 
+            <a
+              href="#review"
               onClick={(e) => {
                 e.preventDefault();
                 setActiveTab("reviews");
                 setTimeout(() => {
-                  document.getElementById("review")?.scrollIntoView({ 
+                  document.getElementById("review")?.scrollIntoView({
                     behavior: "smooth",
-                    block: "start"
+                    block: "start",
                   });
                 }, 100);
               }}
@@ -550,7 +620,7 @@ const SingleProductPage = () => {
                 className="py-2.5 px-8 rounded-xl font-semibold text-primary3 
 transition-all duration-300 btn-slide2 md:text-base text-sm"
               >
-                Design Your Tshirt
+                Design Your Own Apparel
               </Link>
 
               <button
@@ -765,7 +835,7 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
     </div>
   );
 };
-const Accordion = ({ title, children }) => {
+const Accordion = memo(({ title, children }) => {
   const [open, setOpen] = React.useState(false);
   const contentRef = useRef(null);
 
@@ -817,5 +887,6 @@ const Accordion = ({ title, children }) => {
       </div>
     </div>
   );
-};
+});
+
 export default SingleProductPage;

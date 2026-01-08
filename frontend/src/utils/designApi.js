@@ -53,3 +53,12 @@ export const getDesignsByUserIdApi = async (userId) => {
         throw err;
     }
 };
+export const updateDesignApi = async (designId, designData) => {
+    try {
+        const res = await API.put(`/designs/${designId}`, designData);
+        return res.data;
+    }
+    catch (err) {
+        throw err;
+    }
+};
