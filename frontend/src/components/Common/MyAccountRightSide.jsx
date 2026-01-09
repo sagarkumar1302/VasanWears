@@ -1,6 +1,5 @@
 import { RiUser3Line } from "@remixicon/react";
 import React from "react";
-import image_right from "/images/VasanNS.png";
 const MyAccountRightSide = () => {
   return (
     <div className="flex flex-col items-center justify-center h-[400px] text-center text-gray-500">
