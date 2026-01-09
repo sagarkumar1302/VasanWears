@@ -3,7 +3,7 @@ import enjoyVideo from "../../assets/videos/EnjoyYourProduct.mp4";
 
 const HowItWorks = memo(() => {
   return (
-    <section className="px-4 py-6 md:py-20 bg-white">
+    <section className="px-4 py-6 md:py-20 bg-white min-h-[900px] md:min-h-[1200px]">
       <div className="container mx-auto">
         {/* Section Heading */}
         <div className="text-center mb-12">
@@ -23,13 +23,17 @@ const HowItWorks = memo(() => {
           <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 h-full border-l-2 border-primary1/30"></div>
 
           {/* Step 1 */}
-          <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center md:mb-20 mb-6">
-            <img
-              src="./AddCustomDesign.webp"
-              className="rounded-xl "
-              alt="Add custom design step"
-              fetchpriority="high"
-            />
+          <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center md:mb-20 mb-6 min-h-[420px]">
+            <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100">
+              <img
+                src="./AddCustomDesign.webp"
+                alt="Add custom design step"
+                width="600"
+                height="450"
+                fetchpriority="high"
+                className="w-full h-full object-cover"
+              />
+            </div>
 
             <div>
               <div className="w-15 h-15 flex items-center justify-center bg-linear-to-br from-primary4 to-primary3 text-primary2 text-2xl rounded-full mb-4 font-semibold">
@@ -48,12 +52,14 @@ const HowItWorks = memo(() => {
 
           {/* Step 2 */}
           <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center md:mb-20 mb-6 md:flex-row-reverse">
-            <div className="md:order-2">
+            <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 shadow-md md:order-2">
               <img
                 src="./images/hiw1.webp"
-                className="rounded-xl shadow-md"
                 alt="Custom artwork review step"
+                width="600"
+                height="450"
                 loading="lazy"
+                className="w-full h-full object-cover"
               />
             </div>
 
@@ -79,7 +85,7 @@ const HowItWorks = memo(() => {
               className="rounded-xl shadow-md"
               alt="step"
             /> */}
-            <div className="">
+            <div className="aspect-[4/3] rounded-xl overflow-hidden bg-black">
               <video
                 src={enjoyVideo}
                 loop
@@ -87,7 +93,9 @@ const HowItWorks = memo(() => {
                 autoPlay
                 playsInline
                 preload="metadata"
-                className="border-primary3 border-2 rounded-xl block w-full h-full transform translate-z-0 outline-0 object-cover overflow-hidden"
+                width="600"
+                height="450"
+                className="w-full h-full object-cover"
                 aria-label="Enjoy your custom product video"
               />
             </div>
@@ -96,10 +104,10 @@ const HowItWorks = memo(() => {
               <div className="w-15 h-15 flex items-center justify-center bg-linear-to-br from-primary4 to-primary3 text-primary2 text-2xl rounded-full mb-4 font-semibold">
                 3
               </div>
-              <h4 className="md:text-3xl text-2xl font-semibold mb-2">
+              <h4 className="md:text-3xl text-2xl font-semibold mb-2 leading-tight min-h-[72px]">
                 Enjoy your product
               </h4>
-              <p className="text-primary5">
+              <p className="text-primary5 min-h-[72px]">
                 Place your order and get your custom T-shirt delivered to your
                 doorstep. Your shirt is printed with care and shipped safely to
                 you.
