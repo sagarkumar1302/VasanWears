@@ -48,7 +48,7 @@ const ZigZagFeatures = memo(() => {
                   src={f.img}
                   alt={f.title}
                   loading="lazy"
-                  className="rounded-2xl w-full object-cover"
+                  className="rounded-2xl w-full h-full object-cover"
                 />
               </div>
             </div>

@@ -83,7 +83,7 @@ const HeroSlider = memo(() => {
             src={slides[current].url}
             alt={slides[current].title || "Hero slider image"}
             loading="lazy"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover aspect-2/1"
           />
         ) : (
           <video
