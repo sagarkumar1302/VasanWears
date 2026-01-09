@@ -68,7 +68,7 @@ const ZigZag = () => {
           <div className="absolute inset-0 border-2 border-primary5/20 rounded-3xl scale-105 group-hover:scale-110 transition-transform duration-500"></div>
 
           <img
-            src="/images/VasanNS.png"
+            src="/images/VasanNS.webp"
             alt="VasanWears Vision"
             className="rounded-2xl w-full shadow-2xl relative z-10"
           />

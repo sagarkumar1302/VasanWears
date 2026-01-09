@@ -12,7 +12,7 @@ const slides = [
   },
   {
     type: "image",
-    url: "./images/slider.jpg",
+    url: "./images/slider.webp",
     title: "Make Your Design Now",
     button: "Shop Now",
   },
@@ -24,7 +24,7 @@ const slides = [
   },
   {
     type: "image",
-    url: "./images/slider2.jpg",
+    url: "./images/slider2.webp",
     title: "NEW ARRIVALS",
     button: "Shop Now",
   },

@@ -12,21 +12,21 @@ const features = [
     shortTitle: "Design",
     desc: "Create custom T-shirts, hoodies, and sweatshirts using our simple online designer. Upload your artwork, explore ready-to-use elements, and see your design come to life instantly.",
     icon: <RiBrushLine size={42} className="text-primary" />,
-    img: "/images/slider.jpg",
+    img: "/images/slider.webp",
   },
   {
     title: "Customize With Fonts & Graphics",
     shortTitle: "Customize",
     desc: "Personalize your apparel with fonts, custom font uploads, graphics, and ready-made presets. Preview your design instantly and order with confidence — no design experience needed.",
     icon: <RiFontSize2 size={42} className="text-primary" />,
-    img: "/images/slider2.jpg",
+    img: "/images/slider2.webp",
   },
   {
     title: "Preview & Order With Confidence",
     shortTitle: "Preview & Order",
     desc: "See exactly how your design will look before placing your order. Make final adjustments, review every detail, and order your custom apparel with complete confidence.",
     icon: <RiImageLine size={42} className="text-primary" />,
-    img: "/images/slider3.jpg",
+    img: "/images/slider3.webp",
   },
 ];
 

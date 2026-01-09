@@ -4,7 +4,7 @@ const CTASection = () => {
   return (
     <section
       className="md:py-40 py-20 bg-cover bg-center text-primary3 text-center bg-fixed relative"
-      style={{ backgroundImage: "url(/images/slider3.jpg)" }}
+      style={{ backgroundImage: "url(/images/slider3.webp)" }}
     >
       {/* Overlay */}
       <div className="absolute inset-0 bg-primary2/30 "></div>

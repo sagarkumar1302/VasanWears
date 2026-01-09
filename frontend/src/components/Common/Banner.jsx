@@ -4,7 +4,7 @@ const Banner = ({ pageTitle }) => {
   return (
     <section
       className="w-full h-[250px] md:h-[350px] bg-center bg-cover relative flex items-center justify-center mt-20 md:mt-26 bg-fixed"
-      style={{ backgroundImage: "url('/images/slider2.jpg')" }}
+      style={{ backgroundImage: "url('/images/slider2.webp')" }}
     >
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/50"></div>

@@ -1,5 +1,5 @@
 import React from "react";
-import sideImage from "../../assets/images/OurVision.jpg"
+import sideImage from "../../assets/images/OurVision.webp"
 const ZigZag3 = () => {
   return (
     <section className="px-4 container mx-auto py-12 md:py-24 overflow-hidden">

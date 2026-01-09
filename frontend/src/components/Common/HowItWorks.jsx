@@ -25,10 +25,10 @@ const HowItWorks = memo(() => {
           {/* Step 1 */}
           <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center md:mb-20 mb-6">
             <img
-              src="./AddCustomDesign.jpeg"
+              src="./AddCustomDesign.webp"
               className="rounded-xl "
               alt="Add custom design step"
-              loading="lazy"
+              fetchpriority="high"
             />
 
             <div>
@@ -50,7 +50,7 @@ const HowItWorks = memo(() => {
           <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center md:mb-20 mb-6 md:flex-row-reverse">
             <div className="md:order-2">
               <img
-                src="./images/hiw1.jpg"
+                src="./images/hiw1.webp"
                 className="rounded-xl shadow-md"
                 alt="Custom artwork review step"
                 loading="lazy"
@@ -80,11 +80,11 @@ const HowItWorks = memo(() => {
               alt="step"
             /> */}
             <div className="">
-              <video 
-                src={enjoyVideo} 
-                loop 
-                muted 
-                autoPlay 
+              <video
+                src={enjoyVideo}
+                loop
+                muted
+                autoPlay
                 playsInline
                 preload="metadata"
                 className="border-primary3 border-2 rounded-xl block w-full h-full transform translate-z-0 outline-0 object-cover overflow-hidden"

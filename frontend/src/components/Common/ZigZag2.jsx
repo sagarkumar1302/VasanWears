@@ -1,5 +1,5 @@
 import React from "react";
-import sideImage from "../../assets/images/SideImage.jpg"
+import sideImage from "../../assets/images/SideImage.webp"
 const ZigZag2 = () => {
   const brandValues = [
     { title: "Creative Freedom", desc: "Design your apparel your way" },

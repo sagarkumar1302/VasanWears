@@ -40,7 +40,7 @@ const FAQSection = memo(() => {
   }, []);
 
   return (
-    <section className="w-full py-8 px-4 md:py-20 bg-[linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)),url('/images/slider2.jpg')] bg-cover bg-center bg-fixed">
+    <section className="w-full py-8 px-4 md:py-20 bg-[linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)),url('/images/slider2.webp')] bg-cover bg-center bg-fixed">
       <div className="container mx-auto">
         {/* Heading */}
         <h2 className="text-3xl md:text-5xl font-bold text-center mb-6 text-primary3">
