@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import logo from "../../assets/images/VasanWears.png";
-import newLogo from "../../assets/images/VasanWears.png";
+import logo from "../../assets/images/VasanWears.webp";
 import default_female_avatar from "../../../public/images/female_default_avatar.png";
 import default_male_avatar from "../../../public/images/male_default_avatar.png";
 import {

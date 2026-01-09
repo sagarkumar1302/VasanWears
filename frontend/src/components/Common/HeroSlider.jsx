@@ -84,6 +84,9 @@ const HeroSlider = memo(() => {
             alt={slides[current].title || "Hero slider image"}
             loading="lazy"
             className="w-full h-full object-cover aspect-2/1"
+            width="1200"
+            height="600"
+            fetchpriority="high"
           />
         ) : (
           <video

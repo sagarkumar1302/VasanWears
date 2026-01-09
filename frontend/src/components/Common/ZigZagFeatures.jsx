@@ -5,9 +5,9 @@ import {
   RiFontSize2,
   RiPaletteLine,
 } from "@remixicon/react";
-import Design from "../../assets/images/slider.webp"
-import Customize from "../../assets/images/slider2.webp"
-import OurVPreviewision from "../../assets/images/slider3.webp"
+import Design from "../../assets/images/slider.webp";
+import Customize from "../../assets/images/slider2.webp";
+import OurVPreviewision from "../../assets/images/slider3.webp";
 
 const features = [
   {
@@ -52,6 +52,9 @@ const ZigZagFeatures = memo(() => {
                   alt={f.title}
                   loading="lazy"
                   className="rounded-2xl w-full h-full object-cover aspect-2/1"
+                  decoding="async"
+                  width="300"
+                  height="300"
                 />
               </div>
             </div>
