@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import enjoyVideo from "../../assets/videos/EnjoyYourProduct.mp4";
-
+import addCustomDesign from "../../assets/images/AddCustomDesign.webp";
 const HowItWorks = memo(() => {
   return (
     <section className="px-4 py-6 md:py-20 bg-white min-h-[900px] md:min-h-[1200px]">
@@ -24,9 +24,9 @@ const HowItWorks = memo(() => {
 
           {/* Step 1 */}
           <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center md:mb-20 mb-6 min-h-[420px]">
-            <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100">
+            <div className="aspect-4/3 rounded-xl overflow-hidden bg-gray-100">
               <img
-                src="./AddCustomDesign.webp"
+                src={addCustomDesign}
                 alt="Add custom design step"
                 width="600"
                 height="450"
@@ -104,10 +104,10 @@ const HowItWorks = memo(() => {
               <div className="w-15 h-15 flex items-center justify-center bg-linear-to-br from-primary4 to-primary3 text-primary2 text-2xl rounded-full mb-4 font-semibold">
                 3
               </div>
-              <h4 className="md:text-3xl text-2xl font-semibold mb-2 leading-tight min-h-[72px]">
+              <h4 className="md:text-3xl text-2xl font-semibold mb-2 leading-tight">
                 Enjoy your product
               </h4>
-              <p className="text-primary5 min-h-[72px]">
+              <p className="text-primary5">
                 Place your order and get your custom T-shirt delivered to your
                 doorstep. Your shirt is printed with care and shipped safely to
                 you.
