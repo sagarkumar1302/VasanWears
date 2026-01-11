@@ -138,7 +138,7 @@ export const placeOrder = async (req, res) => {
         title: "Order Confirmed 🛍️",
         message: `Your order <b>#${order._id}</b> has been placed successfully.`,
         buttonText: "View Order",
-        buttonLink: `${process.env.FRONTEND_URL}/orders/${order._id}`,
+        buttonLink: `${process.env.FRONT_END_URL}/my-account/orders/${order._id}`,
       });
       await sendEmail({
         email: process.env.EMAIL_USER,
@@ -151,7 +151,7 @@ export const placeOrder = async (req, res) => {
           <b>Payment:</b> COD
         `,
         buttonText: "View Order",
-        buttonLink: `${process.env.ADMIN_PANEL_URL}/orders/${order._id}`,
+        buttonLink: `${process.env.FRONT_END_URL}/admin/orders/${order._id}`,
       });
       return res
         .status(201)
@@ -328,7 +328,7 @@ export const updateOrder = async (req, res) => {
           title: emailContent.admin.title,
           message: emailContent.admin.message,
           buttonText: "View Order",
-          url: `${process.env.ADMIN_PANEL_URL}/orders/${order._id}`,
+          url: `${process.env.FRONT_END_URL}/orders/${order._id}`,
         });
         console.log("Status update emails sent");
 
