@@ -6,12 +6,25 @@ import { SubCategory } from "../model/subcategory.model.js";
 import { uploadToS3 } from "../utils/uploadToS3.js";
 
 /**
+ * Helper function to generate slug from text
+ */
+const generateSlug = (text) => {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+};
+
+/**
  * CREATE PRODUCT
  */
 const createProduct = asyncHandler(async (req, res) => {
   const {
     title,
-    slug,
+    slug: providedSlug,
     description,
     category,
     subCategory,
@@ -19,6 +32,9 @@ const createProduct = asyncHandler(async (req, res) => {
     status,
     additionalInfo
   } = req.body;
+
+  // Generate slug from title if not provided, or format the provided slug
+  const slug = providedSlug ? generateSlug(providedSlug) : generateSlug(title);
 
   // ✅ PARSE COLORS & SIZES
   const colors = req.body.colors ? JSON.parse(req.body.colors) : [];
@@ -237,7 +253,7 @@ const updateProduct = asyncHandler(async (req, res) => {
 
   const {
     title,
-    slug,
+    slug: providedSlug,
     description,
     category,
     subCategory,
@@ -248,7 +264,12 @@ const updateProduct = asyncHandler(async (req, res) => {
 
   /* ================= BASIC FIELDS ================= */
   if (title) product.title = title;
-  if (slug) product.slug = slug;
+  if (providedSlug) {
+    product.slug = generateSlug(providedSlug);
+  } else if (title && !providedSlug) {
+    // Auto-generate slug from new title if slug not provided
+    product.slug = generateSlug(title);
+  }
   if (description) product.description = description;
   if (category) product.category = category;
   if (status) product.status = status;

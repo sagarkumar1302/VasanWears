@@ -172,6 +172,25 @@ const EditProduct = () => {
     setVariants(variants.filter((_, i) => i !== index));
   };
 
+  const duplicateVariant = (index) => {
+    const variantToDuplicate = variants[index];
+    
+    // Create a deep copy of the variant including file objects
+    const duplicatedVariant = {
+      sku: variantToDuplicate.sku,
+      colorId: variantToDuplicate.colorId,
+      sizeId: variantToDuplicate.sizeId,
+      regularPrice: variantToDuplicate.regularPrice,
+      salePrice: variantToDuplicate.salePrice,
+      stock: variantToDuplicate.stock,
+      featuredImage: variantToDuplicate.featuredImage, // Copy the file reference
+      gallery: [...(variantToDuplicate.gallery || [])], // Copy the gallery array
+    };
+
+    setVariants([...variants, duplicatedVariant]);
+    toast.success("Variant duplicated successfully");
+  };
+
   /* ================= SUBMIT ================= */
 
   const handleSubmit = async (e) => {
@@ -758,6 +777,14 @@ const EditProduct = () => {
                 Remove Variant
               </button>
             )}
+
+            <button
+              type="button"
+              onClick={() => duplicateVariant(index)}
+              className="text-green-600 text-sm ml-3"
+            >
+              📋 Duplicate Variant
+            </button>
           </div>
         ))}
 

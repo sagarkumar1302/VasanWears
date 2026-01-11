@@ -31,81 +31,9 @@ import RatingForm from "../components/Product/RatingForm";
 import RatingsList from "../components/Product/RatingsList";
 import RatingSummary from "../components/Product/RatingSummary";
 import { useAuthStore } from "../store/useAuthStore";
-const serviceablePincodes = {
-  110001: "2–4 Days",
-  400001: "3–5 Days",
-  700001: "4–6 Days",
-  560001: "2–3 Days",
-};
-const SIZE_ORDER = {
-  XS: 1,
-  S: 2,
-  M: 3,
-  L: 4,
-  XL: 5,
-  XXL: 6,
-  "2XL": 6,
-  XXXL: 7,
-  "3XL": 7,
-  "4XL": 8,
-  "5XL": 9,
-  "6XL": 10,
-  "7XL": 11,
-};
-const SIZE_CHARTS = {
-  "T-Shirt": {
-    title: "T-Shirt Size Chart",
-    headers: ["Size", "Chest (inches)", "Length (inches)"],
-    rows: [
-      ["XS", "36", "25",],
-      ["S", "38", "26", ],
-      ["M", "40", "27", ],
-      ["L", "42", "28",],
-      ["XL", "44", "29",],
-      ["XXL", "46", "30",],
-      ["3XL", "48", "31",],
-      ["4XL", "50", "32",],
-      ["5XL", "52", "32",],
-      ["6XL", "56", "33",],
-      ["7XL", "60", "33",],
-    ],
-  },
-  "Hoodie": {
-    title: "Hoodie Size Chart",
-    headers: ["Size", "Chest (inches)", "Length (inches)", "Shoulder (inches)", "Sleeve (inches)"],
-    rows: [
-      ["S", "38-40", "26", "17", "24"],
-      ["M", "40-42", "27", "18", "24.5"],
-      ["L", "42-44", "28", "19", "25"],
-      ["XL", "44-46", "29", "20", "25.5"],
-      ["XXL", "46-48", "30", "21", "26"],
-      ["XXXL", "48-50", "31", "22", "26.5"],
-    ],
-  },
-  "Sweatshirt": {
-    title: "Sweatshirt Size Chart",
-    headers: ["Size", "Chest (inches)", "Length (inches)", "Shoulder (inches)", "Sleeve (inches)"],
-    rows: [
-      ["S", "38-40", "26", "17", "23.5"],
-      ["M", "40-42", "27", "18", "24"],
-      ["L", "42-44", "28", "19", "24.5"],
-      ["XL", "44-46", "29", "20", "25"],
-      ["XXL", "46-48", "30", "21", "25.5"],
-      ["XXXL", "48-50", "31", "22", "26"],
-    ],
-  },
-  Default: {
-    title: "Size Chart",
-    headers: ["Size", "Chest (inches)", "Length (inches)"],
-    rows: [
-      ["S", "36-38", "26"],
-      ["M", "38-40", "27"],
-      ["L", "40-42", "28"],
-      ["XL", "42-44", "29"],
-      ["XXL", "44-46", "30"],
-    ],
-  },
-};
+import { serviceablePincodes } from "../contants/pincodes";
+import { SIZE_ORDER } from "../contants/size-order";
+import { SIZE_CHARTS } from "../contants/size-charts";
 
 const SingleProductPage = () => {
   const { id, slug } = useParams();
@@ -176,43 +104,19 @@ const SingleProductPage = () => {
 
     setSelectedVariant(finalVariant);
     setSelectedColor(finalVariant.color);
-
-    /* ========= SIZE - Select smallest size by default ========= */
-    // Sort sizes in ascending order (S, M, L, XL, etc.)
-    const sorted = product.sizes
-      ? [...product.sizes].sort((a, b) => {
-          const aOrder = SIZE_ORDER[a.name.toUpperCase()];
-          const bOrder = SIZE_ORDER[b.name.toUpperCase()];
-
-          // Handle named sizes (S, M, L, XL, etc.)
-          if (aOrder && bOrder) {
-            return aOrder - bOrder;
-          }
-
-          // Handle numeric sizes (28, 30, 32, etc.)
-          const aNum = Number(a.name);
-          const bNum = Number(b.name);
-          if (!isNaN(aNum) && !isNaN(bNum)) {
-            return aNum - bNum;
-          }
-
-          // Fallback to alphabetical
-          return a.name.localeCompare(b.name);
-        })
-      : [];
-
-    // Select the smallest (first) size by default
-    let finalSize = sorted[0]?._id || null;
-
-    // Override with URL size if present
+    
+    // Set size from URL or variant's size
     if (sizeFromUrl) {
       const foundSize = product.sizes.find((s) => s._id === sizeFromUrl);
       if (foundSize) {
-        finalSize = foundSize._id;
+        setSelectedSize(foundSize._id);
+      } else {
+        setSelectedSize(finalVariant.size);
       }
+    } else {
+      setSelectedSize(finalVariant.size);
     }
 
-    setSelectedSize(finalSize);
     setSelectedIndex(0);
   }, [product, variantFromUrl, sizeFromUrl]);
 
@@ -340,17 +244,38 @@ const SingleProductPage = () => {
 
   const handleSizeChange = useCallback(
     (sizeId) => {
-      if (!selectedVariant || !product) return;
+      if (!product) return;
 
       setSelectedSize(sizeId);
 
-      // 🔗 Update URL (KEEP VARIANT)
-      navigate(
-        `/shop/${product._id}/${product.slug}?variant=${selectedVariant._id}&size=${sizeId}`,
-        { replace: true }
+      // Find the variant that matches the current color AND the new size
+      const variant = product.variants.find(
+        (v) => {
+          const colorMatch = v.color?._id?.toString() === selectedColor || 
+                           v.color?.toString() === selectedColor;
+          const sizeMatch = v.size?._id === sizeId || v.size === sizeId;
+          return colorMatch && sizeMatch;
+        }
       );
+
+      // If we found a matching variant, update it
+      if (variant) {
+        setSelectedVariant(variant);
+        setSelectedIndex(0);
+        
+        navigate(
+          `/shop/${product._id}/${product.slug}?variant=${variant._id}&size=${sizeId}`,
+          { replace: true }
+        );
+      } else {
+        // If no variant found for this color+size combo, just update URL with current variant
+        navigate(
+          `/shop/${product._id}/${product.slug}?variant=${selectedVariant?._id}&size=${sizeId}`,
+          { replace: true }
+        );
+      }
     },
-    [selectedVariant, product, navigate]
+    [product, selectedColor, selectedVariant, navigate]
   );
 
   const [showVideo, setShowVideo] = useState(false);
@@ -467,6 +392,9 @@ const SingleProductPage = () => {
           subCategoryName.toLowerCase().includes("t-shirt")) {
         return SIZE_CHARTS["T-Shirt"];
       }
+      if (subCategoryName.toLowerCase().includes("women hoodie")) {
+        return SIZE_CHARTS["Cropped Hoodie"];
+      }
       if (subCategoryName.toLowerCase().includes("hoodie")) {
         return SIZE_CHARTS["Hoodie"];
       }
@@ -491,6 +419,24 @@ const SingleProductPage = () => {
 
     return SIZE_CHARTS.Default;
   }, [product]);
+
+  // Compute displayed SKU based on selected variant and size
+  const displayedSKU = useMemo(() => {
+    if (!selectedVariant) return null;
+
+    // Check if variant has size-specific SKUs (sizeStock array)
+    if (selectedVariant.sizeStock && Array.isArray(selectedVariant.sizeStock) && selectedSize) {
+      const sizeStock = selectedVariant.sizeStock.find(
+        (ss) => ss.size?._id === selectedSize || ss.size === selectedSize
+      );
+      if (sizeStock?.sku) {
+        return sizeStock.sku;
+      }
+    }
+
+    // Fallback to variant-level SKU
+    return selectedVariant.sku || null;
+  }, [selectedVariant, selectedSize]);
 
   const handleAddToCart = useCallback(async () => {
     // Check if user is logged in
@@ -682,9 +628,9 @@ const SingleProductPage = () => {
 
           {/* RIGHT SECTION */}
           <div className="flex flex-col gap-2">
-            <h2 className="text-xl md:text-4xl font-semibold mb-2 md:leading-12">
+            <h1 className="text-xl md:text-4xl font-semibold mb-2 md:leading-12">
               {product.title}
-            </h2>
+            </h1>
             <a
               href="#review"
               onClick={(e) => {
@@ -827,6 +773,15 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
                     </span>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* SKU */}
+            {displayedSKU && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">SKU:</span> {displayedSKU}
+                </p>
               </div>
             )}
 
