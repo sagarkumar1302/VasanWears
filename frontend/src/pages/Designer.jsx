@@ -146,8 +146,9 @@ const AVAILABLE_COLORS = [
   { name: "Red", value: "#c1121f" },
   { name: "Royal Blue", value: "#232a4d" },
   { name: "Grey", value: "#9ca3af" },
-  { name: "Flag Green", value: "#2a8634" },
-  { name: "Yellow", value: "#dfc97e" },
+  // { name: "Flag Green", value: "#2a8634" },
+  // { name: "Yellow", value: "#dfc97e" },
+  { name: "Maroon", value: "#4e242a" },
   { name: "Baby Pink", value: "#dfc0cf" },
 ];
 
@@ -198,6 +199,17 @@ const AVAILABLE_COLORS_BY_CLOTH = {
       "Royal Blue",
       "Grey",
       "Baby Pink",
+    ]),
+  ],
+  sweatshirt: [
+    ...pickColorsByName([
+      "Black",
+      "White",
+      "Sky Blue",
+      "Maroon",
+      // "Royal Blue",
+      "Grey",
+      // "Baby Pink",
     ]),
   ],
 };
