@@ -101,8 +101,8 @@ const COLOR_ALIASES_BY_CLOTH = {
   hoodie: {
     "Sky Blue": "Baby Blue",
     "Royal Blue": "Navy Blue",
-    "Flag Green": "Bottle Green",
-    Yellow: "Mustard Yellow",
+    // "Flag Green": "Bottle Green",
+    // Yellow: "Mustard Yellow",
   },
   womenCropHoodie: {
     Red: "Maroon",
@@ -186,6 +186,19 @@ const AVAILABLE_COLORS_BY_CLOTH = {
   womenCropHoodie: [
     ...pickColorsByName(["Black", "Yellow", "Baby Pink"]),
     ...(EXTRA_COLORS_BY_CLOTH.womenCropHoodie || []),
+  ],
+  // For hoodie assets we intentionally hide some global palette colors
+  // (e.g. Flag Green / Yellow) because those folders aren't available.
+  hoodie: [
+    ...pickColorsByName([
+      "Black",
+      "White",
+      "Sky Blue",
+      "Red",
+      "Royal Blue",
+      "Grey",
+      "Baby Pink",
+    ]),
   ],
 };
 
