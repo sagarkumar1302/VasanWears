@@ -459,10 +459,10 @@ const ShopPage = () => {
             {/* Products Grid */}
             <div
               ref={productsGridRef}
-              className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2"
+              className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 min-h-[400px]"
             >
               {finalProducts.length === 0 ? (
-                <p>No products found.</p>
+                <p className="col-span-full text-center py-10">No products found.</p>
               ) : (
                 finalProducts.map((product) => (
                   <ProductCard
@@ -756,7 +756,7 @@ const ProductCard = memo(({ data, isWishlisted, onToggleWishlist, loading }) => 
   return (
     <div
       // className="relative group cursor-pointer hover:scale-105 duration-300 hover:shadow-xl p-4 rounded-xl hover:-translate-y-3 transform-gpu"
-      className="product-card relative group cursor-pointer duration-300 hover:shadow-xl p-2 md:p-4 rounded-xl hover:-translate-y-3 transform-gpu"
+      className="product-card relative group cursor-pointer duration-300 hover:shadow-xl p-2 md:p-4 rounded-xl hover:-translate-y-3 transform-gpu opacity-0"
       onMouseEnter={handleHoverIn}
       onMouseLeave={handleHoverOut}
     >
