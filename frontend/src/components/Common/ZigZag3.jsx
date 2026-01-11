@@ -2,7 +2,7 @@ import React from "react";
 import sideImage from "../../assets/images/OurVision.webp"
 const ZigZag3 = () => {
   return (
-    <section className="px-4 container mx-auto py-12 md:py-24 overflow-hidden">
+    <section className="px-4 container mx-auto py-5 md:py-24 overflow-hidden">
       <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
         {/* Text Content */}
         <div className="order-2 md:order-1 space-y-8">

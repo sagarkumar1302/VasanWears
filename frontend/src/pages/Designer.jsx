@@ -1647,7 +1647,7 @@ const Designer = ({ productKey } = {}) => {
     const priceTable = {
       men: { one: 599, both: 749 },
       women: { one: 499, both: 699 },
-      hoodie: { one: 859, both: 1 },
+      hoodie: { one: 859, both: 1100 },
       womenCropHoodie: { one: 649, both: 799 },
       sweatshirt: { one: 700, both: 850 },
     };

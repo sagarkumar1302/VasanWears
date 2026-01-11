@@ -24,14 +24,14 @@ const HowItWorks = memo(() => {
 
           {/* Step 1 */}
           <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center md:mb-20 mb-6 min-h-[420px]">
-            <div className="aspect-4/3 rounded-xl overflow-hidden bg-gray-100">
+            <div className="rounded-xl overflow-hidden">
               <img
                 src={addCustomDesign}
                 alt="Add custom design step"
                 width="600"
                 height="450"
                 fetchpriority="high"
-                className="w-full h-full object-cover"
+                className="md:w-[80%] w-full h-full object-cover"
               />
             </div>
 

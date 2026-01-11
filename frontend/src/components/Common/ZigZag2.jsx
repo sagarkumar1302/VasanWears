@@ -11,7 +11,7 @@ const ZigZag2 = () => {
 
   return (
 <div className="bg-primary3/10 border-y border-primary3/20">
-  <section className="px-4 container mx-auto py-12 md:py-24">
+  <section className="px-4 container mx-auto py-5 md:py-24">
     <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
       
       {/* 1. Image Content (Now naturally on the left) */}
@@ -70,7 +70,7 @@ const ZigZag2 = () => {
         </div>
 
         {/* Why VasanWears & Mission Section */}
-        <div className="pt-8 border-t border-primary3/30 space-y-8">
+        <div className="md:pt-8 border-t border-primary3/30 space-y-8">
           <h3 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">Why VasanWears</h3>
           
           <ul className="grid grid-cols-1 gap-5">

@@ -2,7 +2,7 @@ import React from "react";
 
 const ZigZag = () => {
   return (
-    <section className="px-4 container mx-auto py-10 md:py-20 overflow-hidden">
+    <section className="px-4 container mx-auto pb-5 pt-8 md:py-20 overflow-hidden">
       <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
         {/* Text Content */}
         <div className="order-2 md:order-1 space-y-6">

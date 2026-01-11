@@ -17,6 +17,7 @@ const createProduct = asyncHandler(async (req, res) => {
     subCategory,
     variants,
     status,
+    additionalInfo
   } = req.body;
 
   // ✅ PARSE COLORS & SIZES
@@ -210,7 +211,7 @@ const createProduct = asyncHandler(async (req, res) => {
     gallery: galleryMedia,
     status,
     credits,
-
+    additionalInfo,
     author: req.adminuser._id,
   });
 
@@ -242,7 +243,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     subCategory,
     variants,
     status,
-
+    additionalInfo
   } = req.body;
 
   /* ================= BASIC FIELDS ================= */
@@ -325,6 +326,9 @@ const updateProduct = asyncHandler(async (req, res) => {
       featuredImageFile,
       "products/featured"
     );
+  }
+  if(additionalInfo){
+    product.additionalInfo = additionalInfo;
   }
 
   if (hoverImageFile) {

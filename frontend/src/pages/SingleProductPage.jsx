@@ -8,7 +8,14 @@ import {
 } from "@remixicon/react";
 import credits1 from "../assets/gif/Credits1.gif";
 import credits2 from "../assets/gif/Credits2.gif";
-import React, { useState, useRef, useEffect, useMemo, useCallback, memo } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+  memo,
+} from "react";
 import { Link } from "react-router-dom";
 import { useCartStore } from "../store/cartStore";
 import gsap from "gsap";
@@ -37,8 +44,69 @@ const SIZE_ORDER = {
   L: 4,
   XL: 5,
   XXL: 6,
+  "2XL": 6,
   XXXL: 7,
+  "3XL": 7,
+  "4XL": 8,
+  "5XL": 9,
+  "6XL": 10,
+  "7XL": 11,
 };
+const SIZE_CHARTS = {
+  "T-Shirt": {
+    title: "T-Shirt Size Chart",
+    headers: ["Size", "Chest (inches)", "Length (inches)"],
+    rows: [
+      ["XS", "36", "25",],
+      ["S", "38", "26", ],
+      ["M", "40", "27", ],
+      ["L", "42", "28",],
+      ["XL", "44", "29",],
+      ["XXL", "46", "30",],
+      ["3XL", "48", "31",],
+      ["4XL", "50", "32",],
+      ["5XL", "52", "32",],
+      ["6XL", "56", "33",],
+      ["7XL", "60", "33",],
+    ],
+  },
+  "Hoodie": {
+    title: "Hoodie Size Chart",
+    headers: ["Size", "Chest (inches)", "Length (inches)", "Shoulder (inches)", "Sleeve (inches)"],
+    rows: [
+      ["S", "38-40", "26", "17", "24"],
+      ["M", "40-42", "27", "18", "24.5"],
+      ["L", "42-44", "28", "19", "25"],
+      ["XL", "44-46", "29", "20", "25.5"],
+      ["XXL", "46-48", "30", "21", "26"],
+      ["XXXL", "48-50", "31", "22", "26.5"],
+    ],
+  },
+  "Sweatshirt": {
+    title: "Sweatshirt Size Chart",
+    headers: ["Size", "Chest (inches)", "Length (inches)", "Shoulder (inches)", "Sleeve (inches)"],
+    rows: [
+      ["S", "38-40", "26", "17", "23.5"],
+      ["M", "40-42", "27", "18", "24"],
+      ["L", "42-44", "28", "19", "24.5"],
+      ["XL", "44-46", "29", "20", "25"],
+      ["XXL", "46-48", "30", "21", "25.5"],
+      ["XXXL", "48-50", "31", "22", "26"],
+    ],
+  },
+  Default: {
+    title: "Size Chart",
+    headers: ["Size", "Chest (inches)", "Length (inches)"],
+    rows: [
+      ["S", "36-38", "26"],
+      ["M", "38-40", "27"],
+      ["L", "40-42", "28"],
+      ["XL", "42-44", "29"],
+      ["XXL", "44-46", "30"],
+    ],
+  },
+};
+
 const SingleProductPage = () => {
   const { id, slug } = useParams();
   const [searchParams] = useSearchParams();
@@ -57,6 +125,9 @@ const SingleProductPage = () => {
   const [pincode, setPincode] = useState("");
   const [deliveryStatus, setDeliveryStatus] = useState(null);
   const [activeTab, setActiveTab] = useState("description");
+  const [showSizeChart, setShowSizeChart] = useState(false);
+  const sizeChartOverlayRef = useRef(null);
+  const sizeChartBoxRef = useRef(null);
   const fetchCart = useCartStore((s) => s.fetchCart);
   const { user } = useAuthStore();
   useEffect(() => {
@@ -91,22 +162,8 @@ const SingleProductPage = () => {
   useEffect(() => {
     if (!product) return;
 
-    /* ========= VARIANT (COLOR) - Select first color from left ========= */
+    /* ========= VARIANT (COLOR) ========= */
     let finalVariant = product.variants[0];
-    
-    // Get the first color from the displayed colors array
-    const firstDisplayedColor = product.colors?.[0];
-    
-    if (firstDisplayedColor) {
-      // Find the variant that matches the first displayed color
-      const variantForFirstColor = product.variants.find(
-        (v) => v.color?._id?.toString() === firstDisplayedColor._id.toString() || 
-               v.color?.toString() === firstDisplayedColor._id.toString()
-      );
-      if (variantForFirstColor) {
-        finalVariant = variantForFirstColor;
-      }
-    }
 
     if (variantFromUrl) {
       const foundVariant = product.variants.find(
@@ -121,26 +178,33 @@ const SingleProductPage = () => {
     setSelectedColor(finalVariant.color);
 
     /* ========= SIZE - Select smallest size by default ========= */
-    // Sort sizes to get the smallest one
-    const sorted = product.sizes ? [...product.sizes].sort((a, b) => {
-      const aOrder = SIZE_ORDER[a.name];
-      const bOrder = SIZE_ORDER[b.name];
-      
-      if (aOrder && bOrder) {
-        return aOrder - bOrder;
-      }
+    // Sort sizes in ascending order (S, M, L, XL, etc.)
+    const sorted = product.sizes
+      ? [...product.sizes].sort((a, b) => {
+          const aOrder = SIZE_ORDER[a.name.toUpperCase()];
+          const bOrder = SIZE_ORDER[b.name.toUpperCase()];
 
-      const aNum = Number(a.name);
-      const bNum = Number(b.name);
-      if (!isNaN(aNum) && !isNaN(bNum)) {
-        return aNum - bNum;
-      }
+          // Handle named sizes (S, M, L, XL, etc.)
+          if (aOrder && bOrder) {
+            return aOrder - bOrder;
+          }
 
-      return a.name.localeCompare(b.name);
-    }) : [];
+          // Handle numeric sizes (28, 30, 32, etc.)
+          const aNum = Number(a.name);
+          const bNum = Number(b.name);
+          if (!isNaN(aNum) && !isNaN(bNum)) {
+            return aNum - bNum;
+          }
 
+          // Fallback to alphabetical
+          return a.name.localeCompare(b.name);
+        })
+      : [];
+
+    // Select the smallest (first) size by default
     let finalSize = sorted[0]?._id || null;
 
+    // Override with URL size if present
     if (sizeFromUrl) {
       const foundSize = product.sizes.find((s) => s._id === sizeFromUrl);
       if (foundSize) {
@@ -149,7 +213,6 @@ const SingleProductPage = () => {
     }
 
     setSelectedSize(finalSize);
-
     setSelectedIndex(0);
   }, [product, variantFromUrl, sizeFromUrl]);
 
@@ -192,22 +255,22 @@ const SingleProductPage = () => {
     if (!product?.sizes || product.sizes.length === 0) return [];
 
     return [...product.sizes].sort((a, b) => {
-      const aOrder = SIZE_ORDER[a.name];
-      const bOrder = SIZE_ORDER[b.name];
-      
-      // Handle named sizes (S, M, L...)
+      const aOrder = SIZE_ORDER[a.name.toUpperCase()];
+      const bOrder = SIZE_ORDER[b.name.toUpperCase()];
+
+      // Handle named sizes (S, M, L, XL, etc.)
       if (aOrder && bOrder) {
         return aOrder - bOrder;
       }
 
-      // Handle numeric sizes (28, 30, 32...)
+      // Handle numeric sizes (28, 30, 32, etc.)
       const aNum = Number(a.name);
       const bNum = Number(b.name);
       if (!isNaN(aNum) && !isNaN(bNum)) {
         return aNum - bNum;
       }
 
-      // Fallback
+      // Fallback to alphabetical
       return a.name.localeCompare(b.name);
     });
   }, [product?.sizes]);
@@ -250,49 +313,56 @@ const SingleProductPage = () => {
       });
     }
   }, [pincode]);
-  
-  const handleColorChange = useCallback((colorId) => {
-    if (!product) return;
-    
-    const variant = product.variants.find(
-      (v) =>
-        v.color?._id?.toString() === colorId || v.color?.toString() === colorId
-    );
 
-    if (!variant) return;
+  const handleColorChange = useCallback(
+    (colorId) => {
+      if (!product) return;
 
-    setSelectedVariant(variant);
-    setSelectedColor(colorId);
-    setSelectedIndex(0);
+      const variant = product.variants.find(
+        (v) =>
+          v.color?._id?.toString() === colorId ||
+          v.color?.toString() === colorId
+      );
 
-    navigate(
-      `/shop/${product._id}/${product.slug}?variant=${variant._id}&size=${selectedSize}`,
-      { replace: true }
-    );
-  }, [product, selectedSize, navigate]);
+      if (!variant) return;
 
-  const handleSizeChange = useCallback((sizeId) => {
-    if (!selectedVariant || !product) return;
-    
-    setSelectedSize(sizeId);
+      setSelectedVariant(variant);
+      setSelectedColor(colorId);
+      setSelectedIndex(0);
 
-    // 🔗 Update URL (KEEP VARIANT)
-    navigate(
-      `/shop/${product._id}/${product.slug}?variant=${selectedVariant._id}&size=${sizeId}`,
-      { replace: true }
-    );
-  }, [selectedVariant, product, navigate]);
+      navigate(
+        `/shop/${product._id}/${product.slug}?variant=${variant._id}&size=${selectedSize}`,
+        { replace: true }
+      );
+    },
+    [product, selectedSize, navigate]
+  );
+
+  const handleSizeChange = useCallback(
+    (sizeId) => {
+      if (!selectedVariant || !product) return;
+
+      setSelectedSize(sizeId);
+
+      // 🔗 Update URL (KEEP VARIANT)
+      navigate(
+        `/shop/${product._id}/${product.slug}?variant=${selectedVariant._id}&size=${sizeId}`,
+        { replace: true }
+      );
+    },
+    [selectedVariant, product, navigate]
+  );
 
   const [showVideo, setShowVideo] = useState(false);
   const videoOverlayRef = useRef(null);
   const videoBoxRef = useRef(null);
-  
+
   const openVideo = useCallback(() => {
     setShowVideo(true);
 
     requestAnimationFrame(() => {
       if (!videoOverlayRef.current || !videoBoxRef.current) return;
-      
+
       gsap.fromTo(
         videoOverlayRef.current,
         { opacity: 0 },
@@ -317,7 +387,7 @@ const SingleProductPage = () => {
 
   const closeVideo = useCallback(() => {
     if (!videoBoxRef.current || !videoOverlayRef.current) return;
-    
+
     gsap.to(videoBoxRef.current, {
       scale: 0.8,
       y: 50,
@@ -335,7 +405,93 @@ const SingleProductPage = () => {
       },
     });
   }, []);
-  
+
+  const openSizeChart = useCallback(() => {
+    setShowSizeChart(true);
+
+    requestAnimationFrame(() => {
+      if (!sizeChartOverlayRef.current || !sizeChartBoxRef.current) return;
+
+      gsap.fromTo(
+        sizeChartOverlayRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3 }
+      );
+
+      gsap.fromTo(
+        sizeChartBoxRef.current,
+        { scale: 0.8, y: 50, opacity: 0 },
+        {
+          scale: 1,
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          ease: "power3.out",
+        }
+      );
+    });
+
+    document.body.style.overflow = "hidden";
+  }, []);
+
+  const closeSizeChart = useCallback(() => {
+    if (!sizeChartBoxRef.current || !sizeChartOverlayRef.current) return;
+
+    gsap.to(sizeChartBoxRef.current, {
+      scale: 0.8,
+      y: 50,
+      opacity: 0,
+      duration: 0.3,
+      ease: "power3.in",
+    });
+
+    gsap.to(sizeChartOverlayRef.current, {
+      opacity: 0,
+      duration: 0.3,
+      onComplete: () => {
+        setShowSizeChart(false);
+        document.body.style.overflow = "auto";
+      },
+    });
+  }, []);
+
+  const getSizeChart = useMemo(() => {
+    if (!product) return SIZE_CHARTS.Default;
+
+    const subCategoryName = product.subCategory?.name;
+    const categoryName = product.category?.name;
+
+    // Check subcategory first (more specific)
+    if (subCategoryName) {
+      if (subCategoryName.toLowerCase().includes("tshirt") || 
+          subCategoryName.toLowerCase().includes("t-shirt")) {
+        return SIZE_CHARTS["T-Shirt"];
+      }
+      if (subCategoryName.toLowerCase().includes("hoodie")) {
+        return SIZE_CHARTS["Hoodie"];
+      }
+      if (subCategoryName.toLowerCase().includes("sweatshirt")) {
+        return SIZE_CHARTS["Sweatshirt"];
+      }
+    }
+
+    // Check category
+    if (categoryName) {
+      if (categoryName.toLowerCase().includes("tshirt") || 
+          categoryName.toLowerCase().includes("t-shirt")) {
+        return SIZE_CHARTS["T-Shirt"];
+      }
+      if (categoryName.toLowerCase().includes("hoodie")) {
+        return SIZE_CHARTS["Hoodie"];
+      }
+      if (categoryName.toLowerCase().includes("sweatshirt")) {
+        return SIZE_CHARTS["Sweatshirt"];
+      }
+    }
+
+    return SIZE_CHARTS.Default;
+  }, [product]);
+
   const handleAddToCart = useCallback(async () => {
     // Check if user is logged in
     if (!user) {
@@ -371,7 +527,16 @@ const SingleProductPage = () => {
       toast.dismiss();
       toast.error(err.response?.data?.message || "Failed");
     }
-  }, [user, navigate, product, selectedVariant, selectedSize, selectedColor, cartCount, fetchCart]);
+  }, [
+    user,
+    navigate,
+    product,
+    selectedVariant,
+    selectedSize,
+    selectedColor,
+    cartCount,
+    fetchCart,
+  ]);
 
   if (loading) return <Loader />;
   if (!product) return null;
@@ -488,7 +653,12 @@ const SingleProductPage = () => {
                     to={`/designs-collections/users/${product?.credits?._id}`}
                     className="flex justify-center items-center gap-2"
                   >
-                    <img src={credits1} alt="Credits" loading="lazy" className="w-10" />
+                    <img
+                      src={credits1}
+                      alt="Credits"
+                      loading="lazy"
+                      className="w-10"
+                    />
 
                     <span>Credit by </span>
                     <span className="font-bold">
@@ -497,7 +667,12 @@ const SingleProductPage = () => {
                   </Link>
                 ) : (
                   <div className="flex gap-2 items-center justify-center">
-                    <img src={credits1} alt="Credits" loading="lazy" className="w-10" />
+                    <img
+                      src={credits1}
+                      alt="Credits"
+                      loading="lazy"
+                      className="w-10"
+                    />
                     <span className="font-bold">By VasanWears</span>
                   </div>
                 )}
@@ -507,7 +682,7 @@ const SingleProductPage = () => {
 
           {/* RIGHT SECTION */}
           <div className="flex flex-col gap-2">
-            <h2 className="text-xl md:text-4xl font-semibold mb-2">
+            <h2 className="text-xl md:text-4xl font-semibold mb-2 md:leading-12">
               {product.title}
             </h2>
             <a
@@ -526,9 +701,7 @@ const SingleProductPage = () => {
             >
               <RatingSummary product={product} />
             </a>
-            <p className="text-base text-primary5 mb-4">
-              {product.description}
-            </p>
+
             <p className="text-xl font-bold text-primary5 mb-4">
               ₹{selectedVariant?.salePrice}
               <del className="ml-2 text-gray-400">
@@ -539,7 +712,7 @@ const SingleProductPage = () => {
             {/* Colors */}
             <div className="mb-4">
               <p className="font-medium mb-3">Color:</p>
-              <div className="flex gap-4 ">
+              <div className="flex gap-4 flex-wrap">
                 {product.colors.map((color) => (
                   <div
                     key={color._id}
@@ -559,7 +732,15 @@ const SingleProductPage = () => {
 
             {/* Sizes */}
             <div className="mb-4">
-              <p className="font-medium mb-3">Size:</p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="font-medium">Size:</p>
+                <button
+                  onClick={openSizeChart}
+                  className="text-sm text-primary5 underline hover:text-primary1 cursor-pointer"
+                >
+                  View Size Chart
+                </button>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {sortedSizes.map((size) => (
                   <button
@@ -631,6 +812,23 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
                 Watch Tutorials
               </button>
             </div>
+
+            {/* Product Tags */}
+            {product?.tags && product.tags.length > 0 && (
+              <div className="mt-4">
+                <p className="font-medium mb-2">Tags:</p>
+                <div className="flex flex-wrap gap-2">
+                  {product.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-primary4 text-primary2 rounded-full text-sm"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Share */}
             {/* Pincode Checker */}
@@ -709,35 +907,19 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
           <div className="hidden md:block mt-6 text-primary5 leading-relaxed">
             {activeTab === "description" && (
               <div>
-                <p>
-                  Built around a solid beech frame with legs in polished
-                  stainless steel. The Wing chair employs a hand-stitched
-                  natural upholstery that requires virtually no maintenance over
-                  time.
-                </p>
-                <p className="mt-3">
-                  Elegant design can be admired from all angles and fits well in
-                  many interiors.
+                <p className="text-base text-primary5">
+                  {product.description}
                 </p>
               </div>
             )}
 
             {activeTab === "additional" && (
-              <div>
-                <p>
-                  <strong>Material:</strong> Premium cotton (65%) + polyester
-                  blend.
-                </p>
-                <p>
-                  <strong>Weight:</strong> 450g
-                </p>
-                <p>
-                  <strong>Colors:</strong> 6 color variations
-                </p>
-                <p>
-                  <strong>Fit:</strong> Regular fit
-                </p>
-              </div>
+              <div><div 
+                className="prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: product?.additionalInfo }}
+              />
+              <p><b>Color:</b> {product?.colors?.length}</p></div>
+              
             )}
 
             {activeTab === "reviews" && (
@@ -756,36 +938,18 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
             {/* Description */}
             <Accordion title="Description">
               <div>
-                <p>
-                  Built around a solid beech frame with legs in polished
-                  stainless steel. The Wing chair employs a hand-stitched
-                  natural upholstery that requires virtually no maintenance over
-                  time.
-                </p>
-                <p className="mt-3">
-                  Elegant design can be admired from all angles and fits well in
-                  many interiors.
+                <p className="text-base text-primary5">
+                  {product.description}
                 </p>
               </div>
             </Accordion>
 
             {/* Additional Info */}
             <Accordion title="Additional Information">
-              <div>
-                <p>
-                  <strong>Material:</strong> Premium cotton (65%) + polyester
-                  blend.
-                </p>
-                <p>
-                  <strong>Weight:</strong> 450g
-                </p>
-                <p>
-                  <strong>Colors:</strong> 6 color variations
-                </p>
-                <p>
-                  <strong>Fit:</strong> Regular fit
-                </p>
-              </div>
+              <div 
+                className="prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: product?.additionalInfo || '<p>No additional information available.</p>' }}
+              />
             </Accordion>
 
             {/* Reviews */}
@@ -829,6 +993,75 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
               autoPlay
               className="w-full h-full object-cover"
             />
+          </div>
+        </div>
+      )}
+
+      {/* Size Chart Modal */}
+      {showSizeChart && (
+        <div
+          ref={sizeChartOverlayRef}
+          className="fixed inset-0 z-[999] bg-black/80 flex items-center justify-center px-4"
+          onClick={closeSizeChart}
+        >
+          <div
+            ref={sizeChartBoxRef}
+            className="relative w-full max-w-3xl bg-white rounded-xl p-6 md:p-8 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={closeSizeChart}
+              className="absolute top-4 right-4 bg-primary5 text-white 
+                rounded-full w-8 h-8 flex items-center justify-center font-bold cursor-pointer hover:bg-primary4"
+            >
+              ✕
+            </button>
+
+            {/* Title */}
+            <h3 className="text-2xl font-bold text-primary5 mb-6">
+              {getSizeChart.title}
+            </h3>
+
+            {/* Size Chart Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-primary5 text-white">
+                    {getSizeChart.headers.map((header, index) => (
+                      <th
+                        key={index}
+                        className="border border-primary2/20 px-4 py-3 text-left font-semibold"
+                      >
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {getSizeChart.rows.map((row, rowIndex) => (
+                    <tr
+                      key={rowIndex}
+                      className={rowIndex % 2 === 0 ? "bg-primary1/10" : "bg-white"}
+                    >
+                      {row.map((cell, cellIndex) => (
+                        <td
+                          key={cellIndex}
+                          className="border border-primary2/20 px-4 py-3 text-primary5"
+                        >
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Note */}
+            <p className="mt-6 text-sm text-gray-600">
+              <strong>Note:</strong> All measurements are in inches. For best fit, measure yourself and compare with the chart above.
+            </p>
           </div>
         </div>
       )}

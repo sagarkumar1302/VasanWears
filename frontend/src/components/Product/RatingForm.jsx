@@ -5,6 +5,7 @@ import {
   updateRatingApi,
 } from "../../utils/ratingApi";
 import { useAuthStore } from "../../store/useAuthStore";
+import { Link } from "react-router-dom";
 
 const RatingForm = ({ productId, onSuccess, existingRating = null }) => {
   const { user } = useAuthStore();
@@ -42,7 +43,7 @@ const RatingForm = ({ productId, onSuccess, existingRating = null }) => {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     // Validate file count (max 5)
     if (files.length > 5) {
       alert("You can upload a maximum of 5 files");
@@ -62,9 +63,7 @@ const RatingForm = ({ productId, onSuccess, existingRating = null }) => {
 
       if (file.size > maxSize) {
         alert(
-          `${file.name} is too large. Max size: ${
-            isVideo ? "50MB" : "5MB"
-          }`
+          `${file.name} is too large. Max size: ${isVideo ? "50MB" : "5MB"}`
         );
         return false;
       }
@@ -85,10 +84,10 @@ const RatingForm = ({ productId, onSuccess, existingRating = null }) => {
   const removeFile = (index) => {
     const newFiles = selectedFiles.filter((_, i) => i !== index);
     const newPreviews = previewUrls.filter((_, i) => i !== index);
-    
+
     // Revoke the URL to free memory
     URL.revokeObjectURL(previewUrls[index].url);
-    
+
     setSelectedFiles(newFiles);
     setPreviewUrls(newPreviews);
   };
@@ -124,7 +123,7 @@ const RatingForm = ({ productId, onSuccess, existingRating = null }) => {
 
       // Clean up preview URLs
       previewUrls.forEach((preview) => URL.revokeObjectURL(preview.url));
-      
+
       if (onSuccess) onSuccess();
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Failed to submit rating";
@@ -137,7 +136,7 @@ const RatingForm = ({ productId, onSuccess, existingRating = null }) => {
   if (!user) {
     return (
       <div className="p-4 bg-gray-100 rounded-lg text-center">
-        <p className="text-gray-600">Please login to write a review</p>
+        <Link to="/login/" className="text-gray-600">Please login to write a review</Link>
       </div>
     );
   }

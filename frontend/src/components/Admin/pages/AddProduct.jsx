@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { createProductApi } from "../../../utils/productApi";
 import { API, getAllCategoriesWithSubCatApi } from "../../../utils/adminApi";
+import RichTextEditor from "../components/RichTextEditor";
 const AddProduct = () => {
   const navigate = useNavigate();
   const [tags, setTags] = useState([]);
@@ -67,6 +68,7 @@ const AddProduct = () => {
     title: "",
     slug: "",
     description: "",
+    additionalInfo: "",
     category: "",
     subCategory: "",
     status: "published",
@@ -160,6 +162,9 @@ const AddProduct = () => {
       formData.append("title", form.title);
       formData.append("slug", form.slug);
       formData.append("description", form.description);
+      if (form.additionalInfo) {
+        formData.append("additionalInfo", form.additionalInfo);
+      }
       formData.append("category", selectedCategory);
 
       if (selectedSubCategory) {
@@ -301,6 +306,20 @@ const AddProduct = () => {
           className="border p-2 rounded w-full"
           placeholder="Description"
         />
+
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">
+            Additional Information (optional)
+          </label>
+          <p className="text-xs text-gray-500">
+            Add extra details, specifications, or care instructions
+          </p>
+          <RichTextEditor
+            value={form.additionalInfo}
+            onChange={(html) => setForm({ ...form, additionalInfo: html })}
+            placeholder="Enter additional information..."
+          />
+        </div>
 
         {/* PRODUCT FEATURED IMAGE */}
         <div className="space-y-1">
