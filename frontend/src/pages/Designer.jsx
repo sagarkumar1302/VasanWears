@@ -146,9 +146,9 @@ const AVAILABLE_COLORS = [
   { name: "Red", value: "#c1121f" },
   { name: "Royal Blue", value: "#232a4d" },
   { name: "Grey", value: "#9ca3af" },
-  // { name: "Flag Green", value: "#2a8634" },
-  // { name: "Yellow", value: "#dfc97e" },
-  { name: "Maroon", value: "#4e242a" },
+  { name: "Flag Green", value: "#2a8634" },
+  { name: "Yellow", value: "#dfc97e" },
+  // { name: "Maroon", value: "#4e242a" },
   { name: "Baby Pink", value: "#dfc0cf" },
 ];
 
@@ -170,6 +170,7 @@ const COLOR_BG_CLASS_BY_VALUE = {
 // Cloth-specific colors (not part of the global palette)
 const EXTRA_COLORS_BY_CLOTH = {
   womenCropHoodie: [{ name: "Maroon", value: "#4e242a" }],
+  sweatShirt: [{ name: "Maroon", value: "#4e242a" }],
 };
 
 // If some products have fewer/different colors, define them here.
@@ -194,12 +195,13 @@ const AVAILABLE_COLORS_BY_CLOTH = {
     ...pickColorsByName([
       "Black",
       "White",
-      "Sky Blue",
+      // "Sky Blue",
       "Red",
       "Royal Blue",
       "Grey",
       "Baby Pink",
     ]),
+    
   ],
   sweatshirt: [
     ...pickColorsByName([
@@ -211,8 +213,34 @@ const AVAILABLE_COLORS_BY_CLOTH = {
       "Grey",
       // "Baby Pink",
     ]),
+    ...(EXTRA_COLORS_BY_CLOTH.sweatShirt || []),
   ],
 };
+
+// Explicitly hide Maroon for Men and Women T-Shirt variants.
+AVAILABLE_COLORS_BY_CLOTH.men = [
+  ...pickColorsByName([
+    "Black",
+    "White",
+    "Yellow",
+    "Red",
+    "Royal Blue",
+    "Grey",
+    "Flag Green",
+  ]),
+];
+
+AVAILABLE_COLORS_BY_CLOTH.women = [
+  ...pickColorsByName([
+    "Black",
+    "White",
+    "Sky Blue",
+    "Red",
+    "Royal Blue",
+    "Grey",
+    "Baby Pink",
+  ]),
+];
 
 const getAvailableColorsForCloth = (clothKey) => {
   const key = String(clothKey || "");
@@ -288,7 +316,7 @@ const Designer = ({ productKey } = {}) => {
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [showTextControls, setShowTextControls] = useState(false);
-  const [fontColor, setFontColor] = useState("#000000");
+  const [fontColor, setFontColor] = useState("#ff0000");
   const [fontFamily, setFontFamily] = useState("Arial");
   const [customFonts, setCustomFonts] = useState([]);
   const customFontsRef = useRef([]);
@@ -392,12 +420,51 @@ const Designer = ({ productKey } = {}) => {
   // Set a sensible default size when sizes arrive
   const [selectedSize, setSelectedSize] = useState("");
   const selectedSizeRef = useRef("");
-  useEffect(() => {
-    if (sizesList && sizesList.length > 0 && !selectedSize) {
-      setSelectedSize(sizesList[0].name);
-      selectedSizeRef.current = sizesList[0].name;
+  // Preferred size sets per cloth
+  const SIZE_SETS = {
+    women: ["XS", "S", "M", "L", "XL", "XXL"],
+    womenCropHoodie: ["XS", "S", "M", "L", "XL", "XXL"],
+    men: ["XS", "S", "M", "L", "XL","XXL", "2XL", "3XL"],
+    hoodie: ["XS", "S", "M", "L", "XL","XXL", "2XL", "3XL"],
+    sweatshirt: ["XS", "S", "M", "L", "XL","XXL", "2XL", "3XL"],
+  };
+
+  const normalize = (s) => String(s || "").replace(/\s+/g, "").toUpperCase();
+
+  const getDisplayedSizes = (sizesListArg, clothKey) => {
+    const allowed = SIZE_SETS[clothKey] || null;
+    if (!allowed) return Array.isArray(sizesListArg) && sizesListArg.length ? sizesListArg : [];
+
+    if (Array.isArray(sizesListArg) && sizesListArg.length) {
+      const byName = new Map();
+      for (const s of sizesListArg) {
+        try {
+          const key = normalize(s && s.name ? s.name : "");
+          if (key) byName.set(key, s);
+        } catch (e) {}
+      }
+
+      // Return items in the exact order of `allowed`.
+      const ordered = allowed.map((n) => {
+        const key = normalize(n);
+        if (byName.has(key)) return byName.get(key);
+        return { name: n };
+      });
+
+      return ordered;
     }
-  }, [sizesList, selectedSize]);
+
+    // Fallback: return synthetic objects with names (no _id)
+    return allowed.map((n) => ({ name: n }));
+  };
+
+  useEffect(() => {
+    const displayed = getDisplayedSizes(sizesList, cloth);
+    if (displayed && displayed.length > 0 && !selectedSize) {
+      setSelectedSize(displayed[0].name);
+      selectedSizeRef.current = displayed[0].name;
+    }
+  }, [sizesList, cloth, selectedSize]);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -2724,37 +2791,41 @@ const Designer = ({ productKey } = {}) => {
             </p>
 
             <div className="relative z-10 grid grid-cols-4 gap-2 p-2">
-              {sizesList && sizesList.length > 0 ? (
-                sizesList.map((size) => {
-                  const isActive = selectedSize === size.name;
+              {(() => {
+                const displayed = getDisplayedSizes(sizesList, cloth);
+                if (displayed && displayed.length > 0) {
+                  return displayed.map((size) => {
+                    const isActive = selectedSize === size.name;
+                    return (
+                      <button
+                        key={size._id || size.name}
+                        disabled={mockMode}
+                        onClick={() => {
+                          setSelectedSize(size.name);
+                          selectedSizeRef.current = size.name;
+                        }}
+                        className={`relative h-10 rounded-lg inline-flex items-center justify-center transition-all text-sm font-bold ${
+                          mockMode
+                            ? "opacity-60 cursor-not-allowed"
+                            : "cursor-pointer hover:scale-105"
+                        } ${
+                          isActive
+                            ? "border-2 border-black bg-black text-white shadow-lg"
+                            : "border border-gray-300 bg-white text-gray-700 hover:border-gray-900"
+                        }`}
+                      >
+                        {size.name}
+                      </button>
+                    );
+                  });
+                }
 
-                  return (
-                    <button
-                      key={size._id || size.name}
-                      disabled={mockMode}
-                      onClick={() => {
-                        setSelectedSize(size.name);
-                        selectedSizeRef.current = size.name;
-                      }}
-                      className={`relative h-10 rounded-lg inline-flex items-center justify-center transition-all text-sm font-bold ${
-                        mockMode
-                          ? "opacity-60 cursor-not-allowed"
-                          : "cursor-pointer hover:scale-105"
-                      } ${
-                        isActive
-                          ? "border-2 border-black bg-black text-white shadow-lg"
-                          : "border border-gray-300 bg-white text-gray-700 hover:border-gray-900"
-                      }`}
-                    >
-                      {size.name}
-                    </button>
-                  );
-                })
-              ) : (
-                <div className="col-span-4 text-xs text-gray-500 text-center py-2">
-                  No sizes available
-                </div>
-              )}
+                return (
+                  <div className="col-span-4 text-xs text-gray-500 text-center py-2">
+                    No sizes available
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
@@ -3967,9 +4038,26 @@ const Designer = ({ productKey } = {}) => {
     const color = fontColor || "#000000";
 
     const createText = () => {
+      let leftPos = canvas.getWidth() / 2;
+      let topPos = canvas.getHeight() / 2;
+      if (clipRect) {
+        leftPos = (clipRect.left || 0) + (clipRect.width || 0) / 2;
+        topPos = (clipRect.top || 0) + (clipRect.height || 0) / 2;
+        try {
+          const center =
+            typeof clipRect.getCenterPoint === "function"
+              ? clipRect.getCenterPoint()
+              : null;
+          if (center && typeof center.x === "number") leftPos = center.x;
+          if (center && typeof center.y === "number") topPos = center.y;
+        } catch (e) {}
+      }
+
       const text = new fabric.Textbox(trimmed, {
-        left: clipRect.left + 50,
-        top: clipRect.top + 50,
+        originX: "center",
+        originY: "center",
+        left: leftPos,
+        top: topPos,
         fontSize: 30,
         fill: color,
         fontFamily: ff,
@@ -3979,19 +4067,29 @@ const Designer = ({ productKey } = {}) => {
 
       canvas.add(text);
       setTimeout(() => {
-        if (canvas.contains(text)) {
-          canvas.setActiveObject(text);
-          if (typeof text.enterEditing === "function") {
-            text.enterEditing();
-            if (typeof text.selectAll === "function") text.selectAll();
+        try {
+          if (canvas.contains(text)) {
+            try {
+              if (typeof text.exitEditing === "function") text.exitEditing();
+            } catch (e) {}
+            try {
+              canvas.discardActiveObject && canvas.discardActiveObject();
+            } catch (e) {}
+
+            text.setCoords && text.setCoords();
+
+            // Blur any hidden textarea so the user isn't left editing
+            try {
+              const ta =
+                canvas._textInput ||
+                canvas.hiddenTextarea ||
+                document.querySelector("textarea.fabric-textarea");
+              if (ta && typeof ta.blur === "function") ta.blur();
+            } catch (e) {}
+
+            canvas.requestRenderAll && canvas.requestRenderAll();
           }
-          const ta =
-            canvas._textInput ||
-            canvas.hiddenTextarea ||
-            document.querySelector("textarea.fabric-textarea");
-          if (ta && typeof ta.focus === "function") ta.focus();
-          canvas.requestRenderAll();
-        }
+        } catch (e) {}
       }, 0);
     };
 
@@ -4044,8 +4142,16 @@ const Designer = ({ productKey } = {}) => {
         });
 
         if (clipRect) {
-          const cx = clipRect.left + 50;
-          const cy = clipRect.top + 50;
+          let cx = (clipRect.left || 0) + (clipRect.width || 0) / 2;
+          let cy = (clipRect.top || 0) + (clipRect.height || 0) / 2;
+          try {
+            const center =
+              typeof clipRect.getCenterPoint === "function"
+                ? clipRect.getCenterPoint()
+                : null;
+            if (center && typeof center.x === "number") cx = center.x;
+            if (center && typeof center.y === "number") cy = center.y;
+          } catch (e) {}
           fImg.set({ left: cx, top: cy });
           const scale = Math.min(
             clipRect.width / fImg.width,
@@ -4061,6 +4167,10 @@ const Designer = ({ productKey } = {}) => {
         }
 
         canvas.add(fImg);
+        try {
+          fImg.setCoords && fImg.setCoords();
+          canvas.setActiveObject && canvas.setActiveObject(fImg);
+        } catch (e) {}
       };
     };
     reader.readAsDataURL(file);

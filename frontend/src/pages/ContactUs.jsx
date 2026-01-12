@@ -52,7 +52,7 @@ const ContactUs = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [form]);
 
   return (
     <div className="md:mt-35 mt-30">

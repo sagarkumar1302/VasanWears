@@ -19,6 +19,11 @@ const Checkout = memo(() => {
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [placingOrder, setPlacingOrder] = useState(false);
+  // Extra checkout options
+  const GIFT_WRAP_FEE = 60; // rupees
+  const EXPRESS_FEE = 60; // rupees
+  const [giftWrap, setGiftWrap] = useState(false);
+  const [expressDelivery, setExpressDelivery] = useState(false);
 
   /* ---------------- DESIGN PERMISSION MODAL ---------------- */
   const [showPermissionModal, setShowPermissionModal] = useState(false);
@@ -137,7 +142,8 @@ const Checkout = memo(() => {
   }, [pendingOrderId, navigate]);
   // COD Charge
   const codCharge = paymentMethod === "COD" ? 60 : 0;
-  const total = Math.max(subtotal - discount + codCharge, 0);
+  const extraCharges = (giftWrap ? GIFT_WRAP_FEE : 0) + (expressDelivery ? EXPRESS_FEE : 0);
+  const total = Math.max(subtotal - discount + codCharge + extraCharges, 0);
   const handlePlaceOrder = async () => {
     const error = validateCheckout();
     if (error) {
@@ -556,6 +562,29 @@ const Checkout = memo(() => {
 
                 <hr />
 
+                {/* Extra options: Gift wrap / Express delivery */}
+                <div className="mt-4 space-y-3">
+                  <label className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={giftWrap}
+                      onChange={() => setGiftWrap((p) => !p)}
+                    />
+                    <span className="text-sm">Add gift wrap (₹{GIFT_WRAP_FEE})</span>
+                  </label>
+
+                  <label className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={expressDelivery}
+                      onChange={() => setExpressDelivery((p) => !p)}
+                    />
+                    <span className="text-sm">Express delivery (₹{EXPRESS_FEE})</span>
+                  </label>
+                </div>
+
+                <hr />
+
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Total</span>
                   <span>₹{total}</span>
@@ -571,6 +600,19 @@ const Checkout = memo(() => {
               >
                 {placingOrder ? "Placing Order..." : "Place Order"}
               </button>
+
+              {/* Wash / Iron care information */}
+              <div className="mt-4 bg-gray-50 border border-gray-100 rounded-md p-3 text-sm">
+                <h3 className="font-semibold mb-2">Care Instructions</h3>
+                <p>Please follow these tips to improve print longevity:</p>
+                <ul className="list-none mt-2 space-y-1">
+                  <li>✅ Wash inside out</li>
+                  <li>✅ Cold wash</li>
+                  <li>✅ Avoid high heat drying</li>
+                  <li>✅ Do not bleach</li>
+                  <li>✅ Turn garment inside out before ironing</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
