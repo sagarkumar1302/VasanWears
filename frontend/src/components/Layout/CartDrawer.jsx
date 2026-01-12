@@ -9,11 +9,10 @@ const CartDrawer = memo(({ setCartDrawer, cartDrawer }) => {
   const drawerRef = useRef(null);
   const timeline = useRef(null);
   const { items, subtotal, loading, updateQty, removeItem } = useCartStore();
-  console.log("Cart ",items);
-  
+
   useGSAP(() => {
     if (!drawerRef.current) return;
-    
+
     timeline.current = gsap.timeline({ paused: true });
 
     timeline.current.fromTo(
@@ -57,7 +56,7 @@ const CartDrawer = memo(({ setCartDrawer, cartDrawer }) => {
 
   useGSAP(() => {
     if (!timeline.current) return;
-    
+
     if (cartDrawer) {
       timeline.current.play();
     } else {
@@ -88,10 +87,7 @@ const CartDrawer = memo(({ setCartDrawer, cartDrawer }) => {
           <div className="">
             <h4 className="font-semibold text-lg md:text-xl">Your Cart</h4>
           </div>
-          <button
-            className="cursor-pointer z-30"
-            onClick={handleCloseDrawer}
-          >
+          <button className="cursor-pointer z-30" onClick={handleCloseDrawer}>
             <RiCloseLine className="h-8 w-8 text-primary2" />
           </button>
         </div>
@@ -108,7 +104,7 @@ const CartDrawer = memo(({ setCartDrawer, cartDrawer }) => {
                   {item.itemType === "catalog" ? (
                     /* ================= CATALOG PRODUCT ================= */
                     <>
-                      <div className="cartImage">
+                      <div className="cartImage flex-2/12">
                         <img
                           src={item.product?.featuredImage}
                           alt={`${item.product?.title} - Cart item`}
@@ -116,34 +112,41 @@ const CartDrawer = memo(({ setCartDrawer, cartDrawer }) => {
                           loading="lazy"
                         />
                       </div>
-                      <div className="content flex flex-col">
-                        <h5 className="text-sm font-bold md:font-medium md:text-lg">
+                      <div className="content flex flex-col flex-10/12">
+                        <h5 className="text-sm font-bold md:font-medium md:text-lg w-[80%]">
                           {item.product?.title}
                         </h5>
-                        <span className="text-sm">Color: {item.color?.name}</span>
+                        <span className="text-sm">
+                          Color: {item.color?.name}
+                        </span>
 
                         <span className="text-sm">Size: {item.size?.name}</span>
 
                         <span className="text-sm font-bold text-primary5">
                           Price: ₹{item.price}
                         </span>
-                        <div className="flex gap-2 items-center mt-2 ">
+                        <div className="flex gap-2 items-center mt-2 bg-primary3 rounded-full p-0.5 w-fit">
                           <button
-                            className="w-8 py-0.5 bg-primary1 cursor-pointer"
-                            onClick={() => updateQty(item._id, item.quantity + 1)}
+                            className="px-2.5 py-0.5 text-lg cursor-pointer disabled:opacity-40"
+                            onClick={() =>
+                              updateQty(item._id, item.quantity - 1)
+                            }
+                            disabled={item.quantity <= 1}
                           >
-                            +
+                            -
                           </button>
+
                           <span className="text-sm font-bold">
                             {" "}
                             {item.quantity}
                           </span>
                           <button
-                            className="w-8 py-0.5 bg-primary1 cursor-pointer"
-                            onClick={() => updateQty(item._id, item.quantity - 1)}
-                            disabled={item.quantity <= 1}
+                            className="px-2.5 py-0.5 text-lg cursor-pointer disabled:opacity-40"
+                            onClick={() =>
+                              updateQty(item._id, item.quantity + 1)
+                            }
                           >
-                            -
+                            +
                           </button>
                           <button
                             className=" cursor-pointer bg-primary3 rounded-full w-6 h-6 flex items-center justify-center absolute -top-2 md:top-0 right-0"
@@ -157,44 +160,57 @@ const CartDrawer = memo(({ setCartDrawer, cartDrawer }) => {
                   ) : (
                     /* ================= CUSTOM DESIGN ================= */
                     <>
-                      <div className="cartImage">
+                      <div className="cartImage flex-2/12">
                         <img
                           src={item.design?.images?.front}
-                          alt={`${item.design?.title || 'Custom design'} - Cart item`}
-                          className="w-20 rounded"
+                          alt={`${
+                            item.design?.title || "Custom design"
+                          } - Cart item`}
+                          className="w-20 h-12 md:h-20 rounded object-cover"
                           loading="lazy"
                         />
                       </div>
-                      <div className="content flex flex-col">
-                        <h5 className="text-sm font-bold md:font-medium md:text-lg">
+                      <div className="content flex flex-col flex-10/12">
+                        <h5 className="text-sm font-bold md:font-medium md:text-lg w-[80%]">
                           {item.design?.title || "Custom Designed Product"}
                         </h5>
-                        <span className="text-sm">Color: {item.design?.color?.name}</span>
+                        <span className="text-sm">
+                          Color: {item.design?.color?.name}
+                        </span>
 
-                        <span className="text-sm">Size: {item.design?.size?.name}</span>
+                        <span className="text-sm">
+                          Size: {item.design?.size?.name}
+                        </span>
 
-                        <span className="text-xs text-primary5/70">Custom Print</span>
+                        <span className="text-xs text-primary5/70">
+                          Custom Print
+                        </span>
 
                         <span className="text-sm font-bold text-primary5">
                           Price: ₹{item.price}
                         </span>
-                        <div className="flex gap-2 items-center mt-2 ">
+                        <div className="flex gap-2 items-center mt-2 bg-primary3 w-fit p-0.5 rounded-full">
                           <button
-                            className="w-8 py-0.5 bg-primary1 cursor-pointer"
-                            onClick={() => updateQty(item._id, item.quantity + 1)}
+                            className="px-2.5 py-0.5 text-lg cursor-pointer disabled:opacity-40"
+                            onClick={() =>
+                              updateQty(item._id, item.quantity - 1)
+                            }
+                            disabled={item.quantity <= 1}
                           >
-                            +
+                            -
                           </button>
                           <span className="text-sm font-bold">
                             {" "}
                             {item.quantity}
                           </span>
+                          
                           <button
-                            className="w-8 py-0.5 bg-primary1 cursor-pointer"
-                            onClick={() => updateQty(item._id, item.quantity - 1)}
-                            disabled={item.quantity <= 1}
+                            className="px-2.5 py-0.5 text-lg cursor-pointer disabled:opacity-40"
+                            onClick={() =>
+                              updateQty(item._id, item.quantity + 1)
+                            }
                           >
-                            -
+                            +
                           </button>
                           <button
                             className=" cursor-pointer bg-primary3 rounded-full w-6 h-6 flex items-center justify-center absolute -top-2 md:top-0 right-0"
@@ -211,9 +227,9 @@ const CartDrawer = memo(({ setCartDrawer, cartDrawer }) => {
             </div>
           ) : (
             <div className="flex justify-center items-center flex-col gap-4 no-cart">
-              <img 
-                src={noCart} 
-                alt="Empty shopping cart illustration" 
+              <img
+                src={noCart}
+                alt="Empty shopping cart illustration"
                 className="w-45 md:w-60"
                 loading="lazy"
               />

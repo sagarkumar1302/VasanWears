@@ -86,7 +86,7 @@ const HeroSlider = memo(() => {
             className="w-full h-full object-cover aspect-2/1"
             width="1200"
             height="600"
-            fetchpriority="high"
+            fetchPriority="high"
           />
         ) : (
           <video

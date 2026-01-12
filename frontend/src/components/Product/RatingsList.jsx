@@ -27,7 +27,6 @@ const RatingsList = ({ productId }) => {
       setRatings(res.data.ratings);
       setPagination(res.data.pagination);
       setDistribution(res.data.distribution);
-      console.log("Rating ", res.data.ratings);
     } catch (err) {
       console.error("Failed to fetch ratings:", err);
     } finally {

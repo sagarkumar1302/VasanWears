@@ -83,7 +83,7 @@ const getAllCoupons = asyncHandler(async (req, res) => {
   const coupons = await Coupon.find(filter)
     .populate("applicableProducts", "title slug")
     .populate("applicableCategories", "name slug")
-    .populate("createdBy", "name email")
+    .populate("createdBy", "fullName email")
     .sort({ createdAt: -1 });
 
   res

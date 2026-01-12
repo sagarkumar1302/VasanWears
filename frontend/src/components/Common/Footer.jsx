@@ -44,7 +44,7 @@ const Footer = () => {
           {/* Brand Info */}
           <div className="space-y-4">
             <Link to="/">
-              <img src={logo} fetchpriority="high" alt="VasanWears Logo" className="w-[40%] mb-4 aspect-auto" />
+              <img src={logo} fetchPriority="high" alt="VasanWears Logo" className="w-[40%] mb-4 aspect-auto" />
             </Link>
             <p className="text-primary5">
               Vasan comes from the Sanskrit word “Vastra,” meaning clothing.

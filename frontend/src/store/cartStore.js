@@ -17,7 +17,6 @@ export const useCartStore = create((set, get) => ({
     try {
       const res = await getCartApi();
       const cart = res.data || { items: [], subtotal: 0 };
-      console.log("Cart 1", cart);
 
       const totalQty = cart.items.reduce(
         (sum, item) => sum + item.quantity,

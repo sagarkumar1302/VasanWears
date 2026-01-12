@@ -65,8 +65,8 @@ const MyAccount = () => {
              SIDEBAR WITH ACCORDION + AVATAR
         ------------------------------------- */}
         <div
-          className={`bg-white sticky top-40 w-full md:w-72 p-4 shadow rounded-lg h-fit ${
-            !pathname.endsWith("account") ? "md:block hidden" : ""
+          className={`bg-white md:sticky top-40 w-full md:w-72 p-4 shadow rounded-lg h-fit ${
+            !(pathname.endsWith("my-account/")) ? "md:block hidden" : ""
           }`}
         >
           <div className="flex flex-col items-center mb-6">
@@ -132,7 +132,7 @@ const MyAccount = () => {
         ------------------------------------- */}
         <div
           className={`w-full bg-white p-6 shadow rounded-lg h-fit ${
-            pathname.endsWith("account") ? "md:block hidden" : ""
+            pathname.endsWith("my-account/") ? "md:block hidden" : ""
           }`}
         >
           <button

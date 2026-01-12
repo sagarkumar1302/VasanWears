@@ -84,7 +84,6 @@ const Orders = () => {
               const color = firstItem?.color;
               const size = firstItem?.size;
               const design = firstItem?.design;
-              console.log("Design ", design);
 
               return (
                 <div

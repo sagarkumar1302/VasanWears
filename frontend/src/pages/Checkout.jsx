@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useCallback, memo } from "react";
 import Banner from "../components/Common/Banner";
-import { RiBankCardLine, RiPencilLine, RiPenNibLine } from "@remixicon/react";
+import {
+  RiBankCardLine,
+  RiCheckboxCircleFill,
+  RiPencilLine,
+  RiPenNibLine,
+} from "@remixicon/react";
 
 import { useCartStore } from "../store/cartStore";
 import Loader from "../components/Common/Loader";
@@ -142,7 +147,8 @@ const Checkout = memo(() => {
   }, [pendingOrderId, navigate]);
   // COD Charge
   const codCharge = paymentMethod === "COD" ? 60 : 0;
-  const extraCharges = (giftWrap ? GIFT_WRAP_FEE : 0) + (expressDelivery ? EXPRESS_FEE : 0);
+  const extraCharges =
+    (giftWrap ? GIFT_WRAP_FEE : 0) + (expressDelivery ? EXPRESS_FEE : 0);
   const total = Math.max(subtotal - discount + codCharge + extraCharges, 0);
   const handlePlaceOrder = async () => {
     const error = validateCheckout();
@@ -295,14 +301,15 @@ const Checkout = memo(() => {
       <div className="px-5 py-5 md:py-20">
         <div className="container mx-auto mb-5">
           <div className="border-t-2 border-primary5 bg-primary3/60 rounded-md p-4">
-            <p className="text-sm flex items-center gap-2">
+            <p className="text-sm flex flex-row items-center gap-2">
               <span className="text-primary5 font-semibold">
                 <RiBankCardLine />
               </span>
               Have a coupon?
               <button
                 onClick={() => setShowCoupon(!showCoupon)}
-                className="text-primary5 underline font-medium cursor-pointer"
+                className="text-primary5 underline 
+                font-medium cursor-pointer text-left"
               >
                 Click here to enter your code
               </button>
@@ -563,23 +570,27 @@ const Checkout = memo(() => {
                 <hr />
 
                 {/* Extra options: Gift wrap / Express delivery */}
-                <div className="mt-4 space-y-3">
+                <div className="mt-4 space-y-3 text-base">
                   <label className="flex items-center gap-3">
                     <input
                       type="checkbox"
                       checked={giftWrap}
                       onChange={() => setGiftWrap((p) => !p)}
                     />
-                    <span className="text-sm">Add gift wrap (₹{GIFT_WRAP_FEE})</span>
+                    <span className="text-sm">
+                      Add gift wrap (₹{GIFT_WRAP_FEE})
+                    </span>
                   </label>
 
-                  <label className="flex items-center gap-3">
+                  <label className="flex items-center gap-3 text-base">
                     <input
                       type="checkbox"
                       checked={expressDelivery}
                       onChange={() => setExpressDelivery((p) => !p)}
                     />
-                    <span className="text-sm">Express delivery (₹{EXPRESS_FEE})</span>
+                    <span className="text-sm">
+                      Express delivery (₹{EXPRESS_FEE})
+                    </span>
                   </label>
                 </div>
 
@@ -606,11 +617,36 @@ const Checkout = memo(() => {
                 <h3 className="font-semibold mb-2">Care Instructions</h3>
                 <p>Please follow these tips to improve print longevity:</p>
                 <ul className="list-none mt-2 space-y-1">
-                  <li>✅ Wash inside out</li>
-                  <li>✅ Cold wash</li>
-                  <li>✅ Avoid high heat drying</li>
-                  <li>✅ Do not bleach</li>
-                  <li>✅ Turn garment inside out before ironing</li>
+                  <li className="flex gap-1 items-center">
+                    <span className="text-primary5">
+                      <RiCheckboxCircleFill size={20}/>
+                    </span>{" "}
+                    Wash inside out.
+                  </li>
+                  <li className="flex gap-1 items-center">
+                    <span className="text-primary5">
+                      <RiCheckboxCircleFill size={20}/>
+                    </span>
+                    Cold wash.
+                  </li>
+                  <li className="flex gap-1 items-center">
+                    <span className="text-primary5">
+                      <RiCheckboxCircleFill size={20}/>
+                    </span>
+                    Avoid high heat drying.
+                  </li>
+                  <li className="flex gap-1 items-center">
+                    <span className="text-primary5">
+                      <RiCheckboxCircleFill size={20} />
+                    </span>
+                    Do not bleach.
+                  </li>
+                  <li className="flex gap-1 items-center">
+                    <span className="text-primary5">
+                      <RiCheckboxCircleFill size={20} />
+                    </span>
+                    Turn garment inside out before ironing.
+                  </li>
                 </ul>
               </div>
             </div>

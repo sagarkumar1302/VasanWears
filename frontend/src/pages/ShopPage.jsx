@@ -372,7 +372,7 @@ const ShopPage = () => {
                       {cat.subCategories.map((sub) => (
                         <label
                           key={sub._id}
-                          className="flex items-center gap-2 text-sm"
+                          className="flex items-center gap-2"
                         >
                           <input
                             type="checkbox"

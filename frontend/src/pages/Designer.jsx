@@ -201,7 +201,6 @@ const AVAILABLE_COLORS_BY_CLOTH = {
       "Grey",
       "Baby Pink",
     ]),
-    
   ],
   sweatshirt: [
     ...pickColorsByName([
@@ -424,16 +423,22 @@ const Designer = ({ productKey } = {}) => {
   const SIZE_SETS = {
     women: ["XS", "S", "M", "L", "XL", "XXL"],
     womenCropHoodie: ["XS", "S", "M", "L", "XL", "XXL"],
-    men: ["XS", "S", "M", "L", "XL","XXL", "2XL", "3XL"],
-    hoodie: ["XS", "S", "M", "L", "XL","XXL", "2XL", "3XL"],
-    sweatshirt: ["XS", "S", "M", "L", "XL","XXL", "2XL", "3XL"],
+    men: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
+    hoodie: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
+    sweatshirt: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
   };
 
-  const normalize = (s) => String(s || "").replace(/\s+/g, "").toUpperCase();
+  const normalize = (s) =>
+    String(s || "")
+      .replace(/\s+/g, "")
+      .toUpperCase();
 
   const getDisplayedSizes = (sizesListArg, clothKey) => {
     const allowed = SIZE_SETS[clothKey] || null;
-    if (!allowed) return Array.isArray(sizesListArg) && sizesListArg.length ? sizesListArg : [];
+    if (!allowed)
+      return Array.isArray(sizesListArg) && sizesListArg.length
+        ? sizesListArg
+        : [];
 
     if (Array.isArray(sizesListArg) && sizesListArg.length) {
       const byName = new Map();
@@ -1897,9 +1902,9 @@ const Designer = ({ productKey } = {}) => {
       console.log("Images prepared:", Object.keys(images));
 
       // Create design title with user name and timestamp
-      const userName = user?.name || user?.email || "Guest";
+      const userName = user?.fullName || user?.email || "Guest";
       const timestamp = new Date().toLocaleString();
-      const designTitle = `${userName} - ${
+      const designTitle = `${userName}-${user?.email} - ${
         CLOTH_CONFIG[cKey]?.label || "Product"
       } - ${timestamp}`;
 
@@ -4920,7 +4925,6 @@ const Designer = ({ productKey } = {}) => {
     setPreviewStaticImages({ Front: null, Back: null });
   }
 
-
   const nextFrame = () => {
     return new Promise((resolve) => {
       requestAnimationFrame(() => resolve());
@@ -5250,68 +5254,46 @@ const Designer = ({ productKey } = {}) => {
           
         </button> */}
         <div className="mt-6 space-y-3">
-            {!savedDesign ? (
-              <button
-                onClick={handleSaveDesign}
-                disabled={mockMode || savingDesign}
-                aria-label="Add to cart"
-                className={`w-full h-14 px-6 rounded-full text-[15px] font-extrabold inline-flex items-center justify-center active:translate-y-px shadow-lg ${
-                  mockMode || savingDesign
-                    ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-900 text-white hover:bg-gray-800"
-                }`}
-              >
-                {savingDesign ? (
-                  <span className="flex items-center gap-2">
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        fill="none"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    Saving Design...
-                  </span>
-                ) : (
-                  "Save Design"
-                )}
-              </button>
-            ) : (
-              <>
-                {designChanged && (
-                  <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-3">
-                    <p className="text-xs font-semibold text-yellow-800 flex items-center gap-2">
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Design Modified - Save Again Required
-                    </p>
-                    <p className="text-xs text-yellow-700 mt-1">
-                      You've made changes to your design. Please save again
-                      before adding to cart.
-                    </p>
-                  </div>
-                )}
-
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                  <p className="text-xs font-semibold text-green-700 flex items-center gap-2">
+          {!savedDesign ? (
+            <button
+              onClick={handleSaveDesign}
+              disabled={mockMode || savingDesign}
+              aria-label="Add to cart"
+              className={`w-full h-14 px-6 rounded-full text-[15px] font-extrabold inline-flex items-center justify-center active:translate-y-px shadow-lg ${
+                mockMode || savingDesign
+                  ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
+                  : "bg-gray-900 text-white hover:bg-gray-800"
+              }`}
+            >
+              {savingDesign ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Saving Design...
+                </span>
+              ) : (
+                "Save Design"
+              )}
+            </button>
+          ) : (
+            <>
+              {designChanged && (
+                <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-3">
+                  <p className="text-xs font-semibold text-yellow-800 flex items-center gap-2">
                     <svg
                       className="w-4 h-4"
                       fill="currentColor"
@@ -5319,118 +5301,134 @@ const Designer = ({ productKey } = {}) => {
                     >
                       <path
                         fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
                         clipRule="evenodd"
                       />
                     </svg>
-                    Design Saved Successfully!
+                    Design Modified - Save Again Required
                   </p>
-                  <p className="text-xs text-gray-600 mt-1 truncate">
-                    {savedDesign.title}
+                  <p className="text-xs text-yellow-700 mt-1">
+                    You've made changes to your design. Please save again before
+                    adding to cart.
                   </p>
                 </div>
+              )}
 
-                {designChanged && (
-                  <button
-                      onClick={handleSaveDesign}
-                      disabled={mockMode || savingDesign}
-                      className={`w-full h-14 px-6 rounded-full text-[15px] font-extrabold inline-flex items-center justify-center ${
-                        mockMode || savingDesign
-                          ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
-                          : "bg-yellow-600 text-white hover:bg-yellow-700 hover:border-yellow-700 hover:shadow-lg"
-                      }`}
-                    >
-                    {savingDesign ? (
-                      <span className="flex items-center gap-2">
-                        <svg
-                          className="animate-spin h-4 w-4"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                        Saving Changes...
-                      </span>
-                    ) : (
-                      "Save Changes"
-                    )}
-                  </button>
-                )}
-
-                {!addedToCart ? (
-                  <button
-                    onClick={openPreviewBothSides}
-                    disabled={
-                      mockMode || addingToCart || !selectedSize || designChanged
-                    }
-                    className={`w-full h-14 px-6 rounded-full text-[15px] font-extrabold inline-flex items-center justify-center ${
-                      mockMode || addingToCart || !selectedSize || designChanged
-                        ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
-                        : "bg-green-600 text-white hover:bg-green-700 hover:border-green-700 hover:shadow-lg"
-                    }`}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-xs font-semibold text-green-700 flex items-center gap-2">
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
                   >
-                    {addingToCart ? (
-                      <span className="flex items-center gap-2">
-                        <svg
-                          className="animate-spin h-4 w-4"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                        Adding to Cart...
-                      </span>
-                    ) : (
-                      `Add to Cart ${
-                        !selectedSize
-                          ? "(Select Size)"
-                          : designChanged
-                          ? "(Save First)"
-                          : ""
-                      }`
-                    )}
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleGoToCheckout}
-                    className="w-full h-12 px-4 rounded-xl text-sm font-extrabold inline-flex items-center justify-center transition-all border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 hover:border-purple-700 hover:shadow-lg active:translate-y-px"
-                  >
-                    Go to Checkout →
-                  </button>
-                )}
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Design Saved Successfully!
+                </p>
+                <p className="text-xs text-gray-600 mt-1 truncate">
+                  {savedDesign.title}
+                </p>
+              </div>
 
-                {!selectedSize && !addedToCart && (
-                  <p className="text-xs text-red-500 mt-2 text-center">
-                    Please select a size before adding to cart
-                  </p>
-                )}
-              </>
-            )}
-          </div>
+              {designChanged && (
+                <button
+                  onClick={handleSaveDesign}
+                  disabled={mockMode || savingDesign}
+                  className={`w-full h-14 px-6 rounded-full text-[15px] font-extrabold inline-flex items-center justify-center ${
+                    mockMode || savingDesign
+                      ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-yellow-600 text-white hover:bg-yellow-700 hover:border-yellow-700 hover:shadow-lg"
+                  }`}
+                >
+                  {savingDesign ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Saving Changes...
+                    </span>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              )}
+
+              {!addedToCart ? (
+                <button
+                  onClick={openPreviewBothSides}
+                  disabled={
+                    mockMode || addingToCart || !selectedSize || designChanged
+                  }
+                  className={`w-full h-14 px-6 rounded-full text-[15px] font-extrabold inline-flex items-center justify-center ${
+                    mockMode || addingToCart || !selectedSize || designChanged
+                      ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-green-600 text-white hover:bg-green-700 hover:border-green-700 hover:shadow-lg"
+                  }`}
+                >
+                  {addingToCart ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Adding to Cart...
+                    </span>
+                  ) : (
+                    `Add to Cart ${
+                      !selectedSize
+                        ? "(Select Size)"
+                        : designChanged
+                        ? "(Save First)"
+                        : ""
+                    }`
+                  )}
+                </button>
+              ) : (
+                <button
+                  onClick={handleGoToCheckout}
+                  className="w-full h-12 px-4 rounded-xl text-sm font-extrabold inline-flex items-center justify-center transition-all border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 hover:border-purple-700 hover:shadow-lg active:translate-y-px"
+                >
+                  Go to Checkout →
+                </button>
+              )}
+
+              {!selectedSize && !addedToCart && (
+                <p className="text-xs text-red-500 mt-2 text-center">
+                  Please select a size before adding to cart
+                </p>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Mobile bottom bar: back button (left), price (center), add to cart (right) */}
@@ -5462,70 +5460,74 @@ const Designer = ({ productKey } = {}) => {
             await handleMobileAddFlow();
           }}
           disabled={
-            (!savedDesign || !savedDesign._id)
+            !savedDesign || !savedDesign._id
               ? mockMode || savingDesign
               : mockMode || addingToCart || !selectedSize || designChanged
           }
           className={`h-10 px-4 rounded-lg font-extrabold inline-flex items-center justify-center transition-all ${
-            (!savedDesign || !savedDesign._id)
-              ? (mockMode || savingDesign
-                  ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
-                  : "bg-gray-900 text-white")
-              : (mockMode || addingToCart || !selectedSize || designChanged
-                  ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
-                  : "bg-green-600 text-white hover:bg-green-700 hover:border-green-700 hover:shadow-lg")
+            !savedDesign || !savedDesign._id
+              ? mockMode || savingDesign
+                ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
+                : "bg-gray-900 text-white"
+              : mockMode || addingToCart || !selectedSize || designChanged
+              ? "border border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed"
+              : "bg-green-600 text-white hover:bg-green-700 hover:border-green-700 hover:shadow-lg"
           }`}
         >
-          {(!savedDesign || !savedDesign._id) ? (
-            <>{savingDesign ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                Saving Design...
-              </span>
-            ) : (
-              "Save Design"
-            )}</>
+          {!savedDesign || !savedDesign._id ? (
+            <>
+              {savingDesign ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Saving Design...
+                </span>
+              ) : (
+                "Save Design"
+              )}
+            </>
+          ) : addingToCart ? (
+            <span className="flex items-center gap-2">
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              Adding to Cart...
+            </span>
           ) : (
-            (addingToCart ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                Adding to Cart...
-              </span>
-            ) : (
-              `Add to Cart ${
-                !selectedSize ? "(Select Size)" : designChanged ? "(Save First)" : ""
-              }`
-            ))
+            `Add to Cart ${
+              !selectedSize
+                ? "(Select Size)"
+                : designChanged
+                ? "(Save First)"
+                : ""
+            }`
           )}
         </button>
       </div>
@@ -6081,7 +6083,10 @@ const Designer = ({ productKey } = {}) => {
                     )}
                   </div>
 
-                  <div className="mt-3.5 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(520px,1fr))]">
+                  <div
+                    className="mt-3.5 grid gap-3 
+                  md:grid-cols-[repeat(auto-fit,minmax(520px,1fr))]"
+                  >
                     {["Front", "Back"].map((sideKey) => (
                       <div
                         key={sideKey}
@@ -6091,7 +6096,10 @@ const Designer = ({ productKey } = {}) => {
                           {sideKey}
                         </div>
                         <div>
-                          <div className="w-full max-w-full aspect-[3/4] flex items-center justify-center bg-white">
+                          <div
+                            className="md:w-full md:max-w-full aspect-[3/4] 
+                          flex items-center justify-center bg-white"
+                          >
                             {previewStaticImages?.[sideKey] ||
                             previewImages?.[sideKey] ? (
                               <img
@@ -6136,8 +6144,15 @@ const Designer = ({ productKey } = {}) => {
                     // After successfully adding, go to checkout
                     handleGoToCheckout();
                   } catch (err) {
-                    console.error("Preview add-to-cart then checkout failed:", err);
-                    toast.error(err?.response?.data?.message || err?.message || "Add to cart failed");
+                    console.error(
+                      "Preview add-to-cart then checkout failed:",
+                      err
+                    );
+                    toast.error(
+                      err?.response?.data?.message ||
+                        err?.message ||
+                        "Add to cart failed"
+                    );
                   }
                 }}
                 className="w-full h-12 px-4 rounded-xl border-2 border-green-600 bg-green-600 text-white font-extrabold hover:bg-green-700 hover:border-green-700 hover:shadow-lg active:translate-y-px"
@@ -6148,8 +6163,6 @@ const Designer = ({ productKey } = {}) => {
           </div>
         </div>
       )}
-
-      
     </div>
   );
 };

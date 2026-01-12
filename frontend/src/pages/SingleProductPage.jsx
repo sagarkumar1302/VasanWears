@@ -104,7 +104,7 @@ const SingleProductPage = () => {
 
     setSelectedVariant(finalVariant);
     setSelectedColor(finalVariant.color);
-    
+
     // Set size from URL or variant's size
     if (sizeFromUrl) {
       const foundSize = product.sizes.find((s) => s._id === sizeFromUrl);
@@ -249,20 +249,19 @@ const SingleProductPage = () => {
       setSelectedSize(sizeId);
 
       // Find the variant that matches the current color AND the new size
-      const variant = product.variants.find(
-        (v) => {
-          const colorMatch = v.color?._id?.toString() === selectedColor || 
-                           v.color?.toString() === selectedColor;
-          const sizeMatch = v.size?._id === sizeId || v.size === sizeId;
-          return colorMatch && sizeMatch;
-        }
-      );
+      const variant = product.variants.find((v) => {
+        const colorMatch =
+          v.color?._id?.toString() === selectedColor ||
+          v.color?.toString() === selectedColor;
+        const sizeMatch = v.size?._id === sizeId || v.size === sizeId;
+        return colorMatch && sizeMatch;
+      });
 
       // If we found a matching variant, update it
       if (variant) {
         setSelectedVariant(variant);
         setSelectedIndex(0);
-        
+
         navigate(
           `/shop/${product._id}/${product.slug}?variant=${variant._id}&size=${sizeId}`,
           { replace: true }
@@ -390,8 +389,10 @@ const SingleProductPage = () => {
 
     // Check subcategory first (more specific)
     if (subCategoryName) {
-      if (subCategoryName.toLowerCase().includes("tshirt") || 
-          subCategoryName.toLowerCase().includes("t-shirt")) {
+      if (
+        subCategoryName.toLowerCase().includes("tshirt") ||
+        subCategoryName.toLowerCase().includes("t-shirt")
+      ) {
         return SIZE_CHARTS["T-Shirt"];
       }
       if (subCategoryName.toLowerCase().includes("women hoodie")) {
@@ -407,8 +408,10 @@ const SingleProductPage = () => {
 
     // Check category
     if (categoryName) {
-      if (categoryName.toLowerCase().includes("tshirt") || 
-          categoryName.toLowerCase().includes("t-shirt")) {
+      if (
+        categoryName.toLowerCase().includes("tshirt") ||
+        categoryName.toLowerCase().includes("t-shirt")
+      ) {
         return SIZE_CHARTS["T-Shirt"];
       }
       if (categoryName.toLowerCase().includes("hoodie")) {
@@ -427,7 +430,11 @@ const SingleProductPage = () => {
     if (!selectedVariant) return null;
 
     // Check if variant has size-specific SKUs (sizeStock array)
-    if (selectedVariant.sizeStock && Array.isArray(selectedVariant.sizeStock) && selectedSize) {
+    if (
+      selectedVariant.sizeStock &&
+      Array.isArray(selectedVariant.sizeStock) &&
+      selectedSize
+    ) {
       const sizeStock = selectedVariant.sizeStock.find(
         (ss) => ss.size?._id === selectedSize || ss.size === selectedSize
       );
@@ -599,13 +606,13 @@ const SingleProductPage = () => {
                 {product?.credits?.fullName ? (
                   <Link
                     to={`/designs-collections/users/${product?.credits?._id}`}
-                    className="flex justify-center items-center gap-2"
+                    className="flex justify-center items-center gap-2 md:text-base text-sm"
                   >
                     <img
                       src={credits1}
                       alt="Credits"
                       loading="lazy"
-                      className="w-10"
+                      className="md:w-10 w-6"
                     />
 
                     <span>Credit by </span>
@@ -614,12 +621,12 @@ const SingleProductPage = () => {
                     </span>
                   </Link>
                 ) : (
-                  <div className="flex gap-2 items-center justify-center">
+                  <div className="flex gap-2 items-center justify-center md:text-base text-sm">
                     <img
                       src={credits1}
                       alt="Credits"
                       loading="lazy"
-                      className="w-10"
+                      className="md:w-10 w-6"
                     />
                     <span className="font-bold">By VasanWears</span>
                   </div>
@@ -864,19 +871,20 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
           <div className="hidden md:block mt-6 text-primary5 leading-relaxed">
             {activeTab === "description" && (
               <div>
-                <p className="text-base text-primary5">
-                  {product.description}
-                </p>
+                <p className="text-base text-primary5">{product.description}</p>
               </div>
             )}
 
             {activeTab === "additional" && (
-              <div><div 
-                className="prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: product?.additionalInfo }}
-              />
-              <p><b>Color:</b> {product?.colors?.length}</p></div>
-              
+              <div>
+                <div
+                  className="prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: product?.additionalInfo }}
+                />
+                <p>
+                  <b>Color:</b> {product?.colors?.length}
+                </p>
+              </div>
             )}
 
             {activeTab === "reviews" && (
@@ -895,18 +903,21 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
             {/* Description */}
             <Accordion title="Description">
               <div>
-                <p className="text-base text-primary5">
-                  {product.description}
-                </p>
+                <p className="text-base text-primary5">{product.description}</p>
               </div>
             </Accordion>
 
             {/* Additional Info */}
             <Accordion title="Additional Information">
-              <div 
-                className="prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: product?.additionalInfo || '<p>No additional information available.</p>' }}
-              />
+              <div>
+                <div
+                  className="prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: product?.additionalInfo }}
+                />
+                <p>
+                  <b>Color:</b> {product?.colors?.length}
+                </p>
+              </div>
             </Accordion>
 
             {/* Reviews */}
@@ -947,7 +958,8 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
             {(() => {
               // Prefer explicit tutorial URL on product or variant, fall back to selectedMedia if it's a video
               const tutorialSrc =
-                product?.tutorialUrl || selectedVariant?.tutorialUrl ||
+                product?.tutorialUrl ||
+                selectedVariant?.tutorialUrl ||
                 (selectedMedia?.type === "video" ? selectedMedia?.src : null) ||
                 FALLBACK_TUTORIAL_URL;
 
@@ -961,8 +973,10 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
                   }
                   if (u.hostname.includes("youtube.com")) {
                     const v = u.searchParams.get("v");
-                    if (v) return `https://www.youtube.com/embed/${v}?autoplay=1`;
-                    if (u.pathname.includes("/embed/")) return url + "?autoplay=1";
+                    if (v)
+                      return `https://www.youtube.com/embed/${v}?autoplay=1`;
+                    if (u.pathname.includes("/embed/"))
+                      return url + "?autoplay=1";
                   }
                 } catch (e) {}
                 return null;
@@ -1049,7 +1063,9 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
                   {getSizeChart.rows.map((row, rowIndex) => (
                     <tr
                       key={rowIndex}
-                      className={rowIndex % 2 === 0 ? "bg-primary1/10" : "bg-white"}
+                      className={
+                        rowIndex % 2 === 0 ? "bg-primary1/10" : "bg-white"
+                      }
                     >
                       {row.map((cell, cellIndex) => (
                         <td
@@ -1067,7 +1083,8 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
 
             {/* Note */}
             <p className="mt-6 text-sm text-gray-600">
-              <strong>Note:</strong> All measurements are in inches. For best fit, measure yourself and compare with the chart above.
+              <strong>Note:</strong> All measurements are in inches. For best
+              fit, measure yourself and compare with the chart above.
             </p>
           </div>
         </div>

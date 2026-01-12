@@ -30,7 +30,7 @@ const HowItWorks = memo(() => {
                 alt="Add custom design step"
                 width="600"
                 height="450"
-                fetchpriority="high"
+                fetchPriority="high"
                 className="md:w-[80%] w-full h-full object-cover"
               />
             </div>

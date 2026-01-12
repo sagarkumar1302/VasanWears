@@ -138,7 +138,7 @@ export const placeOrder = async (req, res) => {
         title: "Order Confirmed 🛍️",
         message: `Your order <b>#${order._id}</b> has been placed successfully.`,
         buttonText: "View Order",
-        buttonLink: `${process.env.FRONT_END_URL}/my-account/orders/${order._id}`,
+        url: `${process.env.FRONT_END_URL}/my-account/orders/${order._id}`,
       });
       await sendEmail({
         email: process.env.EMAIL_USER,
@@ -151,7 +151,7 @@ export const placeOrder = async (req, res) => {
           <b>Payment:</b> COD
         `,
         buttonText: "View Order",
-        buttonLink: `${process.env.FRONT_END_URL}/admin/orders/${order._id}`,
+        url: `${process.env.FRONT_END_URL}/admin/orders/${order._id}`,
       });
       return res
         .status(201)
