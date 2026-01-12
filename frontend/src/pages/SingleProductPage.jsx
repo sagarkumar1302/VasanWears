@@ -281,6 +281,8 @@ const SingleProductPage = () => {
   const [showVideo, setShowVideo] = useState(false);
   const videoOverlayRef = useRef(null);
   const videoBoxRef = useRef(null);
+  // Fallback tutorial URL (YouTube watch URL). Update if you want a different default.
+  const FALLBACK_TUTORIAL_URL = "https://www.youtube.com/watch?v=s2oO6po8ugw";
 
   const openVideo = useCallback(() => {
     setShowVideo(true);
@@ -941,13 +943,63 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
               ✕
             </button>
 
-            {/* Video */}
-            <video
-              src="/images/dummy/video1.mp4"
-              controls
-              autoPlay
-              className="w-full h-full object-cover"
-            />
+            {/* Video or YouTube Embed */}
+            {(() => {
+              // Prefer explicit tutorial URL on product or variant, fall back to selectedMedia if it's a video
+              const tutorialSrc =
+                product?.tutorialUrl || selectedVariant?.tutorialUrl ||
+                (selectedMedia?.type === "video" ? selectedMedia?.src : null) ||
+                FALLBACK_TUTORIAL_URL;
+
+              const getYouTubeEmbed = (url) => {
+                if (!url) return null;
+                try {
+                  const u = new URL(url, window.location.href);
+                  if (u.hostname.includes("youtu.be")) {
+                    const id = u.pathname.slice(1);
+                    return `https://www.youtube.com/embed/${id}?autoplay=1`;
+                  }
+                  if (u.hostname.includes("youtube.com")) {
+                    const v = u.searchParams.get("v");
+                    if (v) return `https://www.youtube.com/embed/${v}?autoplay=1`;
+                    if (u.pathname.includes("/embed/")) return url + "?autoplay=1";
+                  }
+                } catch (e) {}
+                return null;
+              };
+
+              const ytEmbed = getYouTubeEmbed(tutorialSrc);
+
+              if (ytEmbed) {
+                return (
+                  <iframe
+                    title="tutorial-video"
+                    src={ytEmbed}
+                    allow="autoplay; encrypted-media"
+                    className="w-full h-full"
+                    frameBorder="0"
+                    allowFullScreen
+                  />
+                );
+              }
+
+              if (tutorialSrc) {
+                return (
+                  <video
+                    src={tutorialSrc}
+                    controls
+                    autoPlay
+                    className="w-full h-full object-cover"
+                  />
+                );
+              }
+
+              return (
+                <div className="w-full h-full flex items-center justify-center text-white">
+                  <p>No tutorial available.</p>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
