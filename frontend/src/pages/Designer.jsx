@@ -361,6 +361,7 @@ const Designer = ({ productKey } = {}) => {
   const [hasSelection, setHasSelection] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
   const [savingDesign, setSavingDesign] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [savedDesign, setSavedDesign] = useState(null);
   const [addedToCart, setAddedToCart] = useState(false);
   const [previewAddedToCart, setPreviewAddedToCart] = useState(false);
@@ -2065,6 +2066,7 @@ const Designer = ({ productKey } = {}) => {
   };
 
   const handleGoToCheckout = () => {
+    setCheckoutLoading(true);
     navigate("/checkout");
   };
 
@@ -5078,7 +5080,7 @@ const Designer = ({ productKey } = {}) => {
   }, []);
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-gray-50 text-gray-900 flex flex-col md:flex-row">
+    <div className="relative h-screen w-screen overflow-hidden bg-gray-50 text-gray-900 flex flex-col md:flex-row">
       <input
         ref={fileInputRef}
         type="file"
@@ -5093,6 +5095,18 @@ const Designer = ({ productKey } = {}) => {
         onChange={handleFontUpload}
         className="hidden"
       />
+      {/* Checkout lazy loader overlay */}
+      {checkoutLoading && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="flex items-center gap-3 bg-white/90 px-4 py-3 rounded-lg shadow">
+            <svg className="w-6 h-6 text-gray-900 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <div className="text-sm font-medium text-gray-900">Redirecting to checkout…</div>
+          </div>
+        </div>
+      )}
       {/* LEFT PANEL */}
       <div className="hidden md:flex md:w-[340px] shrink-0 flex-col bg-white border-b md:border-b-0 md:border-r border-gray-200">
         <div className="p-5 border-b border-gray-100">
