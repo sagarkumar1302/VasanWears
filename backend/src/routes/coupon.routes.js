@@ -36,8 +36,8 @@ router.delete("/:id", adminVerifyJwt, deleteCoupon);
 // GET ACTIVE COUPONS (public or user)
 router.get("/active", getActiveCoupons);
 
-// VALIDATE COUPON
-router.post("/validate", validateCoupon);
+// VALIDATE COUPON (requires authentication to check per-user limits)
+router.post("/validate", verifyJWT, validateCoupon);
 
 // MARK COUPON AS USED (called after successful order)
 router.post("/mark-used", verifyJWT, markCouponAsUsed);

@@ -19,6 +19,7 @@ export const addToCartApi = async ({
     colorId,
     sizeId,
     quantity,
+    variantData,
 
     // 👇 only for custom
     design,
@@ -34,6 +35,7 @@ export const addToCartApi = async ({
             payload.productId = productId;
             payload.colorId = colorId;
             payload.sizeId = sizeId;
+            payload.variantData = variantData;
         }
 
         if (itemType === "custom") {
@@ -71,6 +73,15 @@ export const updateCartItemApi = async (itemId, quantity) => {
         const res = await API.delete(`/cart/update/${itemId}`, { data: { quantity } });
         return res.data;
     } catch (err) {
+        throw err;
+    }
+};
+export const getVariantByIdApi = async (productId, variantId) => {
+    try {
+        const res = await API.get(`/adminproduct/variant/${productId}/${variantId}`);
+        return res.data;
+    }
+    catch (err) {
         throw err;
     }
 };

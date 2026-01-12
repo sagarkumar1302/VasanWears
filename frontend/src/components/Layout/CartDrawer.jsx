@@ -9,7 +9,8 @@ const CartDrawer = memo(({ setCartDrawer, cartDrawer }) => {
   const drawerRef = useRef(null);
   const timeline = useRef(null);
   const { items, subtotal, loading, updateQty, removeItem } = useCartStore();
-
+  console.log("Items ",items);
+  
   useGSAP(() => {
     if (!drawerRef.current) return;
 
@@ -93,7 +94,13 @@ const CartDrawer = memo(({ setCartDrawer, cartDrawer }) => {
         </div>
         <div className="md:h-[80vh] h-[60vh] overflow-x-hidden overflow-y-auto custom-scroll">
           {loading ? (
-            <p className="text-center">Loading cart...</p>
+            <div className="flex flex-col items-center justify-center h-full gap-4">
+              <div className="relative w-16 h-16">
+                <div className="absolute inset-0 border-4 border-primary3 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-primary1 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+              <p className="text-primary5 font-medium">Loading cart...</p>
+            </div>
           ) : items.length !== 0 ? (
             <div className="p-4 flex flex-col gap-4 ">
               {items?.map((item) => (
@@ -106,7 +113,7 @@ const CartDrawer = memo(({ setCartDrawer, cartDrawer }) => {
                     <>
                       <div className="cartImage flex-2/12">
                         <img
-                          src={item.product?.featuredImage}
+                          src={item.variantData?.featuredImage  || item.product?.featuredImage}
                           alt={`${item.product?.title} - Cart item`}
                           className="w-20"
                           loading="lazy"

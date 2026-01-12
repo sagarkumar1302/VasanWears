@@ -26,6 +26,12 @@ const cartItemSchema = new mongoose.Schema(
       },
     },
 
+    // Snapshot of variant data (images, prices, stock, etc.)
+    variantData: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+
     color: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Color",

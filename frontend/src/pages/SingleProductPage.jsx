@@ -463,16 +463,27 @@ const SingleProductPage = () => {
     }
 
     if (!product) return;
+    console.log("Selected Variant", selectedVariant.featuredImage);
 
     try {
       toast.loading("Adding to cart...");
       await addToCartApi({
         itemType: "catalog",
         productId: product._id,
-        variantId: selectedVariant._id,
         colorId: selectedColor,
         sizeId: selectedSize,
         quantity: cartCount,
+        variantData: {
+          _id: selectedVariant._id,
+          sku: selectedVariant.sku,
+          featuredImage: selectedVariant.featuredImage,
+          gallery: selectedVariant.gallery,
+          regularPrice: selectedVariant.regularPrice,
+          salePrice: selectedVariant.salePrice,
+          stock: selectedVariant.stock,
+          color: selectedVariant.color,
+          size: selectedVariant.size,
+        },
       });
 
       toast.dismiss();
