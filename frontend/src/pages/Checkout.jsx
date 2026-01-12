@@ -95,16 +95,16 @@ const Checkout = memo(() => {
         orderValue: subtotal,
         products,
       });
-
+      console.log("Res ",response);
+      
       setDiscount(response.data.discountAmount);
       setAppliedCoupon(response.data.coupon);
       setCouponError("");
-      toast.success("Coupon applied successfully!");
     } catch (err) {
       setDiscount(0);
       setAppliedCoupon(null);
       setCouponError(
-        err.response?.data?.message || "Invalid or expired coupon code"
+        err.response?.data?.message || "Invalid or expired coupon code123"
       );
     } finally {
       setValidatingCoupon(false);

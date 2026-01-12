@@ -222,6 +222,7 @@ const validateCoupon = asyncHandler(async (req, res) => {
 
   discountAmount = Math.min(discountAmount, orderValue);
 
+  console.log("Working",coupon);
   res.status(200).json(
     new ApiResponse(200, "Coupon is valid", {
       coupon: {
