@@ -2065,9 +2065,16 @@ const Designer = ({ productKey } = {}) => {
     }
   };
 
-  const handleGoToCheckout = () => {
-    setCheckoutLoading(true);
-    navigate("/checkout");
+  const handleGoToCheckout = async () => {
+    try {
+      setCheckoutLoading(true);
+      // Allow one paint frame so the overlay becomes visible before navigation
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      navigate("/checkout");
+    } catch (e) {
+      setCheckoutLoading(false);
+      throw e;
+    }
   };
 
   // If the parent app provides a productKey like "Men/Tshirt", keep this component in sync.
@@ -3004,11 +3011,24 @@ const Designer = ({ productKey } = {}) => {
                 ) : (
                   <button
                     onClick={handleGoToCheckout}
+                    disabled={checkoutLoading}
                     className={`w-full h-12 px-6 rounded-full text-[15px] font-extrabold inline-flex items-center justify-center active:translate-y-px shadow-lg ${
-                      "bg-purple-600 text-white hover:bg-purple-700 hover:border-purple-700 hover:shadow-lg"
+                      checkoutLoading
+                        ? "opacity-70 cursor-not-allowed bg-purple-600 text-white"
+                        : "bg-purple-600 text-white hover:bg-purple-700 hover:border-purple-700 hover:shadow-lg"
                     }`}
                   >
-                    Go to Checkout →
+                    {checkoutLoading ? (
+                      <span className="flex items-center gap-2">
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Redirecting to checkout…
+                      </span>
+                    ) : (
+                      "Go to Checkout →"
+                    )}
                   </button>
                 )}
 
@@ -5429,9 +5449,24 @@ const Designer = ({ productKey } = {}) => {
               ) : (
                 <button
                   onClick={handleGoToCheckout}
-                  className="w-full h-12 px-4 rounded-xl text-sm font-extrabold inline-flex items-center justify-center transition-all border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 hover:border-purple-700 hover:shadow-lg active:translate-y-px"
+                  disabled={checkoutLoading}
+                  className={`w-full h-12 px-4 rounded-xl text-sm font-extrabold inline-flex items-center justify-center transition-all border-2 ${
+                    checkoutLoading
+                      ? "border-purple-600 bg-purple-600 text-white opacity-70 cursor-not-allowed"
+                      : "border-purple-600 bg-purple-600 text-white hover:bg-purple-700 hover:border-purple-700 hover:shadow-lg"
+                  } active:translate-y-px`}
                 >
-                  Go to Checkout →
+                  {checkoutLoading ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Redirecting to checkout…
+                    </span>
+                  ) : (
+                    "Go to Checkout →"
+                  )}
                 </button>
               )}
 
@@ -6141,18 +6176,6 @@ const Designer = ({ productKey } = {}) => {
             <div className="p-3.5 border-t border-gray-200 flex justify-end bg-white">
               <button
                 onClick={async () => {
-                  // If productId is in URL, open picker as before.
-                  // const productId = searchParams.get("productId");
-                  // if (!productId) {
-                  //   setProductPickerOpen(true);
-                  //   setProductPickerValues((v) => ({
-                  //     ...v,
-                  //     colorName: selectedColor,
-                  //     sizeName: v.sizeName || "",
-                  //   }));
-                  //   return;
-                  // }
-
                   try {
                     await handleAddToCart();
                     // After successfully adding, go to checkout
@@ -6169,9 +6192,24 @@ const Designer = ({ productKey } = {}) => {
                     );
                   }
                 }}
-                className="w-full h-12 px-4 rounded-xl border-2 border-green-600 bg-green-600 text-white font-extrabold hover:bg-green-700 hover:border-green-700 hover:shadow-lg active:translate-y-px"
+                disabled={checkoutLoading}
+                className={`w-full h-12 px-4 rounded-xl border-2 text-white font-extrabold active:translate-y-px ${
+                  checkoutLoading
+                    ? "border-green-600 bg-green-600 opacity-70 cursor-not-allowed"
+                    : "border-green-600 bg-green-600 hover:bg-green-700 hover:border-green-700 hover:shadow-lg"
+                }`}
               >
-                Go to Checkout →
+                {checkoutLoading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Redirecting to checkout…
+                  </span>
+                ) : (
+                  "Go to Checkout →"
+                )}
               </button>
             </div>
           </div>
