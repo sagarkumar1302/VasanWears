@@ -11,7 +11,7 @@ createRoot(document.getElementById("root")).render(
       reverseOrder={false}
       toastOptions={{
         // Shorter duration for mobile
-        duration: 1200,
+        duration: 800,
         // Click to dismiss
         onClick: (toast) => {
           if (toast && typeof toast.dismiss === 'function') {
