@@ -58,7 +58,7 @@ const LoginPage = () => {
 
       toast.success("Profile completed successfully! 🎉");
       setShowAdditionalInfo(false);
-      navigate("/my-account");
+      navigate("/");
     } catch (error) {
       console.error("Profile update failed:", error);
       toast.error("Failed to update profile");
@@ -80,7 +80,7 @@ const LoginPage = () => {
       if (!checkUserProfileComplete(currentUser)) {
         setShowAdditionalInfo(true);
       } else {
-        navigate("/my-account");
+        navigate("/");
       }
     } catch (error) {
       console.error("Login failed:", error.response?.data || error);
@@ -101,7 +101,7 @@ const LoginPage = () => {
         if (!checkUserProfileComplete(currentUser)) {
           setShowAdditionalInfo(true);
         } else {
-          navigate("/my-account");
+          navigate("/");
         }
       } catch (err) {
         console.error("Google login failed:", err.response?.data || err);
