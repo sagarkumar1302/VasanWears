@@ -3,39 +3,40 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
+
 createRoot(document.getElementById("root")).render(
   <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
     <Toaster 
       position="bottom-center" 
       reverseOrder={false}
+      containerStyle={{
+        bottom: 80,
+      }}
       toastOptions={{
-        // Shorter duration for mobile
-        duration: 800,
-        // Click to dismiss
-        onClick: (toast) => {
-          if (toast && typeof toast.dismiss === 'function') {
-            toast.dismiss();
-          }
-        },
+        duration: 2500,
         style: {
+          padding: '12px 16px',
+          fontSize: '14px',
           cursor: 'pointer',
+          userSelect: 'none',
         },
-        // Error toast specific styling
         error: {
           duration: 1200,
           style: {
             cursor: 'pointer',
+            userSelect: 'none',
           },
         },
-        // Success toast specific styling
         success: {
-          duration: 2500,
+          duration: 2000,
           style: {
             cursor: 'pointer',
+            userSelect: 'none',
           },
         },
       }}
+      onClick={(t) => toast.dismiss(t.id)}
     />
     <App />
   </GoogleOAuthProvider>
