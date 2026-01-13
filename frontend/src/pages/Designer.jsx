@@ -5493,7 +5493,7 @@ const Designer = ({ productKey } = {}) => {
         <div className="text-white font-extrabold text-lg">
           {(() => {
             const p = computeDesignPrice();
-            return p.hasAny ? `₹${p.price}` : "Add a design";
+            return p.hasAny ? `₹${p.price}` : <p className="text-xs text-center">Click on tools to <br/>Add a design</p>;
           })()}
         </div>
 

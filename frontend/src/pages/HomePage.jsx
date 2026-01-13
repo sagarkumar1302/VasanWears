@@ -6,10 +6,12 @@ import ProductShowcase from "../components/Common/ProductShowcase";
 import ZigZagFeatures from "../components/Common/ZigZagFeatures";
 import ShoppingCategories from "../components/Common/ShoppingCategories";
 import FAQSection from "../components/Common/FAQSection";
+import WelcomeOfferModal from "../components/Common/WelcomeOfferModal";
 
 const HomePage = () => {
   return (
     <>
+      <WelcomeOfferModal />
       <HeroSlider />
       <ShoppingCategories/>
       <HowItWorks />

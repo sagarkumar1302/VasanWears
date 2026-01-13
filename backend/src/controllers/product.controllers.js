@@ -338,7 +338,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     if (file.fieldname === "featuredImage") featuredImageFile = file;
     if (file.fieldname === "hoverImage") hoverImageFile = file;
     if (file.fieldname === "gallery") galleryFiles.push(file);
-    
+
   }
 
   /* ================= IMAGE UPDATES ================= */
@@ -348,7 +348,7 @@ const updateProduct = asyncHandler(async (req, res) => {
       "products/featured"
     );
   }
-  if(additionalInfo){
+  if (additionalInfo) {
     product.additionalInfo = additionalInfo;
   }
 
@@ -644,5 +644,22 @@ const getAllProductsForWebsite = asyncHandler(async (req, res) => {
   );
 });
 
-
-export { createProduct, updateProduct, deleteProduct, getAllProducts, getProductById, getProductBySlug, getAllProductsForWebsite };
+const getVariantById = asyncHandler(async (req, res) => {
+  const { productId, variantId } = req.params;
+  const product = await Product.findById(productId).lean();
+  if (!product) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, "Product not found"));
+  }
+  const variant = product.variants.find((v) => v._id.toString() === variantId);
+  if (!variant) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, "Variant not found"));
+  }
+  res.status(200).json(
+    new ApiResponse(200, "Variant fetched successfully", variant)
+  );
+});
+export { createProduct, updateProduct, deleteProduct, getAllProducts, getProductById, getProductBySlug, getAllProductsForWebsite, getVariantById };

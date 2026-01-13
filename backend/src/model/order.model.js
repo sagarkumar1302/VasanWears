@@ -280,6 +280,14 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: null, // admin/internal notes
     },
+    isExpressDelivery: {
+      type: Boolean,
+      default: false,
+    },
+    isGift: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

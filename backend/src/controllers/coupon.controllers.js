@@ -117,7 +117,8 @@ const getCouponById = asyncHandler(async (req, res) => {
  * VALIDATE AND APPLY COUPON
  */
 const validateCoupon = asyncHandler(async (req, res) => {
-  const { code, orderValue, userId, products } = req.body;
+  const { code, orderValue, products } = req.body;
+  const userId = req.user?._id; // Get from authenticated user
 
   if (!code || !orderValue) {
     return res
@@ -168,15 +169,15 @@ const validateCoupon = asyncHandler(async (req, res) => {
       .json(new ApiResponse(400, "Coupon usage limit reached"));
   }
 
-  // Check per user limit
+  // Check per user limit (CRITICAL: using authenticated user)
   if (userId) {
     const userUsageCount = coupon.usedBy.filter(
-      (u) => u.user.toString() === userId
+      (u) => u.user.toString() === userId.toString()
     ).length;
     if (userUsageCount >= coupon.perUserLimit) {
       return res
         .status(400)
-        .json(new ApiResponse(400, "You have already used this coupon"));
+        .json(new ApiResponse(400, `You have already used this coupon (limit: ${coupon.perUserLimit} times)`));
     }
   }
 
@@ -221,6 +222,7 @@ const validateCoupon = asyncHandler(async (req, res) => {
 
   discountAmount = Math.min(discountAmount, orderValue);
 
+  console.log("Working",coupon);
   res.status(200).json(
     new ApiResponse(200, "Coupon is valid", {
       coupon: {

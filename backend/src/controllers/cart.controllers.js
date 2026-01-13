@@ -6,7 +6,7 @@ const calculateSubtotal = (items) =>
   items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
 
-const addToCart = async (req, res) => {
+  const addToCart = async (req, res) => {
   try {
     const userId = req.user._id;
     const {
@@ -17,6 +17,7 @@ const addToCart = async (req, res) => {
       quantity,
       design,
       price,
+      variantData, // Accept full variant data from frontend
     } = req.body;
 
     if (!itemType || !quantity || quantity < 1) {
@@ -90,6 +91,16 @@ const addToCart = async (req, res) => {
           sku: variant.sku,
           quantity,
           price: finalPrice,
+          variantData: variantData || {
+            _id: variant._id,
+            sku: variant.sku,
+            images: variant.images,
+            regularPrice: variant.regularPrice,
+            salePrice: variant.salePrice,
+            stock: variant.stock,
+            color: variant.color,
+            size: variant.size,
+          },
         });
       }
     }

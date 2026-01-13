@@ -57,18 +57,29 @@ export const verifyPayment = async (req, res) => {
     order.orderStatus = "CONFIRMED";
     await order.save();
 
-    // Mark coupon as used for online payment
+    // Mark coupon as used for online payment (safety check)
     if (order.couponCode) {
       try {
         const coupon = await Coupon.findOne({ code: order.couponCode.toUpperCase() });
         if (coupon) {
-          coupon.usedCount += 1;
-          coupon.usedBy.push({ user: order.user._id, usedAt: new Date() });
-          await coupon.save();
+          // Safety check: verify limit not exceeded (validation already done at apply stage)
+          const userUsageCount = coupon.usedBy.filter(
+            (u) => u.user.toString() === order.user._id.toString()
+          ).length;
+          
+          if (userUsageCount >= coupon.perUserLimit) {
+            console.warn(`User ${order.user._id} exceeded coupon limit for ${order.couponCode}`);
+          } else if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
+            console.warn(`Global usage limit reached for coupon ${order.couponCode}`);
+          } else {
+            // All checks passed, mark as used
+            coupon.usedCount += 1;
+            coupon.usedBy.push({ user: order.user._id, usedAt: new Date() });
+            await coupon.save();
+          }
         }
       } catch (couponError) {
         console.error("Error updating coupon usage:", couponError);
-        // Don't fail the payment if coupon update fails
       }
     }
 

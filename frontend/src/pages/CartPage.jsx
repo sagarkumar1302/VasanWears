@@ -69,7 +69,9 @@ const CartPage = memo(() => {
                           className="flex gap-4"
                         >
                           <img
-                            src={item.product?.featuredImage}
+                            src={
+                              item.variantData?.featuredImage || item.product?.featuredImage
+                            }
                             alt={item.product?.title || "Product"}
                             loading="lazy"
                             className="w-20 h-24 object-cover rounded-md"
@@ -165,7 +167,9 @@ const CartPage = memo(() => {
                           className="flex gap-3 flex-1"
                         >
                           <img
-                            src={item.product?.featuredImage}
+                            src={
+                              item.variantImage || item.product?.featuredImage
+                            }
                             alt={item.product?.title || "Product"}
                             loading="lazy"
                             className="w-20 h-24 object-cover rounded-md flex-shrink-0"
@@ -270,11 +274,6 @@ const CartPage = memo(() => {
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span>₹{subtotal}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span>Delivery</span>
-                  <span className="font-semibold">Free</span>
                 </div>
 
                 <hr className="text-primary5/20" />

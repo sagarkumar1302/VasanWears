@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 
 const ContactUs = () => {
   const [form, setForm] = useState({
+    type: "contact", // contact or feedback
     name: "",
     email: "",
     subject: "",
@@ -40,6 +41,7 @@ const ContactUs = () => {
 
       // Clear form
       setForm({
+        type: "contact",
         name: "",
         email: "",
         subject: "",
@@ -67,7 +69,7 @@ const ContactUs = () => {
             </h2>
             <p className="text-primary5 mb-8">
               Have a question about our products, orders, or collaborations?
-              We’d love to hear from you.
+              Want to share feedback about your experience? We'd love to hear from you.
             </p>
 
             <div className="space-y-6">
@@ -97,10 +99,41 @@ const ContactUs = () => {
           {/* RIGHT FORM */}
           <div className="bg-primary3/50 p-6 md:p-8 rounded-2xl shadow-sm">
             <h3 className="text-2xl font-bold mb-6">
-              Send Us a Message
+              {form.type === "contact" ? "Send Us a Message" : "Share Your Feedback"}
             </h3>
 
             <form className="space-y-5" onSubmit={handleSubmit}>
+              {/* Type Selection */}
+              <div>
+                <label className="block mb-2 font-medium">
+                  I want to:
+                </label>
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="type"
+                      value="contact"
+                      checked={form.type === "contact"}
+                      onChange={handleChange}
+                      className="w-4 h-4 accent-primary5 cursor-pointer"
+                    />
+                    <span>Contact You</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="type"
+                      value="feedback"
+                      checked={form.type === "feedback"}
+                      onChange={handleChange}
+                      className="w-4 h-4 accent-primary5 cursor-pointer"
+                    />
+                    <span>Give Feedback</span>
+                  </label>
+                </div>
+              </div>
+
               <div>
                 <label className="block mb-1 font-medium">
                   Full Name *
@@ -131,28 +164,36 @@ const ContactUs = () => {
 
               <div>
                 <label className="block mb-1 font-medium">
-                  Subject
+                  {form.type === "contact" ? "Subject" : "Feedback Topic"}
                 </label>
                 <input
                   type="text"
                   name="subject"
                   value={form.subject}
                   onChange={handleChange}
-                  placeholder="Order / Support / Feedback"
+                  placeholder={
+                    form.type === "contact"
+                      ? "Order / Support / Feedback"
+                      : "UI/UX / Product Quality / Delivery / Other"
+                  }
                   className="w-full border border-primary4 rounded-lg px-4 py-2 outline-none focus:border-primary5"
                 />
               </div>
 
               <div>
                 <label className="block mb-1 font-medium">
-                  Message *
+                  {form.type === "contact" ? "Message *" : "Your Feedback *"}
                 </label>
                 <textarea
                   rows="4"
                   name="message"
                   value={form.message}
                   onChange={handleChange}
-                  placeholder="Write your message..."
+                  placeholder={
+                    form.type === "contact"
+                      ? "Write your message..."
+                      : "Tell us about your experience with our website..."
+                  }
                   className="w-full border border-primary4 rounded-lg px-4 py-2 outline-none focus:border-primary5 resize-none"
                 />
               </div>
@@ -163,7 +204,7 @@ const ContactUs = () => {
                 className="w-full py-2.5 px-8 rounded-xl font-semibold text-primary2 
                 transition-all duration-300 btn-slide md:text-base text-sm cursor-pointer"
               >
-                {loading ? "Sending..." : "Send Message"}
+                {loading ? "Sending..." : form.type === "contact" ? "Send Message" : "Submit Feedback"}
               </button>
             </form>
           </div>

@@ -52,6 +52,9 @@ const Checkout = memo(() => {
     state: "",
     pincode: "",
   });
+  const [notes, setNotes] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  
   const validateCheckout = useCallback(() => {
     if (!shipping.fullName || !shipping.phone || !shipping.address) {
       return "Name, phone and address are required";
@@ -65,8 +68,12 @@ const Checkout = memo(() => {
       return "Your cart is empty";
     }
 
+    if (!termsAccepted) {
+      return "Please accept the terms and conditions to proceed";
+    }
+
     return null;
-  }, [shipping, items]);
+  }, [shipping, items, termsAccepted]);
 
   const applyCoupon = useCallback(async () => {
     if (!coupon.trim()) {
@@ -86,10 +93,10 @@ const Checkout = memo(() => {
       const response = await validateCouponApi({
         code: coupon,
         orderValue: subtotal,
-        userId: null, // Will be set from token in backend
         products,
       });
-
+      console.log("Res ",response);
+      
       setDiscount(response.data.discountAmount);
       setAppliedCoupon(response.data.coupon);
       setCouponError("");
@@ -97,7 +104,7 @@ const Checkout = memo(() => {
       setDiscount(0);
       setAppliedCoupon(null);
       setCouponError(
-        err.response?.data?.message || "Invalid or expired coupon code"
+        err.response?.data?.message || "Invalid or expired coupon code123"
       );
     } finally {
       setValidatingCoupon(false);
@@ -174,6 +181,9 @@ const Checkout = memo(() => {
       deliveryCharge: codCharge,
       discount,
       couponCode: appliedCoupon?.code || null,
+      isExpressDelivery: expressDelivery,
+      isGift: giftWrap,
+      notes: notes.trim() || null,
     };
 
     try {
@@ -472,6 +482,21 @@ const Checkout = memo(() => {
                   UPI / Card / Net Banking
                 </label>
               </div>
+
+              {/* ORDER NOTES */}
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-lg font-semibold mb-4">Order Notes (Optional)</h2>
+                <textarea
+                  placeholder="Add any special instructions or preferences for your order..."
+                  className="border rounded-xl px-4 py-3 outline-none w-full resize-none h-24"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  maxLength={500}
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  {notes.length}/500 characters
+                </p>
+              </div>
             </div>
 
             {/* ---------------- RIGHT ---------------- */}
@@ -495,7 +520,7 @@ const Checkout = memo(() => {
                     <img
                       src={
                         item.itemType === "catalog"
-                          ? item.product?.featuredImage
+                          ? item.variantData?.featuredImage || item.product?.featuredImage
                           : item.design?.images?.front
                       }
                       alt={
@@ -571,28 +596,37 @@ const Checkout = memo(() => {
 
                 {/* Extra options: Gift wrap / Express delivery */}
                 <div className="mt-4 space-y-3 text-base">
-                  <label className="flex items-center gap-3">
+                  <label className="flex items-center gap-3 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={giftWrap}
                       onChange={() => setGiftWrap((p) => !p)}
+                      className="cursor-pointer"
                     />
                     <span className="text-sm">
-                      Add gift wrap (₹{GIFT_WRAP_FEE})
+                      Add gift wrap (+₹{GIFT_WRAP_FEE})
                     </span>
                   </label>
 
-                  <label className="flex items-center gap-3 text-base">
+                  <label className="flex items-center gap-3 text-base cursor-pointer">
                     <input
                       type="checkbox"
                       checked={expressDelivery}
                       onChange={() => setExpressDelivery((p) => !p)}
+                      className="cursor-pointer"
                     />
                     <span className="text-sm">
-                      Express delivery (₹{EXPRESS_FEE})
+                      Express delivery (+₹{EXPRESS_FEE})
                     </span>
                   </label>
                 </div>
+
+                {(giftWrap || expressDelivery) && (
+                  <div className="flex justify-between text-primary5">
+                    <span>Extra Charges</span>
+                    <span>+₹{extraCharges}</span>
+                  </div>
+                )}
 
                 <hr />
 
@@ -602,20 +636,48 @@ const Checkout = memo(() => {
                 </div>
               </div>
 
+              {/* Terms & Conditions Consent */}
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    className="mt-1 cursor-pointer accent-primary5 "
+                  />
+                  <span className="text-xs text-gray-700 leading-relaxed w-full">
+                    I confirm that my order does not contain any vulgar, obscene, banned, 
+                    copyright-protected, trademarked, or inappropriate images/designs. 
+                    I understand that I am solely responsible for the content I upload and 
+                    agree to comply with all applicable laws and regulations.
+                  </span>
+                </label>
+              </div>
+
               <button
                 onClick={handlePlaceOrder}
-                disabled={placingOrder}
+                disabled={placingOrder || !termsAccepted}
                 className={`py-2.5 px-8 rounded-xl font-semibold w-full mt-6
-    ${placingOrder ? "opacity-60 cursor-not-allowed" : "btn-slide"}
+    ${placingOrder || !termsAccepted ? "opacity-60 cursor-not-allowed" : "btn-slide"}
   `}
               >
                 {placingOrder ? "Placing Order..." : "Place Order"}
               </button>
 
+              {/* Design Disclaimer */}
+              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-md p-3 text-sm">
+                <h3 className="font-semibold mb-2 text-amber-800">Important Notice</h3>
+                <p className="text-amber-700 text-xs leading-relaxed">
+                  Please note that the actual product design and print quality may vary slightly from the images displayed. 
+                  Variations in color, placement, and print intensity may occur due to fabric type, printing process, and screen display settings. 
+                  We strive to maintain the highest quality standards while ensuring your design vision is realized as accurately as possible.
+                </p>
+              </div>
+
               {/* Wash / Iron care information */}
               <div className="mt-4 bg-gray-50 border border-gray-100 rounded-md p-3 text-sm">
                 <h3 className="font-semibold mb-2">Care Instructions</h3>
-                <p>Please follow these tips to improve print longevity:</p>
+                <p className="text-xs text-gray-600 mb-2">Please follow these tips to improve print longevity:</p>
                 <ul className="list-none mt-2 space-y-1">
                   <li className="flex gap-1 items-center">
                     <span className="text-primary5">

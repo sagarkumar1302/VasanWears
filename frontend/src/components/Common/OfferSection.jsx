@@ -70,9 +70,9 @@ const OfferSection = () => {
                 key={`${block}-${i}`}
                 className="marquee-item flex shrink-0 items-center gap-6 px-10 py-2 md:py-4"
               >
-                <h1 className="text-2xl md:text-3xl uppercase font-semibold">
-                 🛒 Buy 2 & get FREE delivery
-                </h1>
+                <span className="text-2xl md:text-3xl uppercase font-semibold">
+                  Launch Week Special: Use LAUNCH20 for 20% OFF on orders above ₹1299
+                </span>
 
                 <RiArrowRightLine className="marquee-arrow w-8 h-8 md:w-12 md:h-12" />
               </div>

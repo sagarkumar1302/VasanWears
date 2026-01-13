@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { upload } from "../middleware/multer.middleware.js";
 import adminVerifyJwt from "../middleware/adminAuth.middleware.js";
-import { createProduct, deleteProduct, getAllProducts, getAllProductsForWebsite, getProductById, getProductBySlug, updateProduct } from "../controllers/product.controllers.js";
+import { createProduct, deleteProduct, getAllProducts, getAllProductsForWebsite, getProductById, getProductBySlug, getVariantById, updateProduct } from "../controllers/product.controllers.js";
 const router = Router();
 router.post("/", adminVerifyJwt, upload.any(), createProduct);
 router.get("/",adminVerifyJwt, getAllProducts);
@@ -14,6 +14,7 @@ router.patch(
 );
 router.get("/:id", adminVerifyJwt, getProductById);
 router.get("/slug/:slug", getProductBySlug);
+router.get("/variant/:productId/:variantId", getVariantById);
 router.delete("/:id", adminVerifyJwt, deleteProduct);
 export default router
 

@@ -20,6 +20,9 @@ export const placeOrder = async (req, res) => {
       discount = 0,
       deliveryCharge = 0,
       couponCode = null,
+      isExpressDelivery = false,
+      isGift = false,
+      notes = null,
     } = req.body;
 
     if (!shippingAddress || !paymentMethod) {
@@ -98,6 +101,9 @@ export const placeOrder = async (req, res) => {
       orderStatus: "PLACED",
       couponCode: couponCode || null,
       shippingAddress,
+      isExpressDelivery,
+      isGift,
+      notes: notes || null,
     });
 
     /* ================= COD ================= */
@@ -112,18 +118,30 @@ export const placeOrder = async (req, res) => {
 
       order.paymentId = payment._id;
       await order.save();
-      // Mark coupon as used
+      
+      // Mark coupon as used (safety check)
       if (couponCode) {
         try {
           const coupon = await Coupon.findOne({ code: couponCode.toUpperCase() });
           if (coupon) {
-            coupon.usedCount += 1;
-            coupon.usedBy.push({ user: userId, usedAt: new Date() });
-            await coupon.save();
+            // Safety check: verify limit not exceeded (validation already done at apply stage)
+            const userUsageCount = coupon.usedBy.filter(
+              (u) => u.user.toString() === userId.toString()
+            ).length;
+            
+            if (userUsageCount >= coupon.perUserLimit) {
+              console.warn(`User ${userId} exceeded coupon limit for ${couponCode}`);
+            } else if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
+              console.warn(`Global usage limit reached for coupon ${couponCode}`);
+            } else {
+              // All checks passed, mark as used
+              coupon.usedCount += 1;
+              coupon.usedBy.push({ user: userId, usedAt: new Date() });
+              await coupon.save();
+            }
           }
         } catch (couponError) {
           console.error("Error updating coupon usage:", couponError);
-          // Don't fail the order if coupon update fails
         }
       }
 
