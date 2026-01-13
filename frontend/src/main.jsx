@@ -6,7 +6,37 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Toaster } from "react-hot-toast";
 createRoot(document.getElementById("root")).render(
   <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-    <Toaster position="bottom-right" reverseOrder={false} />
+    <Toaster 
+      position="bottom-center" 
+      reverseOrder={false}
+      toastOptions={{
+        // Shorter duration for mobile
+        duration: 3000,
+        // Click to dismiss
+        onClick: (toast) => {
+          if (toast && typeof toast.dismiss === 'function') {
+            toast.dismiss();
+          }
+        },
+        style: {
+          cursor: 'pointer',
+        },
+        // Error toast specific styling
+        error: {
+          duration: 4000,
+          style: {
+            cursor: 'pointer',
+          },
+        },
+        // Success toast specific styling
+        success: {
+          duration: 3000,
+          style: {
+            cursor: 'pointer',
+          },
+        },
+      }}
+    />
     <App />
   </GoogleOAuthProvider>
 );
