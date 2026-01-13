@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const contactSchema = new mongoose.Schema(
     {
+        type: {
+            type: String,
+            enum: ["contact", "feedback"],
+            default: "contact",
+        },
         name: {
             type: String,
             required: true,
