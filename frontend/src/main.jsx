@@ -11,7 +11,7 @@ createRoot(document.getElementById("root")).render(
       reverseOrder={false}
       toastOptions={{
         // Shorter duration for mobile
-        duration: 3000,
+        duration: 1200,
         // Click to dismiss
         onClick: (toast) => {
           if (toast && typeof toast.dismiss === 'function') {
@@ -23,14 +23,14 @@ createRoot(document.getElementById("root")).render(
         },
         // Error toast specific styling
         error: {
-          duration: 4000,
+          duration: 1200,
           style: {
             cursor: 'pointer',
           },
         },
         // Success toast specific styling
         success: {
-          duration: 3000,
+          duration: 2500,
           style: {
             cursor: 'pointer',
           },
