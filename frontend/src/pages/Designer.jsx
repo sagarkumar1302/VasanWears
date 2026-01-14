@@ -13,6 +13,9 @@ import { createDesignApi, getMyDesignsApi } from "../utils/designApi";
 import { getAllSizesApi } from "../utils/productApi";
 import { getAllCategoriesForWebsite } from "../utils/productApi";
 import { getSubcategoryByIdApi } from "../utils/subCategoryApi";
+import FontManager from "../components/FontManager.jsx";
+import fontList from "../fonts/fontList";
+import FontSelect from "../components/FontSelect";
 
 const CUSTOM_FONTS_DB_NAME = "designer_custom_fonts_db_v1";
 const CUSTOM_FONTS_DB_VERSION = 1;
@@ -3227,29 +3230,23 @@ const Designer = ({ productKey } = {}) => {
             <label className="mt-2 text-xs font-semibold text-gray-700">
               Font Family
             </label>
-            <select
+            <FontSelect
               value={fontFamily}
-              className="w-full h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-sm outline-none focus:border-gray-900"
               onChange={handleFontFamilyChange}
-            >
-              <option value="Arial">Arial</option>
-              <option value="Georgia">Georgia</option>
-              <option value="Times New Roman">Times New Roman</option>
-              <option value="Helvetica">Helvetica</option>
-              <option value="Comic Sans MS">Comic Sans MS</option>
-              <option value="Dancing Script">Dancing Script</option>
-              {Array.isArray(customFonts) &&
-                customFonts.length > 0 &&
-                customFonts.map((f) => {
-                  const family = f && f.family ? String(f.family) : "";
-                  if (!family) return null;
-                  return (
-                    <option key={`custom-font-${family}`} value={family}>
-                      {family}
-                    </option>
-                  );
-                })}
-            </select>
+              options={(() => {
+                const base = [
+                  { value: "Arial", label: "Arial" },
+                  { value: "Helvetica", label: "Helvetica" },
+                  { value: "Georgia", label: "Georgia" },
+                  { value: "Times New Roman", label: "Times New Roman" },
+                  { value: "Courier New", label: "Courier New" },
+                  { value: "Comic Sans MS", label: "Comic Sans MS" },
+                ];
+                const fromManifest = (Array.isArray(fontList) ? fontList : []).map((f) => ({ value: f.family, label: f.family }));
+                const custom = (Array.isArray(customFonts) ? customFonts : []).map((f) => ({ value: f.family, label: f.family }));
+                return [...base, ...fromManifest, ...custom];
+              })()}
+            />
 
             <button
               type="button"
@@ -6093,32 +6090,25 @@ const Designer = ({ productKey } = {}) => {
                 <div className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-gray-500 mb-2">
                   Font Family
                 </div>
-                <select
-                  value={fontFamily}
-                  className="w-full h-11 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-sm outline-none focus:border-gray-900"
-                  onChange={handleFontFamilyChange}
-                >
-                  <option value="Arial">Arial</option>
-                  <option value="Georgia">Georgia</option>
-                  <option value="Times New Roman">Times New Roman</option>
-                  <option value="Helvetica">Helvetica</option>
-                  <option value="Comic Sans MS">Comic Sans MS</option>
-                  <option value="Dancing Script">Dancing Script</option>
-                  {Array.isArray(customFonts) &&
-                    customFonts.length > 0 &&
-                    customFonts.map((f) => {
-                      const family = f && f.family ? String(f.family) : "";
-                      if (!family) return null;
-                      return (
-                        <option
-                          key={`custom-font-mobile-${family}`}
-                          value={family}
-                        >
-                          {family}
-                        </option>
-                      );
-                    })}
-                </select>
+                <div>
+                  <FontSelect
+                    value={fontFamily}
+                    onChange={handleFontFamilyChange}
+                    options={(() => {
+                      const base = [
+                        { value: "Arial", label: "Arial" },
+                        { value: "Helvetica", label: "Helvetica" },
+                        { value: "Georgia", label: "Georgia" },
+                        { value: "Times New Roman", label: "Times New Roman" },
+                        { value: "Courier New", label: "Courier New" },
+                        { value: "Comic Sans MS", label: "Comic Sans MS" },
+                      ];
+                      const fromManifest = (Array.isArray(fontList) ? fontList : []).map((f) => ({ value: f.family, label: f.family }));
+                      const custom = (Array.isArray(customFonts) ? customFonts : []).map((f) => ({ value: f.family, label: f.family }));
+                      return [...base, ...fromManifest, ...custom];
+                    })()}
+                  />
+                </div>
 
                 <button
                   type="button"
