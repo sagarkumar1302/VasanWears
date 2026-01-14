@@ -417,6 +417,64 @@ const Designer = ({ productKey } = {}) => {
     };
   }, []);
 
+  // Helpers: mobile-friendly transform actions for selected object
+  const getActiveObject = () => {
+    try {
+      const c = fabricCanvasRef.current;
+      if (!c) return null;
+      return c.getActiveObject
+        ? c.getActiveObject()
+        : selectedObjectRef.current;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const applyTransformAndCommit = (mutateFn) => {
+    try {
+      const c = fabricCanvasRef.current;
+      const obj = getActiveObject();
+      if (!c || !obj) return;
+      // apply mutation
+      mutateFn(obj);
+      try {
+        obj.setCoords && obj.setCoords();
+      } catch (e) {}
+      try {
+        c.requestRenderAll && c.requestRenderAll();
+      } catch (e) {}
+      // ensure change is recorded
+      scheduleCanvasCommit();
+    } catch (e) {}
+  };
+
+  const rotateSelected = (deg) => {
+    applyTransformAndCommit((obj) => {
+      const cur = (obj.angle || 0) % 360;
+      obj.angle = Math.round((cur + deg) * 100) / 100;
+    });
+  };
+
+  const scaleSelected = (factor) => {
+    applyTransformAndCommit((obj) => {
+      // Uniform scale for images/text
+      const sx = (obj.scaleX || 1) * factor;
+      const sy = (obj.scaleY || 1) * factor;
+      obj.scaleX = sx;
+      obj.scaleY = sy;
+    });
+  };
+
+  const stretchSelected = ({ dx = 0, dy = 0 }) => {
+    applyTransformAndCommit((obj) => {
+      // dx/dy are relative multipliers (e.g., 0.05 means +5% width)
+      const curX = typeof obj.scaleX === "number" ? obj.scaleX : 1;
+      const curY = typeof obj.scaleY === "number" ? obj.scaleY : 1;
+      obj.scaleX = Math.max(0.05, curX * (1 + dx));
+      obj.scaleY = Math.max(0.05, curY * (1 + dy));
+    });
+  };
+
   // Set a sensible default size when sizes arrive
   const [selectedSize, setSelectedSize] = useState("");
   const selectedSizeRef = useRef("");
@@ -1207,10 +1265,8 @@ const Designer = ({ productKey } = {}) => {
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.22;
         // Higher pixel ratio makes the 3D preview noticeably sharper.
-        // On mobile, cap the pixel ratio lower to avoid GPU/memory issues.
-        renderer.setPixelRatio(
-          isMobileViewport ? Math.min(2, dpr) : Math.min(3, dpr)
-        );
+        // On mobile, force a low pixel ratio to avoid GPU/memory pressure.
+        renderer.setPixelRatio(isMobileViewport ? 1 : Math.min(3, dpr));
         renderer.setClearColor(0xffffff, 1);
 
         try {
@@ -1824,6 +1880,10 @@ const Designer = ({ productKey } = {}) => {
 
       const images = {};
 
+      // Use lower capture scales on mobile to reduce CPU and memory usage.
+      const fullCaptureScale = isMobileViewport() ? 1 : 3;
+      const designCaptureScale = isMobileViewport() ? 1 : 4;
+
       // Capture Front side if it has design
       if (hasFront) {
         console.log("Capturing front side...");
@@ -1837,12 +1897,16 @@ const Designer = ({ productKey } = {}) => {
         await new Promise((resolve) => setTimeout(resolve, 200));
 
         // Capture full mockup with cloth (red border removed automatically by captureFullMockupDataUrl)
-        const frontFullMockup = await captureFullMockupDataUrl({ scale: 3 });
+        const frontFullMockup = await captureFullMockupDataUrl({
+          scale: fullCaptureScale,
+        });
         images.front = frontFullMockup;
 
         // Capture design only (transparent background)
         try {
-          const frontDesignOnly = await captureDesignOnlyDataUrl({ scale: 4 });
+          const frontDesignOnly = await captureDesignOnlyDataUrl({
+            scale: designCaptureScale,
+          });
           if (frontDesignOnly) {
             images.frontDesignArea = frontDesignOnly;
           }
@@ -1864,12 +1928,16 @@ const Designer = ({ productKey } = {}) => {
         await new Promise((resolve) => setTimeout(resolve, 200));
 
         // Capture full mockup with cloth
-        const backFullMockup = await captureFullMockupDataUrl({ scale: 3 });
+        const backFullMockup = await captureFullMockupDataUrl({
+          scale: fullCaptureScale,
+        });
         images.back = backFullMockup;
 
         // Capture design only (transparent background)
         try {
-          const backDesignOnly = await captureDesignOnlyDataUrl({ scale: 4 });
+          const backDesignOnly = await captureDesignOnlyDataUrl({
+            scale: designCaptureScale,
+          });
           if (backDesignOnly) {
             images.backDesignArea = backDesignOnly;
           }
@@ -1887,7 +1955,9 @@ const Designer = ({ productKey } = {}) => {
         });
         await new Promise((resolve) => setTimeout(resolve, 200));
 
-        const backFullMockup = await captureFullMockupDataUrl({ scale: 3 });
+        const backFullMockup = await captureFullMockupDataUrl({
+          scale: fullCaptureScale,
+        });
         images.back = backFullMockup;
       }
 
@@ -2112,6 +2182,17 @@ const Designer = ({ productKey } = {}) => {
   };
 
   useEffect(() => {
+    // Reduce internal canvas resolution on mobile devices to improve performance.
+    try {
+      if (isMobileViewport()) {
+        // halve the default size (keeps aspect but lowers CPU/GPU cost)
+        baseSizeRef.current = {
+          width: Math.round(baseSizeRef.current.width / 2),
+          height: Math.round(baseSizeRef.current.height / 2),
+        };
+      }
+    } catch (e) {}
+
     const canvas = new fabric.Canvas(canvasRef.current, {
       width: baseSizeRef.current.width,
       height: baseSizeRef.current.height,
@@ -2201,21 +2282,29 @@ const Designer = ({ productKey } = {}) => {
         : opt.target;
       const obj = active || opt.target;
 
-      // Mobile: whenever any object is active, strictly restrict scrolling.
+      // Compute booleans locally to avoid repeated React updates.
+      let has = false;
       try {
         const activeObjects =
           (typeof canvas.getActiveObjects === "function" &&
             canvas.getActiveObjects()) ||
           (canvas.getActiveObject() ? [canvas.getActiveObject()] : []);
-        hasActiveObjectRef.current =
-          Array.isArray(activeObjects) && activeObjects.length > 0;
-        setHasSelection(
-          Array.isArray(activeObjects) && activeObjects.length > 0
-        );
+        has = Array.isArray(activeObjects) && activeObjects.length > 0;
       } catch (e) {
-        hasActiveObjectRef.current = !!obj;
-        setHasSelection(!!obj);
+        has = !!obj;
       }
+
+      // Debounce React state updates coming from Fabric events which can fire
+      // many times per second on mobile during transforms.
+      try {
+        if (selectionHandler._timer) clearTimeout(selectionHandler._timer);
+      } catch (e) {}
+      selectionHandler._timer = setTimeout(() => {
+        try {
+          hasActiveObjectRef.current = has;
+          setHasSelection(has);
+        } catch (e) {}
+      }, 120);
 
       try {
         recalcFabricOffsets();
@@ -2226,15 +2315,25 @@ const Designer = ({ productKey } = {}) => {
         (obj.type === "textbox" ||
           obj.type === "i-text" ||
           obj.type === "text");
-      if (isText) {
-        selectedObjectRef.current = obj;
-        setShowTextControls(true);
-        setFontColor(obj.fill || "#000000");
-        setFontFamily(obj.fontFamily || "Arial");
-      } else {
-        selectedObjectRef.current = null;
-        setShowTextControls(false);
-      }
+
+      // Debounce text-control updates as well.
+      try {
+        if (selectionHandler._textTimer)
+          clearTimeout(selectionHandler._textTimer);
+      } catch (e) {}
+      selectionHandler._textTimer = setTimeout(() => {
+        try {
+          if (isText) {
+            selectedObjectRef.current = obj;
+            setShowTextControls(true);
+            setFontColor(obj.fill || "#000000");
+            setFontFamily(obj.fontFamily || "Arial");
+          } else {
+            selectedObjectRef.current = null;
+            setShowTextControls(false);
+          }
+        } catch (e) {}
+      }, 120);
     };
 
     const clearHandler = () => {
@@ -2398,6 +2497,17 @@ const Designer = ({ productKey } = {}) => {
           clearTimeout(commitTimerRef.current);
           commitTimerRef.current = 0;
         }
+      } catch (e) {}
+      try {
+        // Clear any selection debounce timers created above
+        try {
+          if (selectionHandler && selectionHandler._timer)
+            clearTimeout(selectionHandler._timer);
+        } catch (e) {}
+        try {
+          if (selectionHandler && selectionHandler._textTimer)
+            clearTimeout(selectionHandler._textTimer);
+        } catch (e) {}
       } catch (e) {}
       canvas.dispose();
     };
@@ -4514,7 +4624,10 @@ const Designer = ({ productKey } = {}) => {
     return out.toDataURL("image/png");
   };
 
-  async function captureFullMockupDataUrl({ scale = 3 } = {}) {
+  async function captureFullMockupDataUrl({ scale } = {}) {
+    if (scale == null) {
+      scale = isMobileViewport() ? 1 : 3;
+    }
     const canvas = fabricCanvasRef.current;
     const container = stageRef.current || containerRef.current;
     if (!canvas || !container) throw new Error("Canvas or container not found");
@@ -4574,7 +4687,10 @@ const Designer = ({ productKey } = {}) => {
   }
 
   // Capture the design layer only (transparent background), scaled.
-  const captureDesignOnlyDataUrl = async ({ scale = 4 } = {}) => {
+  const captureDesignOnlyDataUrl = async ({ scale } = {}) => {
+    if (scale == null) {
+      scale = isMobileViewport() ? 1 : 4;
+    }
     const canvas = fabricCanvasRef.current;
     if (!canvas) throw new Error("Canvas not found");
 
@@ -4662,6 +4778,9 @@ const Designer = ({ productKey } = {}) => {
     // Persist current side before we start switching
     saveCurrentSideDesign();
 
+    // Lower design-only capture scale on mobile to avoid large images
+    const designCaptureScale = isMobileViewport() ? 1 : 4;
+
     try {
       for (const sideKey of ["Front", "Back"]) {
         await handleSideChange(sideKey, { skipSave: true });
@@ -4677,7 +4796,9 @@ const Designer = ({ productKey } = {}) => {
         });
         // Also include design-only (transparent background) for this side
         try {
-          const designOnlyUrl = await captureDesignOnlyDataUrl({ scale: 4 });
+          const designOnlyUrl = await captureDesignOnlyDataUrl({
+            scale: designCaptureScale,
+          });
           const designOnlyBase64 = String(designOnlyUrl).split(",")[1] || "";
           if (designOnlyBase64) {
             zip.file(
@@ -5119,11 +5240,29 @@ const Designer = ({ productKey } = {}) => {
       {checkoutLoading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="flex items-center gap-3 bg-white/90 px-4 py-3 rounded-lg shadow">
-            <svg className="w-6 h-6 text-gray-900 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            <svg
+              className="w-6 h-6 text-gray-900 animate-spin"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
             </svg>
-            <div className="text-sm font-medium text-gray-900">Redirecting to checkout…</div>
+            <div className="text-sm font-medium text-gray-900">
+              Redirecting to checkout…
+            </div>
           </div>
         </div>
       )}
@@ -5228,6 +5367,104 @@ const Designer = ({ productKey } = {}) => {
               />
               <canvas ref={canvasRef} className="relative" />
             </div>
+
+            {/* Mobile object transform controls - show when an object is selected */}
+            {/** Visible only on small viewports and when an object is selected */}
+            {hasSelection && (
+              <div className="md:hidden fixed left-0 right-0 bottom-20 z-50 flex justify-center px-4">
+                {/* Main Container with subtle glass effect and horizontal scroll */}
+                <div className="w-full max-w-fit bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200 shadow-xl overflow-x-auto no-scrollbar">
+                  <div className="flex items-start gap-6 p-4 min-w-max">
+                    {/* Rotation Group */}
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => rotateSelected(-15)}
+                          className="h-10 w-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-lg shadow-sm active:bg-primary2 active:text-white transition-all"
+                        >
+                          ↺
+                        </button>
+                        <button
+                          onClick={() => rotateSelected(15)}
+                          className="h-10 w-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-lg shadow-sm active:bg-primary2 active:text-white transition-all"
+                        >
+                          ↻
+                        </button>
+                        <button
+                          onClick={() => rotateSelected(-90)}
+                          className="h-10 w-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-lg shadow-sm active:bg-primary2 active:text-white transition-all"
+                        >
+                          ⟲
+                        </button>
+                      </div>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+                        Rotate
+                      </span>
+                    </div>
+
+                    {/* Separator */}
+                    <div className="w-px h-10 bg-gray-100 self-center" />
+
+                    {/* Size Group */}
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => scaleSelected(0.9)}
+                          className="h-10 w-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-xl shadow-sm active:bg-primary2 active:text-white transition-all"
+                        >
+                          −
+                        </button>
+                        <button
+                          onClick={() => scaleSelected(1.1)}
+                          className="h-10 w-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-xl shadow-sm active:bg-primary2 active:text-white transition-all"
+                        >
+                          ＋
+                        </button>
+                      </div>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+                        Scale
+                      </span>
+                    </div>
+
+                    {/* Separator */}
+                    <div className="w-px h-10 bg-gray-100 self-center" />
+
+                    {/* Stretch Group */}
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => stretchSelected({ dx: 0.06, dy: 0 })}
+                          className="h-10 w-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-lg shadow-sm active:bg-primary2 active:text-white transition-all"
+                        >
+                          ↔
+                        </button>
+                        <button
+                          onClick={() => stretchSelected({ dx: -0.06, dy: 0 })}
+                          className="h-10 w-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-lg shadow-sm active:bg-primary2 active:text-white transition-all"
+                        >
+                          ⇆
+                        </button>
+                        <button
+                          onClick={() => stretchSelected({ dx: 0, dy: 0.06 })}
+                          className="h-10 w-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-lg shadow-sm active:bg-primary2 active:text-white transition-all"
+                        >
+                          ↕
+                        </button>
+                        <button
+                          onClick={() => stretchSelected({ dx: 0, dy: -0.06 })}
+                          className="h-10 w-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-lg shadow-sm active:bg-primary2 active:text-white transition-all"
+                        >
+                          ⇅
+                        </button>
+                      </div>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+                        Stretch
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -5459,8 +5696,20 @@ const Designer = ({ productKey } = {}) => {
                   {checkoutLoading ? (
                     <span className="flex items-center gap-2">
                       <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
                       </svg>
                       Redirecting to checkout…
                     </span>
@@ -5493,7 +5742,14 @@ const Designer = ({ productKey } = {}) => {
         <div className="text-white font-extrabold text-lg">
           {(() => {
             const p = computeDesignPrice();
-            return p.hasAny ? `₹${p.price}` : <p className="text-xs text-center">Click on tools to <br/>Add a design</p>;
+            return p.hasAny ? (
+              `₹${p.price}`
+            ) : (
+              <p className="text-xs text-center">
+                Click on tools to <br />
+                Add a design
+              </p>
+            );
           })()}
         </div>
 
@@ -6202,8 +6458,20 @@ const Designer = ({ productKey } = {}) => {
                 {checkoutLoading ? (
                   <span className="flex items-center gap-2">
                     <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
                     </svg>
                     Redirecting to checkout…
                   </span>

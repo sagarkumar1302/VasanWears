@@ -12,6 +12,12 @@ const slides = [
   },
   {
     type: "image",
+    url: "./images/Sample1.png",
+    title: "LAUNCHING WEEK OFFER",
+    button: "Shop Now",
+  },
+  {
+    type: "image",
     url: "./images/slider.webp",
     title: "Make Your Design Now",
     button: "Shop Now",
@@ -20,12 +26,6 @@ const slides = [
     type: "video",
     url: "/videos/video1.mp4",
     title: "Exclusive Collection",
-    button: "Shop Now",
-  },
-  {
-    type: "image",
-    url: "./images/slider2.webp",
-    title: "NEW ARRIVALS",
     button: "Shop Now",
   },
 ];
