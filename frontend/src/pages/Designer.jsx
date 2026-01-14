@@ -5293,61 +5293,81 @@ const Designer = ({ productKey } = {}) => {
           previewOpen
         ) && (
           <div className="md:hidden fixed left-3 top-3 z-[50]">
-            <div className="p-1 rounded-2xl border border-gray-200 bg-white/90 backdrop-blur shadow-sm flex gap-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileSideOpen(false);
-                  setMobileArrangeOpen(false);
-                  setMobileTextOpen(false);
-                  setMobileToolsOpen(true);
-                }}
-                className="h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[13px] font-extrabold"
-              >
-                Tools
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileToolsOpen(false);
-                  setMobileArrangeOpen(false);
-                  setMobileTextOpen(false);
-                  setMobileSideOpen(true);
-                }}
-                className="h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[13px] font-extrabold inline-flex items-center gap-2"
-              >
-                Side
-                <span className="text-[11px] font-extrabold px-2 py-1 rounded-lg border border-gray-200 bg-white text-gray-700">
-                  {currentSide}
-                </span>
-              </button>
+            <div className="p-1 rounded-2xl border border-gray-200 bg-white/90 backdrop-blur shadow-sm flex flex-col gap-1">
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileSideOpen(false);
+                    setMobileArrangeOpen(false);
+                    setMobileTextOpen(false);
+                    setMobileToolsOpen(true);
+                  }}
+                  className="h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[13px] font-extrabold"
+                >
+                  Tools
+                </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileToolsOpen(false);
-                  setMobileSideOpen(false);
-                  setMobileTextOpen(false);
-                  setMobileArrangeOpen(true);
-                }}
-                className="h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[13px] font-extrabold"
-              >
-                Operations
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileToolsOpen(false);
+                    setMobileArrangeOpen(false);
+                    setMobileTextOpen(false);
+                    setMobileSideOpen(true);
+                  }}
+                  className="h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[13px] font-extrabold inline-flex items-center gap-2"
+                >
+                  Side
+                  <span className="text-[11px] font-extrabold px-2 py-1 rounded-lg border border-gray-200 bg-white text-gray-700">
+                    {currentSide}
+                  </span>
+                </button>
 
-              {showTextControls && (
                 <button
                   type="button"
                   onClick={() => {
                     setMobileToolsOpen(false);
                     setMobileSideOpen(false);
-                    setMobileArrangeOpen(false);
-                    setMobileTextOpen(true);
+                    setMobileTextOpen(false);
+                    setMobileArrangeOpen(true);
                   }}
                   className="h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[13px] font-extrabold"
                 >
-                  Text
+                  Operations
                 </button>
+
+                {showTextControls && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileToolsOpen(false);
+                      setMobileSideOpen(false);
+                      setMobileArrangeOpen(false);
+                      setMobileTextOpen(true);
+                    }}
+                    className="h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[13px] font-extrabold"
+                  >
+                    Text
+                  </button>
+                )}
+              </div>
+
+              {/* Move Delete below the Tools row on mobile */}
+              {hasSelection && (
+                <div className="flex mt-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      try {
+                        handleDeleteObject();
+                      } catch (e) {}
+                    }}
+                    className="w-full h-10 px-3 rounded-xl border border-red-700 bg-red-700 text-white text-[13px] font-extrabold"
+                  >
+                    Delete
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -6173,11 +6193,11 @@ const Designer = ({ productKey } = {}) => {
                     setMobileArrangeOpen(false);
                   }}
                   disabled={mockMode || !hasSelection}
-                  className="h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[13px] font-extrabold inline-flex items-center justify-center transition-shadow hover:shadow-md active:translate-y-px disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="col-span-2 h-10 px-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[13px] font-extrabold inline-flex items-center justify-center transition-shadow hover:shadow-md active:translate-y-px disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   Bring Front
                 </button>
-                <button
+                {/* <button
                   onClick={() => {
                     handleDeleteObject();
                     setMobileArrangeOpen(false);
@@ -6186,7 +6206,7 @@ const Designer = ({ productKey } = {}) => {
                   className="h-10 px-3 rounded-xl border border-red-700 bg-red-700 text-white text-[13px] font-extrabold inline-flex items-center justify-center transition-shadow hover:shadow-md active:translate-y-px disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   Delete
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
