@@ -82,7 +82,7 @@ export const toggleLikeDesign = asyncHandler(async (req, res) => {
  * GET ALL PUBLIC DESIGNS
  */
 export const getAllDesigns = asyncHandler(async (req, res) => {
-  const designs = await Design.find()
+  const designs = await Design.find({ isPublic: true })
     .populate("createdBy", "fullName email")
     .sort({ likesCount: -1, createdAt: -1 });
 

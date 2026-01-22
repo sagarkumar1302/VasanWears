@@ -5,6 +5,7 @@ import {
   RiBarChart2Line,
   RiFlashlightLine,
   RiArrowRightLine,
+  RiMoneyRupeeCircleLine,
 } from "@remixicon/react";
 import { useCountUpOnView } from "../../utils/useCountUpOnView";
 import { Link } from "react-router-dom";
@@ -12,26 +13,26 @@ import { Link } from "react-router-dom";
 const stats = [
   {
     label: "Invested in printing equipment",
-    value: 48,
-    suffix: "M",
-    icon: RiMoneyDollarCircleLine,
+    value: 3.4,
+    suffix: "K",
+    icon: RiMoneyRupeeCircleLine,
   },
   {
     label: "Orders processed monthly",
-    value: 1400,
-    suffix: "",
+    value: 1.4,
+    suffix: "K",
     icon: RiShoppingBag3Line,
   },
   {
     label: "Sold by VasanWears creators",
-    value: 64,
-    suffix: "M+",
+    value: 2.2,
+    suffix: "K+",
     icon: RiUserStarLine,
   },
   {
     label: "Revenue generated worldwide",
-    value: 26,
-    suffix: "M+",
+    value: 5.6,
+    suffix: "K+",
     icon: RiBarChart2Line,
   },
 ];
@@ -62,7 +63,7 @@ const Counters = () => {
                   />
 
                   <h3 className="text-3xl font-bold text-primary">
-                    ${count}
+                    ₹{count}
                     {s.suffix}
                   </h3>
 
@@ -94,7 +95,7 @@ const Counters = () => {
                   />
 
                   <h3 className="text-3xl font-bold text-primary">
-                    ${count}
+                    ₹{count}
                     {s.suffix}
                   </h3>
 

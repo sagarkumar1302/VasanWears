@@ -113,6 +113,12 @@ const Navbar = ({ searchModel, setSearchModel }) => {
           >
             Women
           </Link>
+          <Link
+            to="/designs-collections/"
+            className="hover:text-primary1 menu-item"
+          >
+            Designs
+          </Link>
 
           <Link to="/contact-us" className="hover:text-primary1 menu-item">
             Contact Us
@@ -209,7 +215,12 @@ const Navbar = ({ searchModel, setSearchModel }) => {
         >
           Women
         </Link>
-
+        <Link
+          to="/designs-collections/"
+          className="hover:text-primary1 menu-item"
+        >
+          Designs
+        </Link>
         <Link
           to="/contact-us"
           className="hover:text-primary2 "
