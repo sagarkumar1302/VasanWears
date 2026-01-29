@@ -13,7 +13,7 @@ createRoot(document.getElementById("root")).render(
       position={isMobile ? "bottom-center" : "bottom-right"}
       reverseOrder={false}
       containerStyle={{
-        bottom: 80,
+        bottom: isMobile ? 80 : 20,
       }}
       toastOptions={{
         duration: 2500,
