@@ -12,8 +12,8 @@ const slides = [
   },
   {
     type: "image",
-    url: "./images/Sample1.png",
-    title: "LAUNCHING WEEK OFFER",
+    url: "./images/LaunchMonth.webp",
+    title: "LAUNCHING MONTH OFFER",
     button: "Shop Now",
   },
   {
