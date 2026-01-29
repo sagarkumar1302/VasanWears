@@ -6,10 +6,11 @@ import App from "./App.jsx";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Toaster, toast } from "react-hot-toast";
 
+const isMobile = window.innerWidth <= 600;
 createRoot(document.getElementById("root")).render(
   <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
     <Toaster 
-      position="bottom-center" 
+      position={isMobile ? "bottom-center" : "bottom-right"}
       reverseOrder={false}
       containerStyle={{
         bottom: 80,
