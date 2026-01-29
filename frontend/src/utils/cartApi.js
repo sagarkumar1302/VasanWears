@@ -68,9 +68,16 @@ export const clearCartApi = async () => {
         throw err;
     }
 };
-export const updateCartItemApi = async (itemId, quantity) => {
+export const updateCartItemApi = async (itemId, quantity, sizeId) => {
     try {
-        const res = await API.delete(`/cart/update/${itemId}`, { data: { quantity } });
+        const payload = {};
+        if (typeof quantity !== 'undefined') payload.quantity = quantity;
+        if (typeof sizeId !== 'undefined') payload.sizeId = sizeId;
+        console.log("WOrking till here", payload.quantity);
+        
+        const res = await API.put(`/cart/update/${itemId}`, {  quantity, sizeId });
+        console.log("Data of cart: ",res.data);
+        
         return res.data;
     } catch (err) {
         throw err;

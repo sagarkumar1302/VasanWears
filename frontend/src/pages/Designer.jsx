@@ -1801,8 +1801,9 @@ const Designer = ({ productKey } = {}) => {
     }
 
     // Price table (internal cloth keys)
+
     const priceTable = {
-      men: { one: 599, both: 749 },
+      men: { one: 599, both: 849 },
       women: { one: 499, both: 699 },
       hoodie: { one: 859, both: 1100 },
       womenCropHoodie: { one: 649, both: 799 },

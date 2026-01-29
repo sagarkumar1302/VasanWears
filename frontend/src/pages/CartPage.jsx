@@ -1,15 +1,42 @@
-import React, { useEffect, memo } from "react";
+import React, { useEffect, memo, useState } from "react";
 import { Link } from "react-router-dom";
 import Banner from "../components/Common/Banner";
 import { useCartStore } from "../store/cartStore";
+import { getAllSizesForWebsite } from "../utils/productApi";
 import Loader from "../components/Common/Loader";
 
 const CartPage = memo(() => {
-  const { items, subtotal, loading, fetchCart, updateQty, removeItem } =
-    useCartStore();
+  const {
+    items,
+    subtotal,
+    loading,
+    fetchCart,
+    updateQty,
+    removeItem,
+    updateSize,
+  } = useCartStore();
+
+  const [sizesList, setSizesList] = useState([]);
 
   useEffect(() => {
     fetchCart();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await getAllSizesForWebsite();
+        const sizes = Array.isArray(res?.data) ? res.data : [];
+        if (!cancelled) setSizesList(sizes);
+      } catch (err) {
+        // ignore
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading) {
@@ -63,61 +90,110 @@ const CartPage = memo(() => {
                       >
                         ×
                       </button>
-                      {item.itemType === "catalog" ? (
-                        <Link
-                          to={`/shop/${item.product?._id}/${item.product?.slug}?variant=${item.variant}&size=${item.size?._id}`}
-                          className="flex gap-4"
-                        >
-                          <img
-                            src={
-                              item.variantData?.featuredImage || item.product?.featuredImage
-                            }
-                            alt={item.product?.title || "Product"}
-                            loading="lazy"
-                            className="w-20 h-24 object-cover rounded-md"
-                          />
+                      <div className="flex gap-4">
+                        {item.itemType === "catalog" ? (
+                          <>
+                            <Link
+                              to={`/shop/${item.product?._id}/${item.product?.slug}?variant=${item.variant}&size=${item.size?._id}`}
+                              className="flex gap-4"
+                              tabIndex={-1}
+                              onClick={(e) =>
+                                e.target.tagName === "SELECT" &&
+                                e.preventDefault()
+                              }
+                            >
+                              <img
+                                src={
+                                  item.variantData?.featuredImage ||
+                                  item.product?.featuredImage
+                                }
+                                alt={item.product?.title || "Product"}
+                                loading="lazy"
+                                className="w-20 h-24 object-cover rounded-md"
+                              />
+                            </Link>
+                            <div className="space-y-1 text-primary5">
+                              <Link
+                                to={`/shop/${item.product?._id}/${item.product?.slug}?variant=${item.variant}&size=${item.size?._id}`}
+                                className="flex gap-4"
+                                tabIndex={-1}
+                                onClick={(e) =>
+                                  e.target.tagName === "SELECT" &&
+                                  e.preventDefault()
+                                }
+                              >
+                                <h3 className="font-semibold">
+                                  {item.product?.title}
+                                </h3>
+                              </Link>
+                              <p className="text-sm">
+                                Color: {item.color?.name}
+                              </p>
+                              <p className="text-sm">
+                                Size:{" "}
+                                <select
+                                  value={item.size?._id || ""}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) =>
+                                    updateSize(item._id, e.target.value, item.quantity)
+                                  }
+                                  className="text-sm bg-transparent"
+                                >
+                                  <option value="">Free Size</option>
+                                  {sizesList.map((s) => (
+                                    <option key={s._id} value={s._id}>
+                                      {s.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </p>
+                              <p className="text-sm">
+                                Delivery: 5–7 business days
+                              </p>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <img
+                              src={item.design?.images?.front}
+                              alt={item.design?.title || "Custom design"}
+                              loading="lazy"
+                              className="w-20 h-24 object-cover rounded-md "
+                            />
 
-                          <div className="space-y-1 text-primary5">
-                            <h3 className="font-semibold">
-                              {item.product?.title}
-                            </h3>
+                            <div className="space-y-1 text-primary5">
+                              <h3 className="font-semibold">
+                                {item.design?.title ||
+                                  "Custom Designed Product"}
+                              </h3>
 
-                            <p className="text-sm">Color: {item.color?.name}</p>
-                            <p className="text-sm">
-                              Size: {item.size?.name || "Free Size"}
-                            </p>
-                            <p className="text-sm">
-                              Delivery: 5–7 business days
-                            </p>
-                          </div>
-                        </Link>
-                      ) : (
-                        /* ================= CUSTOM DESIGN ================= */
-                        <div className="flex gap-4">
-                          <img
-                            src={item.design?.images?.front}
-                            alt={item.design?.title || "Custom design"}
-                            loading="lazy"
-                            className="w-20 h-24 object-cover rounded-md "
-                          />
+                              <p className="text-sm">
+                                Color: {item.design?.color?.name}
+                              </p>
 
-                          <div className="space-y-1 text-primary5">
-                            <h3 className="font-semibold">
-                              {item.design?.title || "Custom Designed Product"}
-                            </h3>
+                              <p className="text-sm">
+                                Size:{" "}
+                                <select
+                                  value={item.design?.size?._id || ""}
+                                  onChange={(e) =>
+                                    updateSize(item._id, e.target.value, item.quantity)
+                                  }
+                                  className="text-sm bg-transparent"
+                                >
+                                  <option value="">Free Size</option>
+                                  {sizesList.map((s) => (
+                                    <option key={s._id} value={s._id}>
+                                      {s.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </p>
 
-                            <p className="text-sm">
-                              Color: {item.design?.color?.name}
-                            </p>
-
-                            <p className="text-sm">
-                              Size: {item.design?.size?.name}
-                            </p>
-
-                            <p className="text-sm">Custom Print</p>
-                          </div>
-                        </div>
-                      )}
+                              <p className="text-sm">Custom Print</p>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
 
                     {/* PRICE */}
@@ -182,7 +258,39 @@ const CartPage = memo(() => {
 
                             <p className="text-xs">Color: {item.color?.name}</p>
                             <p className="text-xs">
-                              Size: {item.size?.name || "Free Size"}
+                              Size:{" "}
+                              {item.itemType === "catalog" ? (
+                                <select
+                                  value={item.size?._id || ""}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) =>
+                                    updateSize(item._id, e.target.value, item.quantity)
+                                  }
+                                  className="text-xs bg-transparent"
+                                >
+                                  <option value="">Free Size</option>
+                                  {sizesList.map((s) => (
+                                    <option key={s._id} value={s._id}>
+                                      {s.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <select
+                                  value={item.design?.size?._id || ""}
+                                  onChange={(e) =>
+                                    updateSize(item._id, e.target.value, item.quantity)
+                                  }
+                                  className="text-xs bg-transparent"
+                                >
+                                  <option value="">Free Size</option>
+                                  {sizesList.map((s) => (
+                                    <option key={s._id} value={s._id}>
+                                      {s.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
                             </p>
                             <p className="text-xs">
                               Delivery: 5–7 business days

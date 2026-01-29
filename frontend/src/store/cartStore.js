@@ -60,6 +60,48 @@ export const useCartStore = create((set, get) => ({
     }
   },
 
+  /* ================= UPDATE SIZE ================= */
+  updateSize: async (itemId, sizeId, quantity) => {
+    // Optimistic update: set the new size id locally then sync with backend
+    console.log("itemid: ",itemId);
+    console.log("sizeId: ",sizeId);
+    
+    set((state) => {
+      const updatedItems = state.items.map((i) => {
+        if (i._id !== itemId) return i;
+        if (i.itemType === 'catalog') {
+          return { ...i, size: { _id: sizeId, name: i.size?.name } };
+        } else if (i.itemType === 'custom') {
+          return {
+            ...i,
+            design: {
+              ...i.design,
+              size: { _id: sizeId, name: i.design?.size?.name },
+            },
+          };
+        }
+        return i;
+      });
+      return {
+        items: updatedItems,
+        subtotal: updatedItems.reduce((sum, i) => sum + i.price * i.quantity, 0),
+      };
+    });
+
+    try {
+      // For custom, only send sizeId (not quantity unless explicitly provided)
+      const item = get().items.find(i => i._id === itemId);
+      if (item?.itemType === 'custom') {
+        await updateCartItemApi(itemId, quantity, sizeId);
+      } else {
+        await updateCartItemApi(itemId, quantity, sizeId);
+      }
+      await get().fetchCart();
+    } catch (err) {
+      await get().fetchCart();
+    }
+  },
+
   getItemDisplayData: (item) => {
     if (item.itemType === "custom") {
       return {

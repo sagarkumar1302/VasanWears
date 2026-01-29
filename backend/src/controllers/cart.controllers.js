@@ -240,9 +240,11 @@ const clearCart = async (req, res) => {
 const updateCartItem = async (req, res) => {
   try {
     const { itemId } = req.params;
-    const { quantity } = req.body;
+    const { quantity, sizeId } = req.body;
+    // console.log("Item id :",quantity,sizeId);
 
-    if (!quantity || quantity < 1) {
+    // Only require quantity for catalog, not for custom size update
+    if (typeof quantity !== 'undefined' && quantity < 1) {
       return res
         .status(400)
         .json(new ApiResponse(400, "Quantity must be at least 1"));
@@ -266,16 +268,37 @@ const updateCartItem = async (req, res) => {
       const product = await Product.findById(item.product);
       const variant = product?.variants?.id(item.variant);
 
-      if (!variant || variant.stock < quantity) {
-        return res
-          .status(400)
-          .json(new ApiResponse(400, "Insufficient stock"));
+      if (typeof quantity !== 'undefined') {
+        if (!variant || variant.stock < quantity) {
+          return res
+            .status(400)
+            .json(new ApiResponse(400, "Insufficient stock"));
+        }
+        item.quantity = quantity;
+      }
+
+      // If a new size is provided, update the item's size
+      if (sizeId) {
+        item.size = sizeId;
+      }
+    } else if (item.itemType === "custom") {
+      // For custom, update the design.size field
+      if (sizeId) {
+        // if (!item.design) item.design = {};
+        item.design.size = sizeId;
+        console.log("Updated design size to: ", item.design.size);
+      }
+      if (typeof quantity !== 'undefined') {
+        item.quantity = quantity;
       }
     }
 
-    item.quantity = quantity;
-    cart.subtotal = calculateSubtotal(cart.items);
+    // Only update quantity for catalog if provided, for custom if provided
+    if (item.itemType !== "catalog" && typeof quantity !== 'undefined') {
+      item.quantity = quantity;
+    }
 
+    cart.subtotal = calculateSubtotal(cart.items);
     await cart.save();
 
     res
