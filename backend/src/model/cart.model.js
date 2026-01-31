@@ -69,8 +69,9 @@ const cartItemSchema = new mongoose.Schema(
         backDesignArea: String,
       },
       size: {
-        id: mongoose.Schema.Types.ObjectId, // optional
-        name: String, // "S", "M", "L"
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Size",
+        default: null,
       },
 
       // 🎨 Selected color (snapshot)

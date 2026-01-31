@@ -162,7 +162,8 @@ const getCart = async (req, res) => {
       .populate("items.product")
       .populate("items.color")
       .populate("items.size")
-      .populate("items.design.designId");
+      .populate("items.design.designId")
+      .populate("items.design.size");
 
     res.status(200).json(
       new ApiResponse(
@@ -297,9 +298,12 @@ const updateCartItem = async (req, res) => {
     if (item.itemType !== "catalog" && typeof quantity !== 'undefined') {
       item.quantity = quantity;
     }
-
+    console.log("The");
+    
     cart.subtotal = calculateSubtotal(cart.items);
+    console.log("The 2");
     await cart.save();
+    console.log("The 3");
 
     res
       .status(200)

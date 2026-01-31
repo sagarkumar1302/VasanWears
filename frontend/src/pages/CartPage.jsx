@@ -129,27 +129,28 @@ const CartPage = memo(() => {
                               <p className="text-sm">
                                 Color: {item.color?.name}
                               </p>
-                              <p className="text-sm">
-                                Size:{" "}
-                                <select
-                                  value={item.size?._id || ""}
-                                  onClick={(e) => e.stopPropagation()}
-                                  onChange={(e) =>
-                                    updateSize(item._id, e.target.value, item.quantity)
-                                  }
-                                  className="text-sm bg-transparent"
-                                >
-                                  <option value="">Free Size</option>
-                                  {sizesList.map((s) => (
-                                    <option key={s._id} value={s._id}>
-                                      {s.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              </p>
-                              <p className="text-sm">
-                                Delivery: 5–7 business days
-                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-sm font-medium text-primary5">Size:</span>
+                                <div className="relative">
+                                  <select
+                                    value={item.size?._id || ""}
+                                    onClick={(e) => e.stopPropagation()}
+                                    onChange={(e) => updateSize(item._id, e.target.value, item.quantity)}
+                                    className="appearance-none text-sm bg-primary1/10 border border-primary2/20 rounded-lg px-4 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-primary5 transition w-32 cursor-pointer"
+                                  >
+                                    {sizesList.length<0 && <option value="">Free Size</option>}
+                                    {sizesList.map((s) => (
+                                      <option key={s._id} value={s._id}>
+                                        {s.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-primary5 text-lg">
+                                    ▼
+                                  </span>
+                                </div>
+                              </div>
+                              
                             </div>
                           </>
                         ) : (
@@ -171,23 +172,26 @@ const CartPage = memo(() => {
                                 Color: {item.design?.color?.name}
                               </p>
 
-                              <p className="text-sm">
-                                Size:{" "}
-                                <select
-                                  value={item.design?.size?._id || ""}
-                                  onChange={(e) =>
-                                    updateSize(item._id, e.target.value, item.quantity)
-                                  }
-                                  className="text-sm bg-transparent"
-                                >
-                                  <option value="">Free Size</option>
-                                  {sizesList.map((s) => (
-                                    <option key={s._id} value={s._id}>
-                                      {s.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-sm font-medium text-primary5">Size:</span>
+                                <div className="relative">
+                                  <select
+                                    value={item.design?.size?._id || ""}
+                                    onChange={(e) => updateSize(item._id, e.target.value, item.quantity)}
+                                    className="appearance-none text-sm bg-primary1/10 border border-primary2/20 rounded-lg px-4 py-1 pr-8 focus:outline-none focus:ring-2 focus:ring-primary5 transition w-32 cursor-pointer"
+                                  >
+                                    {sizesList.length<0 && <option value="">Free Size</option>}
+                                    {sizesList.map((s) => (
+                                      <option key={s._id} value={s._id}>
+                                        {s.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-primary5 text-lg">
+                                    ▼
+                                  </span>
+                                </div>
+                              </div>
 
                               <p className="text-sm">Custom Print</p>
                             </div>

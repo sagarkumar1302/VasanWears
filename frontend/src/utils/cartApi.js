@@ -80,7 +80,8 @@ export const updateCartItemApi = async (itemId, quantity, sizeId) => {
         
         return res.data;
     } catch (err) {
-        throw err;
+        console.log(err);
+        
     }
 };
 export const getVariantByIdApi = async (productId, variantId) => {
