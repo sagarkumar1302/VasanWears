@@ -282,6 +282,7 @@ const SingleProductPage = () => {
   const videoBoxRef = useRef(null);
   // Fallback tutorial URL (YouTube watch URL). Update if you want a different default.
   const FALLBACK_TUTORIAL_URL = "https://www.youtube.com/watch?v=s2oO6po8ugw";
+  const FALLBACK_TUTORIAL_URL_MOBILE = "https://www.youtube.com/watch?v=0mvmNJD5r98"; // Replace with your mobile-specific URL
 
   const openVideo = useCallback(() => {
     setShowVideo(true);
@@ -968,11 +969,13 @@ transition-all duration-300 btn-slide2 md:text-base text-sm"
             {/* Video or YouTube Embed */}
             {(() => {
               // Prefer explicit tutorial URL on product or variant, fall back to selectedMedia if it's a video
+              const isMobile = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
+              const fallbackUrl = isMobile ? FALLBACK_TUTORIAL_URL_MOBILE : FALLBACK_TUTORIAL_URL;
               const tutorialSrc =
                 product?.tutorialUrl ||
                 selectedVariant?.tutorialUrl ||
                 (selectedMedia?.type === "video" ? selectedMedia?.src : null) ||
-                FALLBACK_TUTORIAL_URL;
+                fallbackUrl;
 
               const getYouTubeEmbed = (url) => {
                 if (!url) return null;
