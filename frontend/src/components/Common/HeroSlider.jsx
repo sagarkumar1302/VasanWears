@@ -12,7 +12,7 @@ const slides = [
   },
   {
     type: "image",
-    url: "./images/LaunchMonth.webp",
+    url: "./videos/ValentineDay.mp4",
     title: "LAUNCHING MONTH OFFER",
     button: "Shop Now",
   },
