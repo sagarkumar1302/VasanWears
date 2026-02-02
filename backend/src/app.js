@@ -1,7 +1,6 @@
 import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
-import prerender from 'prerender-node';
 import compression from "compression";
 
 const app = express();
@@ -23,28 +22,6 @@ app.use(express.urlencoded({
 }))
 app.use(express.static("public"));
 app.use(cookieParser());
-
-// Prerender middleware for bots/crawlers (helps SPA pages be indexed)
-// Requires installing `prerender-node` and configuring PRERENDER_TOKEN or PRERENDER_SERVICE_URL
-if (process.env.PRERENDER_TOKEN || process.env.PRERENDER_SERVICE_URL) {
-    prerender.set('prerenderServiceUrl', process.env.PRERENDER_SERVICE_URL || '');
-    if (process.env.PRERENDER_TOKEN) prerender.set('prerenderToken', process.env.PRERENDER_TOKEN);
-    app.use(prerender);
-}
-
-// Redirect unauthenticated access to account pages to login (prevents indexing of login shells)
-app.use((req, res, next) => {
-    try {
-        if (req.path.startsWith('/my-account')) {
-            // crude unauthenticated check: change to your auth logic
-            const hasAuth = Boolean(req.cookies && (req.cookies.token || req.cookies.session));
-            if (!hasAuth) return res.redirect(302, '/login');
-        }
-    } catch (err) {
-        // ignore
-    }
-    return next();
-});
 
 // Canonical/redirect middleware for public HTML requests only
 app.use((req, res, next) => {
@@ -76,10 +53,6 @@ app.use((req, res, next) => {
 
         // Set Link header for canonical (search engines can read this)
         res.setHeader('Link', `<${canonicalUrl}>; rel="canonical"`);
-        // For cart/checkout, instruct crawlers not to index while allowing fetch
-        if (req.path.startsWith('/cart') || req.path.startsWith('/checkout')) {
-            res.setHeader('X-Robots-Tag', 'noindex, noarchive');
-        }
     } catch (err) {
         // on error, don't block request
         console.error('Canonical middleware error:', err);
