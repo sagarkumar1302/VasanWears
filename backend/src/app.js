@@ -4,6 +4,8 @@ import cookieParser from "cookie-parser"
 import compression from "compression";
 
 const app = express();
+// Honor proxy headers so protocol and host detection work behind load balancers
+app.set('trust proxy', true);
 app.use(compression());
 app.use(cors({
     origin: process.env.FRONT_END_URL,
@@ -20,6 +22,43 @@ app.use(express.urlencoded({
 }))
 app.use(express.static("public"));
 app.use(cookieParser());
+
+// Canonical/redirect middleware for public HTML requests only
+app.use((req, res, next) => {
+    try {
+        const canonicalHost = 'www.vasanwears.in';
+
+        // Only apply to likely HTML page requests (skip API and asset requests)
+        const isApi = req.path.startsWith('/api');
+        const hasExtension = /\.[a-zA-Z0-9]+$/.test(req.path);
+        const acceptsHtml = req.accepts && req.accepts('html');
+
+        if (isApi || hasExtension || !acceptsHtml) return next();
+
+        const forwardedProto = (req.headers['x-forwarded-proto'] || req.protocol || '').split(',')[0].trim();
+        const isHttps = forwardedProto === 'https' || req.protocol === 'https';
+        const hostHeader = (req.headers.host || '').toLowerCase();
+        const isWww = hostHeader.startsWith('www.');
+
+        // If not https or not the preferred host, redirect to canonical https + www URL
+        if (!isHttps || !isWww) {
+            const redirectUrl = `https://${canonicalHost}${req.originalUrl}`;
+            return res.redirect(301, redirectUrl);
+        }
+
+        // Build canonical URL: https://www.vasanwears.in + normalized pathname (drop query/hash)
+        let pathname = req.path.replace(/\/+$/,'');
+        if (pathname === '') pathname = '/';
+        const canonicalUrl = `https://${canonicalHost}${pathname.endsWith('/') ? pathname : pathname + '/'}`;
+
+        // Set Link header for canonical (search engines can read this)
+        res.setHeader('Link', `<${canonicalUrl}>; rel="canonical"`);
+    } catch (err) {
+        // on error, don't block request
+        console.error('Canonical middleware error:', err);
+    }
+    return next();
+});
 import userRouter from "./routes/user.routes.js"
 import adminRouter from "./routes/admin.routes.js"
 import categoryRoutes from "./routes/admincategory.routes.js"

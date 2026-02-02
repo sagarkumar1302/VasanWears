@@ -9,7 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="/image.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="robots" content="noindex, follow" />
+    <!-- Allow indexing: remove noindex so search engines can index public pages -->
+    <meta name="robots" content="index, follow" />
     
     <meta
       name="google-site-verification"
@@ -23,6 +24,41 @@ Design your own T-shirts, hoodies, and sweatshirts, showcase them with your name
     />
 
     <title>VasanWears | Custom T-Shirts, Hoodies & Streetwear in India</title>
+    <script>
+      (function setCanonical() {
+        var canonicalHost = 'https://www.vasanwears.in';
+
+        function normalizePath(p) {
+          if (!p) return '/';
+          p = p.replace(/\/+/g, '/');
+          if (p.charAt(0) !== '/') p = '/' + p;
+          if (p.length > 1) p = p.replace(/\/+$/,'');
+          return p + '/';
+        }
+
+        function getCanonicalHref() {
+          var path = normalizePath(location.pathname);
+          return canonicalHost.replace(/\/+$/,'') + path;
+        }
+
+        var link = document.querySelector('link[rel="canonical"]');
+        if (!link) {
+          link = document.createElement('link');
+          link.setAttribute('rel', 'canonical');
+          document.head.appendChild(link);
+        }
+
+        function update() { link.href = getCanonicalHref(); }
+
+        update();
+
+        var _push = history.pushState;
+        history.pushState = function() { _push.apply(this, arguments); update(); };
+        var _replace = history.replaceState;
+        history.replaceState = function() { _replace.apply(this, arguments); update(); };
+        window.addEventListener('popstate', update, false);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
