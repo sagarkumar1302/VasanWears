@@ -1,8 +1,6 @@
 User-agent: *
 Allow: /
 
-Disallow: /checkout
-Disallow: /cart
 Disallow: /designer
 Disallow: /create-design
 Disallow: /admin
@@ -12,6 +10,8 @@ Disallow: /account
 Disallow: /designer
 Disallow: /create-design
 Disallow: /designs-collections
+
+Disallow: /my-account
 
 
 Sitemap: https://www.vasanwears.in/sitemap.xml
