@@ -9,4 +9,9 @@ Disallow: /admin
 Disallow: /login
 Disallow: /account
 
+Disallow: /designer
+Disallow: /create-design
+Disallow: /designs-collections
+
+
 Sitemap: https://www.vasanwears.in/sitemap.xml
