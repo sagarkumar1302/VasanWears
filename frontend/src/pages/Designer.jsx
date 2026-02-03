@@ -4245,6 +4245,12 @@ const Designer = ({ productKey } = {}) => {
     if (!file) return;
 
     const MAX_BYTES = 25 * 1024 * 1024; // 25MB
+    const MIN_BYTES = 1024 * 1024; // 1MB
+    if (file.size < MIN_BYTES) {
+      alert("Image file is too small (minimum 1MB).");
+      e.target.value = "";
+      return;
+    }
     const allowedMime = new Set(["image/jpeg", "image/png"]);
     const name = String(file.name || "").toLowerCase();
     const extOk =
