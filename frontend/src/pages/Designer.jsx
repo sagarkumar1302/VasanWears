@@ -97,6 +97,17 @@ const CLOTH_CONFIG = {
     },
     margin: { Front: 0.4, Back: 0.4 },
   },
+  oversized: {
+    label: "Oversized",
+    imageFolderForColor: (colorName) =>
+      `Men/Oversized/${String(colorName || "Black")}`,
+    printAreaInch: { width: 13.5, height: 16 },
+    placementBySide: {
+      Front: { x: 0.5, y: 0.49 },
+      Back: { x: 0.5, y: 0.48 },
+    },
+    margin: { Front: 0.41, Back: 0.4 },
+  },
 };
 
 const COLOR_ALIASES_BY_CLOTH = {
@@ -174,6 +185,8 @@ const COLOR_BG_CLASS_BY_VALUE = {
 const EXTRA_COLORS_BY_CLOTH = {
   womenCropHoodie: [{ name: "Maroon", value: "#4e242a" }],
   sweatShirt: [{ name: "Maroon", value: "#4e242a" }],
+  oversized: [{ name: "Maroon", value: "#4e242a" },{ name: "Lavendar", value: "#" },],
+
 };
 
 // If some products have fewer/different colors, define them here.
@@ -216,6 +229,21 @@ const AVAILABLE_COLORS_BY_CLOTH = {
       // "Baby Pink",
     ]),
     ...(EXTRA_COLORS_BY_CLOTH.sweatShirt || []),
+  ],
+  oversized: [
+    ...pickColorsByName([
+      "Black",
+      "White",
+      "Sky Blue",
+      "Maroon",
+      "Royal Blue",
+      //"Grey",
+      "Baby Pink",
+      "Lavendar",
+      "Flag Green",
+      "Red",
+    ]),
+    ...(EXTRA_COLORS_BY_CLOTH.oversized || []),
   ],
 };
 
@@ -284,6 +312,7 @@ const clothKeyFromExternalProductKey = (productKey) => {
   // It also uses the folder `Women/Hoodie/...` so it matches your external key.
   if (gender === "women" && product === "hoodie") return "womenCropHoodie";
   if (gender === "men" && product === "sweatshirt") return "sweatshirt";
+  if (gender === "men" && product === "oversized") return "oversized";
   return "";
 };
 
@@ -335,6 +364,7 @@ const Designer = ({ productKey } = {}) => {
     hoodie: { front: null, back: null },
     womenCropHoodie: { front: null, back: null },
     sweatshirt: { front: null, back: null },
+    oversized: { front: null, back: null },
   });
 
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -488,6 +518,7 @@ const Designer = ({ productKey } = {}) => {
     men: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
     hoodie: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
     sweatshirt: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
+    oversized: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
   };
 
   const normalize = (s) =>
@@ -552,6 +583,7 @@ const Designer = ({ productKey } = {}) => {
       return "hoodie";
     }
     if (sub.includes("sweatshirt")) return "sweatshirt";
+    if (sub.includes("oversized")) return "oversized";
     if (
       sub.includes("tshirt") ||
       sub.includes("t-shirt") ||
@@ -1808,6 +1840,7 @@ const Designer = ({ productKey } = {}) => {
       hoodie: { one: 859, both: 1100 },
       womenCropHoodie: { one: 649, both: 799 },
       sweatshirt: { one: 700, both: 850 },
+      oversized: { one: 699, both: 999 },
     };
 
     const key = String(cloth || "men");
@@ -2560,6 +2593,8 @@ const Designer = ({ productKey } = {}) => {
 
   // Responsive canvas for mobile: scale canvas by container width
   useEffect(() => {
+
+    
     const canvas = fabricCanvasRef.current;
     if (!canvas) return;
 
