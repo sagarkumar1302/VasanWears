@@ -13,7 +13,7 @@ const slides = [
   {
     type: "video",
     url: "./videos/ValentineDay.mp4",
-    title: "LAUNCHING MONTH OFFER",
+    title: "VALENTINE MONTH OFFER",
     button: "Shop Now",
   },
   {
