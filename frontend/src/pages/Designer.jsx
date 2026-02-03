@@ -108,6 +108,20 @@ const CLOTH_CONFIG = {
     },
     margin: { Front: 0.41, Back: 0.4 },
   },
+  poloTshirt: {
+    label: "Polo T-Shirt",
+    imageFolderForColor: (colorName) =>
+      `Men/PoloTshirt/${String(colorName || "Black")}`,
+    printAreaInch: {
+      Front: { width: 10, height: 10 },
+      Back: { width: 12, height: 16 },
+    },
+    placementBySide: {
+      Front: { x: 0.62, y: 0.55 },
+      Back: { x: 0.5, y: 0.48 },
+    },
+    margin: { Front: 0.21, Back: 0.5 },
+  },
 };
 
 const COLOR_ALIASES_BY_CLOTH = {
@@ -179,13 +193,18 @@ const COLOR_BG_CLASS_BY_VALUE = {
   "#dfc97e": "bg-[#dfc97e]",
   "#dfc0cf": "bg-[#dfc0cf]",
   "#4e242a": "bg-[#4e242a]",
+  "#d0c5e7": "bg-[#d0c5e7]",
+  "#233a3e": "bg-[#233a3e]",
+  "#322522": "bg-[#322522]",
+
 };
 
 // Cloth-specific colors (not part of the global palette)
 const EXTRA_COLORS_BY_CLOTH = {
   womenCropHoodie: [{ name: "Maroon", value: "#4e242a" }],
   sweatShirt: [{ name: "Maroon", value: "#4e242a" }],
-  oversized: [{ name: "Maroon", value: "#4e242a" },{ name: "Lavendar", value: "#" },],
+  oversized: [{ name: "Maroon", value: "#4e242a" },{ name: "Lavendar", value: "#d0c5e7" }],
+  poloTshirt: [{ name: "Brown", value: "#322522" },{ name: "Petrol Blue", value: "#233a3e"}],
 
 };
 
@@ -244,6 +263,21 @@ const AVAILABLE_COLORS_BY_CLOTH = {
       "Red",
     ]),
     ...(EXTRA_COLORS_BY_CLOTH.oversized || []),
+  ],
+  poloTshirt: [
+    ...pickColorsByName([
+      "Black",
+      "White",
+      "Blue",
+      "Maroon",
+      "Royal Blue",
+      "Grey",
+      "Yellow",
+      "Brown",
+      "Red",
+      "Petrol Blue"
+    ]),
+    ...(EXTRA_COLORS_BY_CLOTH.poloTshirt || []),
   ],
 };
 
@@ -313,6 +347,7 @@ const clothKeyFromExternalProductKey = (productKey) => {
   if (gender === "women" && product === "hoodie") return "womenCropHoodie";
   if (gender === "men" && product === "sweatshirt") return "sweatshirt";
   if (gender === "men" && product === "oversized") return "oversized";
+  if (gender === "men" && product === "polotshirt") return "poloTshirt";
   return "";
 };
 
@@ -365,6 +400,7 @@ const Designer = ({ productKey } = {}) => {
     womenCropHoodie: { front: null, back: null },
     sweatshirt: { front: null, back: null },
     oversized: { front: null, back: null },
+    poloTshirt: { front: null, back: null },
   });
 
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -519,6 +555,7 @@ const Designer = ({ productKey } = {}) => {
     hoodie: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
     sweatshirt: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
     oversized: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
+    poloTshirt: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
   };
 
   const normalize = (s) =>
@@ -584,6 +621,7 @@ const Designer = ({ productKey } = {}) => {
     }
     if (sub.includes("sweatshirt")) return "sweatshirt";
     if (sub.includes("oversized")) return "oversized";
+    if (sub.includes("polotshirt")) return "poloTshirt";
     if (
       sub.includes("tshirt") ||
       sub.includes("t-shirt") ||
@@ -1841,6 +1879,7 @@ const Designer = ({ productKey } = {}) => {
       womenCropHoodie: { one: 649, both: 799 },
       sweatshirt: { one: 700, both: 850 },
       oversized: { one: 699, both: 999 },
+      poloTshirt: { one: 699, both: 949 },
     };
 
     const key = String(cloth || "men");
