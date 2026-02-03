@@ -1885,8 +1885,10 @@ const Designer = ({ productKey } = {}) => {
       const images = {};
 
       // Use lower capture scales on mobile to reduce CPU and memory usage.
-      const fullCaptureScale = isMobileViewport() ? 1 : 3;
-      const designCaptureScale = isMobileViewport() ? 1 : 4;
+      // Increased desktop scales so saved designs are higher-resolution
+      // and remain sharp after cropping.
+      const fullCaptureScale = isMobileViewport() ? 1 : 4;
+      const designCaptureScale = isMobileViewport() ? 1 : 6;
 
       // Capture Front side if it has design
       if (hasFront) {
@@ -4527,104 +4529,202 @@ const Designer = ({ productKey } = {}) => {
     });
   };
 
+  // const captureFullMockupFallbackDataUrl = async ({ scale = 3 } = {}) => {
+  //   const canvas = fabricCanvasRef.current;
+  //   const stage = stageRef.current || containerRef.current;
+  //   if (!canvas || !stage) throw new Error("Canvas or container not found");
+
+  //   const cssW = stage.offsetWidth || 0;
+  //   const cssH = stage.offsetHeight || 0;
+  //   if (!cssW || !cssH) throw new Error("Stage has zero size");
+
+  //   // Figure out the shirt background URL (prefer stage's computed style).
+  //   let bgUrl = "";
+  //   try {
+  //     const computed = window.getComputedStyle(stage);
+  //     bgUrl =
+  //       extractCssUrl(computed.backgroundImage) ||
+  //       extractCssUrl(stage.style.backgroundImage);
+  //   } catch (e) {}
+  //   bgUrl = bgUrl || imageUrl;
+
+  //   const out = document.createElement("canvas");
+  //   out.width = Math.round(cssW * scale);
+  //   out.height = Math.round(cssH * scale);
+  //   const ctx = out.getContext("2d");
+  //   if (!ctx) throw new Error("2D context not available");
+  //   ctx.clearRect(0, 0, out.width, out.height);
+
+  //   // Draw shirt background as 'contain'
+  //   if (bgUrl) {
+  //     try {
+  //       const bg = await loadImageEl(bgUrl, { crossOrigin: "anonymous" });
+  //       const iw = bg.naturalWidth || bg.width || 1;
+  //       const ih = bg.naturalHeight || bg.height || 1;
+  //       const s = Math.min(out.width / iw, out.height / ih);
+  //       const dw = iw * s;
+  //       const dh = ih * s;
+  //       const dx = (out.width - dw) / 2;
+  //       const dy = (out.height - dh) / 2;
+  //       ctx.drawImage(bg, dx, dy, dw, dh);
+  //     } catch (e) {
+  //       // if bg fails, still export design layer
+  //     }
+  //   }
+
+  //   // Draw Fabric design layer (without Fabric background, to avoid double-shirt).
+  //   const originalBg = canvas.backgroundImage;
+  //   const originalBgColor = canvas.backgroundColor;
+  //   try {
+  //     try {
+  //       if (typeof canvas.setBackgroundImage === "function") {
+  //         canvas.setBackgroundImage(null, () => {});
+  //       } else {
+  //         canvas.backgroundImage = null;
+  //       }
+  //     } catch (e) {}
+  //     try {
+  //       if (typeof canvas.setBackgroundColor === "function") {
+  //         canvas.setBackgroundColor(null, () => {});
+  //       } else {
+  //         canvas.backgroundColor = null;
+  //       }
+  //     } catch (e) {}
+
+  //     canvas.requestRenderAll && canvas.requestRenderAll();
+  //     await nextFrame();
+
+  //     const designUrl = canvas.toDataURL({
+  //       format: "png",
+  //       multiplier: scale,
+  //       withoutTransform: false,
+  //       backgroundColor: null,
+  //     });
+
+  //     const designImg = await loadImageEl(designUrl, { crossOrigin: null });
+  //     ctx.drawImage(designImg, 0, 0, out.width, out.height);
+  //   } finally {
+  //     try {
+  //       if (typeof canvas.setBackgroundImage === "function") {
+  //         canvas.setBackgroundImage(originalBg || null, () => {});
+  //       } else {
+  //         canvas.backgroundImage = originalBg || null;
+  //       }
+  //     } catch (e) {}
+  //     try {
+  //       if (typeof canvas.setBackgroundColor === "function") {
+  //         canvas.setBackgroundColor(originalBgColor ?? null, () => {});
+  //       } else {
+  //         canvas.backgroundColor = originalBgColor ?? null;
+  //       }
+  //     } catch (e) {}
+  //     canvas.requestRenderAll && canvas.requestRenderAll();
+  //   }
+
+  //   return out.toDataURL("image/png");
+  // };
+
+  //Other CaptureFullMockupFallbackDataUrl function
+
   const captureFullMockupFallbackDataUrl = async ({ scale = 3 } = {}) => {
-    const canvas = fabricCanvasRef.current;
-    const stage = stageRef.current || containerRef.current;
-    if (!canvas || !stage) throw new Error("Canvas or container not found");
+  const canvas = fabricCanvasRef.current;
+  const stage = stageRef.current || containerRef.current;
+  if (!canvas || !stage) throw new Error("Canvas or container not found");
 
-    const cssW = stage.offsetWidth || 0;
-    const cssH = stage.offsetHeight || 0;
-    if (!cssW || !cssH) throw new Error("Stage has zero size");
+  // Prefer canvas backstore (real pixel size) instead of CSS size
+  const baseW =
+    canvas.width ||
+    (typeof canvas.getWidth === "function" ? canvas.getWidth() : 0);
+  const baseH =
+    canvas.height ||
+    (typeof canvas.getHeight === "function" ? canvas.getHeight() : 0);
+  if (!baseW || !baseH) throw new Error("Canvas has zero size");
 
-    // Figure out the shirt background URL (prefer stage's computed style).
-    let bgUrl = "";
+  // Figure out the shirt background URL (prefer stage's computed style).
+  let bgUrl = "";
+  try {
+    const computed = window.getComputedStyle(stage);
+    bgUrl =
+      extractCssUrl(computed.backgroundImage) ||
+      extractCssUrl(stage.style.backgroundImage);
+  } catch (e) {}
+  bgUrl = bgUrl || imageUrl;
+
+  const out = document.createElement("canvas");
+  out.width = Math.round(baseW * scale);
+  out.height = Math.round(baseH * scale);
+  const ctx = out.getContext("2d");
+  if (!ctx) throw new Error("2D context not available");
+  ctx.clearRect(0, 0, out.width, out.height);
+
+  // Draw shirt background as 'contain'
+  if (bgUrl) {
     try {
-      const computed = window.getComputedStyle(stage);
-      bgUrl =
-        extractCssUrl(computed.backgroundImage) ||
-        extractCssUrl(stage.style.backgroundImage);
+      const bg = await loadImageEl(bgUrl, { crossOrigin: "anonymous" });
+      const iw = bg.naturalWidth || bg.width || 1;
+      const ih = bg.naturalHeight || bg.height || 1;
+      const s = Math.min(out.width / iw, out.height / ih);
+      const dw = iw * s;
+      const dh = ih * s;
+      const dx = (out.width - dw) / 2;
+      const dy = (out.height - dh) / 2;
+      ctx.drawImage(bg, dx, dy, dw, dh);
+    } catch (e) {
+      // background load failed, continue with design layer
+    }
+  }
+
+  // Draw Fabric design layer (without Fabric background, to avoid double-shirt)
+  const originalBg = canvas.backgroundImage;
+  const originalBgColor = canvas.backgroundColor;
+  try {
+    try {
+      if (typeof canvas.setBackgroundImage === "function")
+        canvas.setBackgroundImage(null, () => {});
+      else canvas.backgroundImage = null;
     } catch (e) {}
-    bgUrl = bgUrl || imageUrl;
-
-    const out = document.createElement("canvas");
-    out.width = Math.round(cssW * scale);
-    out.height = Math.round(cssH * scale);
-    const ctx = out.getContext("2d");
-    if (!ctx) throw new Error("2D context not available");
-    ctx.clearRect(0, 0, out.width, out.height);
-
-    // Draw shirt background as 'contain'
-    if (bgUrl) {
-      try {
-        const bg = await loadImageEl(bgUrl, { crossOrigin: "anonymous" });
-        const iw = bg.naturalWidth || bg.width || 1;
-        const ih = bg.naturalHeight || bg.height || 1;
-        const s = Math.min(out.width / iw, out.height / ih);
-        const dw = iw * s;
-        const dh = ih * s;
-        const dx = (out.width - dw) / 2;
-        const dy = (out.height - dh) / 2;
-        ctx.drawImage(bg, dx, dy, dw, dh);
-      } catch (e) {
-        // if bg fails, still export design layer
-      }
-    }
-
-    // Draw Fabric design layer (without Fabric background, to avoid double-shirt).
-    const originalBg = canvas.backgroundImage;
-    const originalBgColor = canvas.backgroundColor;
     try {
-      try {
-        if (typeof canvas.setBackgroundImage === "function") {
-          canvas.setBackgroundImage(null, () => {});
-        } else {
-          canvas.backgroundImage = null;
-        }
-      } catch (e) {}
-      try {
-        if (typeof canvas.setBackgroundColor === "function") {
-          canvas.setBackgroundColor(null, () => {});
-        } else {
-          canvas.backgroundColor = null;
-        }
-      } catch (e) {}
+      if (typeof canvas.setBackgroundColor === "function")
+        canvas.setBackgroundColor(null, () => {});
+      else canvas.backgroundColor = null;
+    } catch (e) {}
 
-      canvas.requestRenderAll && canvas.requestRenderAll();
-      await nextFrame();
+    canvas.requestRenderAll && canvas.requestRenderAll();
+    await nextFrame();
 
-      const designUrl = canvas.toDataURL({
-        format: "png",
-        multiplier: scale,
-        withoutTransform: false,
-        backgroundColor: null,
-      });
+    const designUrl = canvas.toDataURL({
+      format: "png",
+      multiplier: scale,
+      withoutTransform: false,
+      backgroundColor: null,
+    });
 
-      const designImg = await loadImageEl(designUrl, { crossOrigin: null });
-      ctx.drawImage(designImg, 0, 0, out.width, out.height);
-    } finally {
-      try {
-        if (typeof canvas.setBackgroundImage === "function") {
-          canvas.setBackgroundImage(originalBg || null, () => {});
-        } else {
-          canvas.backgroundImage = originalBg || null;
-        }
-      } catch (e) {}
-      try {
-        if (typeof canvas.setBackgroundColor === "function") {
-          canvas.setBackgroundColor(originalBgColor ?? null, () => {});
-        } else {
-          canvas.backgroundColor = originalBgColor ?? null;
-        }
-      } catch (e) {}
-      canvas.requestRenderAll && canvas.requestRenderAll();
-    }
+    const designImg = await loadImageEl(designUrl, { crossOrigin: "anonymous" });
+    ctx.drawImage(designImg, 0, 0, out.width, out.height);
+  } finally {
+    try {
+      if (typeof canvas.setBackgroundImage === "function")
+        canvas.setBackgroundImage(originalBg || null, () => {});
+      else canvas.backgroundImage = originalBg || null;
+    } catch (e) {}
+    try {
+      if (typeof canvas.setBackgroundColor === "function")
+        canvas.setBackgroundColor(originalBgColor ?? null, () => {});
+      else canvas.backgroundColor = originalBgColor ?? null;
+    } catch (e) {}
+    canvas.requestRenderAll && canvas.requestRenderAll();
+  }
 
-    return out.toDataURL("image/png");
-  };
+  return out.toDataURL("image/png");
+};
+
+
 
   async function captureFullMockupDataUrl({ scale } = {}) {
     if (scale == null) {
-      scale = isMobileViewport() ? 1 : 3;
+      // Increase default desktop export scale so full mockups are higher-res
+      // even when callers omit an explicit scale.
+      scale = isMobileViewport() ? 1 : 4;
     }
     const canvas = fabricCanvasRef.current;
     const container = stageRef.current || containerRef.current;
@@ -4687,7 +4787,8 @@ const Designer = ({ productKey } = {}) => {
   // Capture the design layer only (transparent background), scaled.
   const captureDesignOnlyDataUrl = async ({ scale } = {}) => {
     if (scale == null) {
-      scale = isMobileViewport() ? 1 : 4;
+      // Increase default desktop design-only export scale for max resolution.
+      scale = isMobileViewport() ? 1 : 6;
     }
     const canvas = fabricCanvasRef.current;
     if (!canvas) throw new Error("Canvas not found");
@@ -4777,7 +4878,8 @@ const Designer = ({ productKey } = {}) => {
     saveCurrentSideDesign();
 
     // Lower design-only capture scale on mobile to avoid large images
-    const designCaptureScale = isMobileViewport() ? 1 : 4;
+    // Increase desktop design-only scale for higher-res zip exports.
+    const designCaptureScale = isMobileViewport() ? 1 : 6;
 
     try {
       for (const sideKey of ["Front", "Back"]) {
@@ -5004,7 +5106,8 @@ const Designer = ({ productKey } = {}) => {
     const isMobileViewport =
       (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) ||
       (window.innerWidth || 0) <= 768;
-    const PREVIEW_CAPTURE_SCALE = isMobileViewport ? 3 : 4;
+    // Slightly higher preview scale for sharper on-screen and 3D textures.
+    const PREVIEW_CAPTURE_SCALE = isMobileViewport ? 3 : 5;
 
     try {
       for (const sideKey of ["Front", "Back"]) {
