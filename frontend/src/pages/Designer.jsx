@@ -86,6 +86,40 @@ const CLOTH_CONFIG = {
     },
     margin: { Front: 0.2, Back: 0.2 },
   },
+  womenBabyTee: {
+    label: "Women Baby Tee",
+    imageFolderForColor: (colorName) =>
+      `Women/BabyTee/${String(colorName || "Black")}`,
+    // Print area / placement can be tuned later.
+    // Allow different print areas per side.
+    // Keep Front as 11x10; set Back independently.
+    printAreaInch: {
+      Front: { width: 14, height: 14 },
+      Back: { width: 14, height: 14 },
+    },
+    placementBySide: {
+      Front: { x: 0.5, y: 0.54 },
+      Back: { x: 0.5, y: 0.54 },
+    },
+    margin: { Front: 0.32, Back: 0.32 },
+  },
+  womenCropTop: {
+    label: "Women Crop Top",
+    imageFolderForColor: (colorName) =>
+      `Women/CropTop/${String(colorName || "Black")}`,
+    // Print area / placement can be tuned later.
+    // Allow different print areas per side.
+    // Keep Front as 11x10; set Back independently.
+    printAreaInch: {
+      Front: { width: 8, height: 7.5 },
+      Back: { width: 8.5, height: 8 },
+    },
+    placementBySide: {
+      Front: { x: 0.498, y: 0.46 },
+      Back: { x: 0.505, y: 0.44 },
+    },
+    margin: { Front: 0.32, Back: 0.32 },
+  },
   sweatshirt: {
     label: "Sweatshirt",
     imageFolderForColor: (colorName) =>
@@ -195,7 +229,8 @@ const COLOR_BG_CLASS_BY_VALUE = {
   "#4e242a": "bg-[#4e242a]",
   "#d0c5e7": "bg-[#d0c5e7]",
   "#233a3e": "bg-[#233a3e]",
-  "#322522": "bg-[#322522]",
+  "#ffecad": "bg-[#ffecad]",
+  "#f5c742": "bg-[#f5c742]",
 
 };
 
@@ -205,6 +240,9 @@ const EXTRA_COLORS_BY_CLOTH = {
   sweatShirt: [{ name: "Maroon", value: "#4e242a" }],
   oversized: [{ name: "Maroon", value: "#4e242a" },{ name: "Lavendar", value: "#d0c5e7" }],
   poloTshirt: [{ name: "Brown", value: "#322522" },{ name: "Petrol Blue", value: "#233a3e"}],
+  womenBabyTee: [{name: "Lavendar", value: "#d0c5e7"}],
+  womenCropTop: [{name: "Lavendar", value: "#d0c5e7"},{name: "Beige", value: "#ffecad"},{name:"Golden Yellow", value: "#f5c742"}],
+
 
 };
 
@@ -226,6 +264,30 @@ const AVAILABLE_COLORS_BY_CLOTH = {
   ],
   // For hoodie assets we intentionally hide some global palette colors
   // (e.g. Flag Green / Yellow) because those folders aren't available.
+  womenBabyTee: [
+    ...pickColorsByName([
+      "Black",
+      "White",
+      "Royal Blue",
+      "Baby Pink",
+      "Lavendar",
+    ]),
+    ...(EXTRA_COLORS_BY_CLOTH.womenBabyTee || []),
+  ],
+  womenCropTop: [
+    ...pickColorsByName([
+      "Black",
+      "White",
+      "Royal Blue",
+      "Baby Pink",
+      "Red",
+      "Sky Blue",
+      "Beige",
+      "Grey",
+      "Lavendar",
+    ]),
+    ...(EXTRA_COLORS_BY_CLOTH.womenCropTop || []),
+  ],
   hoodie: [
     ...pickColorsByName([
       "Black",
@@ -345,6 +407,8 @@ const clothKeyFromExternalProductKey = (productKey) => {
   // This project only has a women hoodie variant wired as womenCropHoodie.
   // It also uses the folder `Women/Hoodie/...` so it matches your external key.
   if (gender === "women" && product === "hoodie") return "womenCropHoodie";
+  if (gender === "women" && product === "hoodie") return "womenCropHoodie";
+  if (gender === "women" && product === "cropTop") return "womenCropTop";
   if (gender === "men" && product === "sweatshirt") return "sweatshirt";
   if (gender === "men" && product === "oversized") return "oversized";
   if (gender === "men" && product === "polotshirt") return "poloTshirt";
@@ -398,6 +462,8 @@ const Designer = ({ productKey } = {}) => {
     women: { front: null, back: null },
     hoodie: { front: null, back: null },
     womenCropHoodie: { front: null, back: null },
+    womenCropTop: { front: null, back: null },
+    womenBabyTee: { front: null, back: null },
     sweatshirt: { front: null, back: null },
     oversized: { front: null, back: null },
     poloTshirt: { front: null, back: null },
@@ -551,6 +617,8 @@ const Designer = ({ productKey } = {}) => {
   const SIZE_SETS = {
     women: ["XS", "S", "M", "L", "XL", "XXL"],
     womenCropHoodie: ["XS", "S", "M", "L", "XL", "XXL"],
+    womenCropTop: ["XS", "S", "M", "L", "XL", "XXL"],
+    womenBabyTee: ["XS", "S", "M", "L", "XL", "XXL"],
     men: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
     hoodie: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
     sweatshirt: ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL"],
@@ -614,8 +682,11 @@ const Designer = ({ productKey } = {}) => {
     // Prefer subcategory hints first — they are more specific.
     if (sub.includes("crop") && sub.includes("hoodie"))
       return "womenCropHoodie";
+    if (sub.includes("crop") && sub.includes("top"))
+      return "womenCropTop";
+    if (sub.includes("tee") && sub.includes("babytee"))
+      return "womenBabyTee";
     if (sub.includes("hoodie")) {
-      // Prefer a women-specific hoodie variant when the category indicates women.
       if (cat.includes("women")) return "womenCropHoodie";
       return "hoodie";
     }
@@ -1876,7 +1947,9 @@ const Designer = ({ productKey } = {}) => {
       men: { one: 599, both: 849 },
       women: { one: 499, both: 699 },
       hoodie: { one: 859, both: 1100 },
+      womenBabyTee: { one: 549, both: 699 },
       womenCropHoodie: { one: 649, both: 799 },
+      womenCropTop: { one: 549, both: 699 },
       sweatshirt: { one: 700, both: 850 },
       oversized: { one: 699, both: 999 },
       poloTshirt: { one: 699, both: 949 },
@@ -2914,7 +2987,7 @@ const Designer = ({ productKey } = {}) => {
             disabled={mockMode}
             value={cloth}
             onChange={(e) => handleClothChange(e.target.value)}
-            className="w-full hidden h-10 px-3 rounded-lg border border-gray-200 bg-white text-gray-900 text-sm outline-none focus:border-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed mb-[18px]"
+            className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-white text-gray-900 text-sm outline-none focus:border-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed mb-[18px]"
           >
             {Object.keys(CLOTH_CONFIG).map((key) => (
               <option key={key} value={key}>
