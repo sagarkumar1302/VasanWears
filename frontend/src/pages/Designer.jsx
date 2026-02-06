@@ -2987,7 +2987,7 @@ const Designer = ({ productKey } = {}) => {
             disabled={mockMode}
             value={cloth}
             onChange={(e) => handleClothChange(e.target.value)}
-            className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-white text-gray-900 text-sm outline-none focus:border-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed mb-[18px]"
+            className="w-full hidden h-10 px-3 rounded-lg border border-gray-200 bg-white text-gray-900 text-sm outline-none focus:border-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed mb-[18px]"
           >
             {Object.keys(CLOTH_CONFIG).map((key) => (
               <option key={key} value={key}>
